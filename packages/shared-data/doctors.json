@@ -5,8 +5,12 @@
     "specialty": "Medicina General",
     "price": 50,
     "image": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop",
+    "rating": 4.8,
+    "reviews": 156,
     "availability": ["09:00", "09:30", "10:00", "10:30", "14:00", "15:00", "16:00"],
-    "bio": "15 años de experiencia en medicina general"
+    "bio": "15 años de experiencia en medicina general con enfoque en atención preventiva",
+    "languages": ["Español", "Inglés"],
+    "insurance": ["OSDE", "Swiss", "Medifé"]
   },
   {
     "id": 2,
@@ -14,8 +18,12 @@
     "specialty": "Cardiología",
     "price": 80,
     "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+    "rating": 5.0,
+    "reviews": 203,
     "availability": ["10:00", "11:00", "15:00", "15:30", "16:00", "16:30"],
-    "bio": "Especialista en cardiología preventiva"
+    "bio": "Especialista en cardiología preventiva y arritmias. Miembro de la Sociedad Argentina de Cardiología",
+    "languages": ["Español", "Inglés", "Portugués"],
+    "insurance": ["OSDE", "Swiss", "Axa", "Medifé"]
   },
   {
     "id": 3,
@@ -23,8 +31,12 @@
     "specialty": "Dermatología",
     "price": 60,
     "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
+    "rating": 4.9,
+    "reviews": 189,
     "availability": ["09:00", "10:00", "11:00", "14:00", "15:00"],
-    "bio": "Especialista en dermatología clínica y estética"
+    "bio": "Especialista en dermatología clínica y estética. Experta en tratamientos con láser y rejuvenecimiento",
+    "languages": ["Español", "Inglés"],
+    "insurance": ["OSDE", "Swiss", "Medifé"]
   },
   {
     "id": 4,
@@ -32,7 +44,63 @@
     "specialty": "Traumatología",
     "price": 70,
     "image": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop",
+    "rating": 4.7,
+    "reviews": 142,
     "availability": ["10:00", "11:00", "12:00", "16:00", "17:00"],
-    "bio": "Traumatólogo con 20 años de experiencia"
+    "bio": "Traumatólogo con 20 años de experiencia en cirugía ortopédica y traumatología deportiva",
+    "languages": ["Español", "Inglés"],
+    "insurance": ["OSDE", "Swiss", "Axa"]
+  },
+  {
+    "id": 5,
+    "name": "Dra. Sofía Martínez",
+    "specialty": "Psicología",
+    "price": 45,
+    "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+    "rating": 4.9,
+    "reviews": 178,
+    "availability": ["09:00", "10:00", "14:00", "15:00", "16:00", "17:00"],
+    "bio": "Psicóloga clínica con especialización en terapia cognitivo-conductual",
+    "languages": ["Español", "Inglés"],
+    "insurance": ["OSDE", "Swiss", "Medifé", "Axa"]
+  },
+  {
+    "id": 6,
+    "name": "Dr. Roberto Díaz",
+    "specialty": "Oftalmología",
+    "price": 75,
+    "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
+    "rating": 4.8,
+    "reviews": 167,
+    "availability": ["09:30", "10:30", "11:00", "14:30", "15:30", "16:30"],
+    "bio": "Oftalmólogo con experiencia en cirugía de cataratas y LASIK",
+    "languages": ["Español", "Inglés"],
+    "insurance": ["OSDE", "Swiss", "Medifé", "Axa"]
+  },
+  {
+    "id": 7,
+    "name": "Dra. Patricia Reyes",
+    "specialty": "Ginecología",
+    "price": 65,
+    "image": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop",
+    "rating": 4.9,
+    "reviews": 195,
+    "availability": ["09:00", "10:00", "10:30", "14:00", "15:00", "16:00"],
+    "bio": "Ginecóloga obstetra con 18 años de experiencia en medicina reproductiva",
+    "languages": ["Español", "Inglés"],
+    "insurance": ["OSDE", "Swiss", "Medifé"]
+  },
+  {
+    "id": 8,
+    "name": "Dr. Fernando Torres",
+    "specialty": "Pediatría",
+    "price": 55,
+    "image": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop",
+    "rating": 4.8,
+    "reviews": 181,
+    "availability": ["09:00", "09:30", "10:30", "14:00", "14:30", "15:30"],
+    "bio": "Pediatra con especialización en enfermedades infectocontagiosas pediátricas",
+    "languages": ["Español", "Inglés"],
+    "insurance": ["OSDE", "Swiss", "Medifé", "Axa"]
   }
 ]

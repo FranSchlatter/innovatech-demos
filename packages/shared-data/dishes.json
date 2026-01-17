@@ -6,7 +6,10 @@
     "price": 18,
     "image": "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=500&h=400&fit=crop",
     "description": "Milanesa con jamón y queso fundido",
-    "preparationTime": 15
+    "preparationTime": 15,
+    "rating": 4.8,
+    "reviews": 156,
+    "tags": ["Picante", "Vegetariano"]
   },
   {
     "id": 2,
@@ -15,7 +18,10 @@
     "price": 12,
     "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&h=400&fit=crop",
     "description": "Lechuga, croutones, queso y aderezo casero",
-    "preparationTime": 8
+    "preparationTime": 8,
+    "rating": 4.6,
+    "reviews": 89,
+    "tags": ["Saludable", "Vegetariano"]
   },
   {
     "id": 3,
@@ -24,7 +30,10 @@
     "price": 24,
     "image": "https://images.unsplash.com/photo-1432139555190-58524dae6a55?w=500&h=400&fit=crop",
     "description": "Corte premium argentino a la parrilla",
-    "preparationTime": 20
+    "preparationTime": 20,
+    "rating": 5.0,
+    "reviews": 234,
+    "tags": ["Especialidad", "Carnes"]
   },
   {
     "id": 4,
@@ -33,7 +42,10 @@
     "price": 14,
     "image": "https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?w=500&h=400&fit=crop",
     "description": "Mozzarella, tomate y albahaca fresca",
-    "preparationTime": 12
+    "preparationTime": 12,
+    "rating": 4.7,
+    "reviews": 178,
+    "tags": ["Clásico", "Vegetariano"]
   },
   {
     "id": 5,
@@ -42,7 +54,10 @@
     "price": 16,
     "image": "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=500&h=400&fit=crop",
     "description": "Tallarín con huevo, queso y panceta",
-    "preparationTime": 12
+    "preparationTime": 12,
+    "rating": 4.9,
+    "reviews": 201,
+    "tags": ["Italiano", "Premium"]
   },
   {
     "id": 6,
@@ -51,6 +66,81 @@
     "price": 8,
     "image": "https://images.unsplash.com/photo-1571115764595-644a59e5aaaa?w=500&h=400&fit=crop",
     "description": "Tradicional postre italiano",
-    "preparationTime": 5
+    "preparationTime": 5,
+    "rating": 4.8,
+    "reviews": 145,
+    "tags": ["Dulce", "Italiano"]
+  },
+  {
+    "id": 7,
+    "name": "Salmón a la Mantequilla",
+    "category": "Platos principales",
+    "price": 22,
+    "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&h=400&fit=crop",
+    "description": "Filete de salmón fresco con salsa de limón",
+    "preparationTime": 18,
+    "rating": 4.9,
+    "reviews": 189,
+    "tags": ["Marino", "Saludable"]
+  },
+  {
+    "id": 8,
+    "name": "Hamburguesa Premium",
+    "category": "Sándwiches",
+    "price": 16,
+    "image": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&h=400&fit=crop",
+    "description": "Carne 100% beef con queso cheddar y tocino",
+    "preparationTime": 10,
+    "rating": 4.7,
+    "reviews": 167,
+    "tags": ["Americano", "Premium"]
+  },
+  {
+    "id": 9,
+    "name": "Tabla de Quesos y Embutidos",
+    "category": "Entrantes",
+    "price": 20,
+    "image": "https://images.unsplash.com/photo-1513159083618-c53660b1ae0f?w=500&h=400&fit=crop",
+    "description": "Selección variada de quesos nacionales e importados",
+    "preparationTime": 3,
+    "rating": 4.8,
+    "reviews": 156,
+    "tags": ["Compartible", "Gourmet"]
+  },
+  {
+    "id": 10,
+    "name": "Ravioles de Ricota",
+    "category": "Pastas",
+    "price": 14,
+    "image": "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=500&h=400&fit=crop",
+    "description": "Ravioles caseros de ricota y espinaca",
+    "preparationTime": 10,
+    "rating": 4.6,
+    "reviews": 123,
+    "tags": ["Casero", "Vegetariano"]
+  },
+  {
+    "id": 11,
+    "name": "Choripán",
+    "category": "Sándwiches",
+    "price": 10,
+    "image": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&h=400&fit=crop",
+    "description": "Chorizo a la parrilla con chimichurri",
+    "preparationTime": 7,
+    "rating": 4.9,
+    "reviews": 267,
+    "tags": ["Argentino", "Popular"]
+  },
+  {
+    "id": 12,
+    "name": "Flan Casero",
+    "category": "Postres",
+    "price": 7,
+    "image": "https://images.unsplash.com/photo-1571115764595-644a59e5aaaa?w=500&h=400&fit=crop",
+    "description": "Flan tradicional con dulce de leche",
+    "preparationTime": 4,
+    "rating": 4.8,
+    "reviews": 134,
+    "tags": ["Clásico", "Casero"]
   }
 ]

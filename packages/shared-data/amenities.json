@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "name": "Piscina Olímpica",
+    "description": "Piscina de 50 metros con área de descanso y bar acuático",
+    "icon": "Waves",
+    "image": "https://images.unsplash.com/photo-1576610616656-570f080fcada?w=500&h=400&fit=crop"
+  },
+  {
+    "id": 2,
+    "name": "Spa y Bienestar",
+    "description": "Spa de lujo con masajes, tratamientos faciales y saunas",
+    "icon": "Droplet",
+    "image": "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=500&h=400&fit=crop"
+  },
+  {
+    "id": 3,
+    "name": "Gimnasio Premium",
+    "description": "Gimnasio completamente equipado con entrenador personal disponible",
+    "icon": "Dumbbell",
+    "image": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=500&h=400&fit=crop"
+  },
+  {
+    "id": 4,
+    "name": "Restaurante Gourmet",
+    "description": "Restaurante de 5 estrellas con chef internacional",
+    "icon": "UtensilsCrossed",
+    "image": "https://images.unsplash.com/photo-1517521271924-fc3ee0d48906?w=500&h=400&fit=crop"
+  },
+  {
+    "id": 5,
+    "name": "Bar de Cócteles",
+    "description": "Bar lounge con mixólogos profesionales y vistas al atardecer",
+    "icon": "Wine",
+    "image": "https://images.unsplash.com/photo-1514432324607-2e467f4af0e6?w=500&h=400&fit=crop"
+  },
+  {
+    "id": 6,
+    "name": "Playa Privada",
+    "description": "Acceso exclusivo a playa privada con sombrillas y servicio de bebidas",
+    "icon": "Sun",
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&h=400&fit=crop"
+  },
+  {
+    "id": 7,
+    "name": "Biblioteca y Lounge",
+    "description": "Espacio tranquilo con libros, juegos de mesa y conexión WiFi",
+    "icon": "BookOpen",
+    "image": "https://images.unsplash.com/photo-150784272343-583f20270319?w=500&h=400&fit=crop"
+  },
+  {
+    "id": 8,
+    "name": "Centro de Negocios",
+    "description": "Salas de conferencia, oficinas privadas y servicios de secretaría",
+    "icon": "Briefcase",
+    "image": "https://images.unsplash.com/photo-1552664730-d307ca884978?w=500&h=400&fit=crop"
+  },
+  {
+    "id": 9,
+    "name": "Guardería Infantil",
+    "description": "Guardería profesional con actividades recreativas supervisadas",
+    "icon": "Baby",
+    "image": "https://images.unsplash.com/photo-1503454537688-e6694d30c4ef?w=500&h=400&fit=crop"
+  },
+  {
+    "id": 10,
+    "name": "Estacionamiento Valet",
+    "description": "Servicio de valet parking 24/7 con área de aparcamiento segura",
+    "icon": "Car",
+    "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&h=400&fit=crop"
+  }
+]

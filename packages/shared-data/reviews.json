@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "author": "María González",
+    "rating": 5,
+    "title": "¡Experiencia increíble!",
+    "comment": "El hotel superó todas nuestras expectativas. Excelente servicio, comodidades de lujo y una ubicación privilegiada. Sin duda volveremos.",
+    "date": "2025-12-15",
+    "verified": true
+  },
+  {
+    "id": 2,
+    "author": "Carlos Rodríguez",
+    "rating": 5,
+    "title": "Perfecto para luna de miel",
+    "comment": "Suite romántica impeccable, servicio de 5 estrellas y atención al detalle excelente. El personal muy amable y profesional.",
+    "date": "2025-12-10",
+    "verified": true
+  },
+  {
+    "id": 3,
+    "author": "Ana Martínez",
+    "rating": 4,
+    "title": "Muy bueno, pequeños detalles mejorables",
+    "comment": "Hotel de muy buen nivel. Lo único es que el restaurante podría tener más opciones al desayuno. En lo demás, excelente.",
+    "date": "2025-12-05",
+    "verified": true
+  },
+  {
+    "id": 4,
+    "author": "Roberto Silva",
+    "rating": 5,
+    "title": "Impeccable en todo",
+    "comment": "Desde check-in hasta check-out, todo perfecto. Las amenities están al máximo nivel y el personal anticipan tus necesidades.",
+    "date": "2025-11-28",
+    "verified": true
+  },
+  {
+    "id": 5,
+    "author": "Julia Fernández",
+    "rating": 5,
+    "title": "Vacaciones inolvidables",
+    "comment": "Nuestros hijos disfrutaron mucho la guardería y las actividades. Nosotros disfrutamos del spa. Un lugar para toda la familia.",
+    "date": "2025-11-20",
+    "verified": true
+  },
+  {
+    "id": 6,
+    "author": "Thomas Anderson",
+    "rating": 4,
+    "title": "Great stay with excellent amenities",
+    "comment": "Very professional staff, clean rooms and amazing facilities. The location is perfect for exploring the area. Highly recommended!",
+    "date": "2025-11-15",
+    "verified": true
+  }
+]

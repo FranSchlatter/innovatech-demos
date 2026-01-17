@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react'
 import Navbar from '@shared-ui/components/Navbar'
 import Footer from '@shared-ui/components/Footer'
-import Hero from '@shared-ui/components/Hero'
 import ContactSection from '@shared-ui/components/ContactSection'
 import { useDarkMode } from '@shared-hooks/useDarkMode'
 import { useCart } from '@shared-hooks/useCart'
+import HeroCarousel from './components/HeroCarousel'
+import AmenitiesSection from './components/AmenitiesSection'
+import ToursSection from './components/ToursSection'
+import ReviewsSection from './components/ReviewsSection'
 import RoomsList from './pages/RoomsList'
 import BookingForm from './pages/BookingForm'
 import './styles.css'
@@ -12,56 +15,66 @@ import './styles.css'
 export default function App() {
   const { isDark, toggleTheme } = useDarkMode()
   const { cart, addItem, removeItem } = useCart()
-  const [currentPage, setCurrentPage] = useState('home')
   const [selectedRoom, setSelectedRoom] = useState(null)
 
   const navLinks = [
     { name: 'Inicio', href: '#home' },
     { name: 'Habitaciones', href: '#rooms' },
-    { name: 'Reservar', href: '#booking' }
+    { name: 'Amenities', href: '#amenities' },
+    { name: 'Tours', href: '#tours' },
+    { name: 'Contacto', href: '#contact' }
   ]
 
   return (
     <div className="min-h-screen bg-bg text-text">
       <Navbar 
-        brand="Hotel InnovaTech" 
+        brand="Hotel InnovaTech Premium" 
         toggleTheme={toggleTheme} 
         isDark={isDark}
         links={navLinks}
       />
 
-      <main className="pt-16">
-        {/* Hero */}
-        <Hero 
-          title="Reserva tu estadía"
-          subtitle="Experiencia hotelera premium con tecnología de punta. Nuestro sistema automatizado hace que tu reserva sea simple y rápida."
-          image="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=1200&h=600&fit=crop"
-          cta={{
-            label: 'Ver Habitaciones',
-            onClick: () => {
-              setCurrentPage('rooms')
-              document.getElementById('rooms-section').scrollIntoView({ behavior: 'smooth' })
-            }
-          }}
-        />
+      <main>
+        {/* Hero Carousel */}
+        <HeroCarousel />
 
         {/* Rooms Section */}
-        <section id="rooms-section" className="py-16 bg-surface/30">
-          <div className="container">
-            <h2 className="text-4xl font-bold text-center mb-12">Nuestras Habitaciones</h2>
+        <section id="rooms-section" className="py-20 bg-bg">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4">Nuestras Habitaciones</h2>
+              <p className="text-lg text-muted max-w-2xl mx-auto">
+                Elige entre nuestras 15 categorías de habitaciones, cada una diseñada para ofrecerte el máximo confort
+              </p>
+            </div>
             <RoomsList onSelectRoom={(room) => {
               setSelectedRoom(room)
-              setCurrentPage('booking')
               document.getElementById('booking-section').scrollIntoView({ behavior: 'smooth' })
             }} />
           </div>
         </section>
 
+        {/* Amenities Section */}
+        <section id="amenities">
+          <AmenitiesSection />
+        </section>
+
+        {/* Tours Section */}
+        <section id="tours">
+          <ToursSection />
+        </section>
+
+        {/* Reviews Section */}
+        <ReviewsSection />
+
         {/* Booking Form */}
-        <section id="booking-section" className="py-16 bg-bg">
-          <div className="container">
-            <h2 className="text-4xl font-bold text-center mb-12">Completá tu Reserva</h2>
-            {selectedRoom && (
+        {selectedRoom && (
+          <section id="booking-section" className="py-20 bg-surface/50">
+            <div className="container mx-auto px-4">
+              <div className="text-center mb-12">
+                <h2 className="text-4xl md:text-5xl font-bold mb-4">Finalizar Reserva</h2>
+                <p className="text-lg text-muted">Completa los detalles de tu reserva</p>
+              </div>
               <BookingForm 
                 room={selectedRoom} 
                 onBook={(booking) => {
@@ -72,18 +85,21 @@ export default function App() {
                     quantity: 1
                   })
                   alert('¡Reserva completada! Te contactaremos pronto.')
-                  setCurrentPage('home')
+                  setSelectedRoom(null)
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
                 }}
               />
-            )}
-          </div>
-        </section>
+            </div>
+          </section>
+        )}
 
         {/* Contact */}
-        <ContactSection />
+        <section id="contact">
+          <ContactSection />
+        </section>
       </main>
 
-      <Footer brand="Hotel InnovaTech" />
+      <Footer brand="Hotel InnovaTech Premium" />
     </div>
   )
 }

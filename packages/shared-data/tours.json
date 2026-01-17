@@ -1,0 +1,98 @@
+[
+  {
+    "id": 1,
+    "name": "Tour a la Ciudad Histórica",
+    "description": "Recorrido de 4 horas por los monumentos y arquitectura histórica de la ciudad",
+    "duration": "4 horas",
+    "price": 89,
+    "capacity": 15,
+    "image": "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=500&h=400&fit=crop",
+    "schedule": "09:00, 14:00",
+    "difficulty": "Fácil",
+    "highlights": ["Monumentos coloniales", "Museos", "Calles históricas", "Gastronomía local"]
+  },
+  {
+    "id": 2,
+    "name": "Aventura en Kayak",
+    "description": "Expedición en kayak por la laguna con guía experto",
+    "duration": "3 horas",
+    "price": 79,
+    "capacity": 10,
+    "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&h=400&fit=crop",
+    "schedule": "08:00, 15:00",
+    "difficulty": "Moderada",
+    "highlights": ["Fauna silvestre", "Naturaleza virgen", "Paisajes únicos", "Fotografía"]
+  },
+  {
+    "id": 3,
+    "name": "Cena Romántica en la Playa",
+    "description": "Cena privada en la playa con servicio de chef y vistas al atardecer",
+    "duration": "3 horas",
+    "price": 150,
+    "capacity": 2,
+    "image": "https://images.unsplash.com/photo-1585937421612-a0573dc5bbe8?w=500&h=400&fit=crop",
+    "schedule": "18:00, 19:30",
+    "difficulty": "Fácil",
+    "highlights": ["Servicio privado", "Atardecer", "Gourmet", "Romántico"]
+  },
+  {
+    "id": 4,
+    "name": "Senderismo en Montaña",
+    "description": "Excursión de trekking a la cima con vistas panorámicas",
+    "duration": "6 horas",
+    "price": 99,
+    "capacity": 12,
+    "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&h=400&fit=crop",
+    "schedule": "07:00",
+    "difficulty": "Difícil",
+    "highlights": ["Vistas panorámicas", "Flora nativa", "Fotografía", "Experiencia outdoor"]
+  },
+  {
+    "id": 5,
+    "name": "Clase de Surf para Principiantes",
+    "description": "Lección de surf con instructor certificado en la playa del hotel",
+    "duration": "2 horas",
+    "price": 69,
+    "capacity": 8,
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&h=400&fit=crop",
+    "schedule": "08:00, 10:30, 14:00",
+    "difficulty": "Fácil",
+    "highlights": ["Playa privada", "Instructor experto", "Equipo incluido", "Divertido"]
+  },
+  {
+    "id": 6,
+    "name": "Tour Gastronómico",
+    "description": "Degustación de 5 platos con sommelier en restaurante del hotel",
+    "duration": "2.5 horas",
+    "price": 125,
+    "capacity": 20,
+    "image": "https://images.unsplash.com/photo-1517521271924-fc3ee0d48906?w=500&h=400&fit=crop",
+    "schedule": "19:30",
+    "difficulty": "Fácil",
+    "highlights": ["Chef ejecutivo", "Maridaje de vinos", "Comida gourmet", "Experiencia culinaria"]
+  },
+  {
+    "id": 7,
+    "name": "Yoga y Meditación al Amanecer",
+    "description": "Sesión de yoga en la terraza con vista al mar y desayuno incluido",
+    "duration": "2 horas",
+    "price": 45,
+    "capacity": 15,
+    "image": "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=500&h=400&fit=crop",
+    "schedule": "06:30",
+    "difficulty": "Fácil",
+    "highlights": ["Vista al mar", "Desayuno saludable", "Instructor certificado", "Relajación"]
+  },
+  {
+    "id": 8,
+    "name": "Observación de Fauna Marina",
+    "description": "Buceo de superficie para observar arrecifes coralinos y peces tropicales",
+    "duration": "3.5 horas",
+    "price": 95,
+    "capacity": 12,
+    "image": "https://images.unsplash.com/photo-1519046904884-53103b34b206?w=500&h=400&fit=crop",
+    "schedule": "09:00, 14:00",
+    "difficulty": "Moderada",
+    "highlights": ["Vida marina", "Arrecife coralino", "Fotografía submarina", "Equipo incluido"]
+  }
+]

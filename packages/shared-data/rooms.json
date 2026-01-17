@@ -6,47 +6,162 @@
     "price": 150,
     "capacity": 2,
     "image": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=500&h=400&fit=crop",
-    "amenities": ["WiFi", "AC", "TV", "Baño privado"],
-    "description": "Cómoda habitación con vistas a la ciudad"
+    "floor": 2,
+    "amenities": ["WiFi de Alta Velocidad", "Aire Acondicionado", "TV Smart 48\"", "Baño de Mármol", "Secador de Cabello", "Caja de Seguridad"],
+    "description": "Habitación acogedora con vistas parciales a la ciudad, perfecta para viajeros de negocios y turismo"
   },
   {
     "id": 2,
-    "name": "Habitación Deluxe",
+    "name": "Habitación Deluxe Ocean View",
     "type": "deluxe",
-    "price": 250,
+    "price": 280,
     "capacity": 2,
     "image": "https://images.unsplash.com/photo-1630049307388-da0ec9d70304?w=500&h=400&fit=crop",
-    "amenities": ["WiFi", "AC", "TV Smart", "Baño de lujo", "Mini bar", "Escritorio"],
-    "description": "Habitación espaciosa con comodidades premium"
+    "floor": 4,
+    "amenities": ["WiFi Premium", "AC", "TV Smart 55\"", "Baño con Bañera", "Mini bar", "Balcón privado", "Escritorio de trabajo", "Nespresso"],
+    "description": "Habitación espaciosa con vistas espectaculares al océano y acceso a balcón privado"
   },
   {
     "id": 3,
-    "name": "Suite Ejecutiva",
-    "type": "suite",
-    "price": 400,
-    "capacity": 4,
-    "image": "https://images.unsplash.com/photo-1591088398332-8c5ecd3971d7?w=500&h=400&fit=crop",
-    "amenities": ["WiFi", "AC", "TV Smart", "Jacuzzi", "Sala de estar", "Mini bar completo"],
-    "description": "Suite lujosa con sala de estar separada"
+    "name": "Habitación Deluxe Garden View",
+    "type": "deluxe",
+    "price": 260,
+    "capacity": 2,
+    "image": "https://images.unsplash.com/photo-1605662669865-4a6c92e5d8f1?w=500&h=400&fit=crop",
+    "floor": 3,
+    "amenities": ["WiFi Premium", "AC", "TV Smart 55\"", "Baño de lujo", "Mini bar", "Terraza", "Escritorio", "Nespresso"],
+    "description": "Habitación con vistas a los jardines tropicales del hotel"
   },
   {
     "id": 4,
-    "name": "Habitación Familiar",
-    "type": "family",
-    "price": 300,
-    "capacity": 4,
-    "image": "https://images.unsplash.com/photo-1631049307388-da0ec9d70304?w=500&h=400&fit=crop",
-    "amenities": ["WiFi", "AC", "2 TV", "Baños múltiples", "Área de juegos"],
-    "description": "Espaciosa habitación para familias"
+    "name": "Suite Ejecutiva",
+    "type": "suite",
+    "price": 450,
+    "capacity": 2,
+    "image": "https://images.unsplash.com/photo-1591088398332-8c5ecd3971d7?w=500&h=400&fit=crop",
+    "floor": 5,
+    "amenities": ["WiFi Empresarial", "AC zonal", "TV Smart 65\"", "Jacuzzi", "Sala de estar separada", "Mini bar completo", "Escritorio ejecutivo", "Ropa de cama de 400 hilos", "Productos de lujo"],
+    "description": "Suite lujosa con sala de estar separada, perfecta para ejecutivos y celebraciones especiales"
   },
   {
     "id": 5,
-    "name": "Habitación Económica",
+    "name": "Suite Presidencial",
+    "type": "presidential",
+    "price": 800,
+    "capacity": 4,
+    "image": "https://images.unsplash.com/photo-1578683049991-c92c1c68f908?w=500&h=400&fit=crop",
+    "floor": 6,
+    "amenities": ["WiFi de Fibra Óptica", "AC inteligente", "TV Smart 75\" x2", "Spa privado", "Terraza panorámica", "Cocina completa", "Comedor para 8", "Servicio concierge 24/7", "Ropa de cama exclusiva"],
+    "description": "Suite presidencial de lujo con vistas 360° de la ciudad, terraza privada y acceso VIP a todas las instalaciones"
+  },
+  {
+    "id": 6,
+    "name": "Habitación Familiar Estándar",
+    "type": "family",
+    "price": 300,
+    "capacity": 4,
+    "image": "https://images.unsplash.com/photo-1565183938294-7563f3ce68c8?w=500&h=400&fit=crop",
+    "floor": 2,
+    "amenities": ["WiFi", "AC", "2 TV Smart", "Baños múltiples", "Sala infantil", "Área de juegos", "Nevera", "Ropa de cama premium"],
+    "description": "Espaciosa habitación con dos ambientes, ideal para familias con niños"
+  },
+  {
+    "id": 7,
+    "name": "Habitación Familiar Deluxe",
+    "type": "family",
+    "price": 420,
+    "capacity": 4,
+    "image": "https://images.unsplash.com/photo-1571508601166-72f95cb89b7d?w=500&h=400&fit=crop",
+    "floor": 4,
+    "amenities": ["WiFi Premium", "AC", "2 TV Smart 55\"", "2 Baños completos", "Sala infantil temática", "Juegos de mesa", "Mini cocina", "Balcón seguro"],
+    "description": "Suite familiar de lujo con entretenimiento para toda la familia"
+  },
+  {
+    "id": 8,
+    "name": "Habitación Económica Single",
     "type": "economy",
-    "price": 80,
+    "price": 95,
     "capacity": 1,
     "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&h=400&fit=crop",
-    "amenities": ["WiFi", "AC", "TV", "Baño"],
-    "description": "Habitación compacta y asequible"
+    "floor": 1,
+    "amenities": ["WiFi", "AC", "TV", "Baño con ducha", "Escritorio compacto"],
+    "description": "Habitación compacta y económica, perfecta para viajeros solos"
+  },
+  {
+    "id": 9,
+    "name": "Habitación Económica Doble",
+    "type": "economy",
+    "price": 120,
+    "capacity": 2,
+    "image": "https://images.unsplash.com/photo-1566665556112-652601899235?w=500&h=400&fit=crop",
+    "floor": 1,
+    "amenities": ["WiFi", "AC", "TV", "Baño", "Secador de cabello"],
+    "description": "Habitación económica con cama doble, ideal para presupuestos ajustados"
+  },
+  {
+    "id": 10,
+    "name": "Habitación Beach Club",
+    "type": "premium",
+    "price": 350,
+    "capacity": 3,
+    "image": "https://images.unsplash.com/photo-1618833762338-33b820d5d6e1?w=500&h=400&fit=crop",
+    "floor": 0,
+    "amenities": ["WiFi Premium", "AC", "TV Smart", "Acceso directo a playa", "Ropa de cama premium", "Nevera", "Terraza con vista al mar", "Amenities de lujo"],
+    "description": "Habitación con acceso directo a la playa privada del hotel"
+  },
+  {
+    "id": 11,
+    "name": "Suite Romántica",
+    "type": "suite",
+    "price": 500,
+    "capacity": 2,
+    "image": "https://images.unsplash.com/photo-1599073052857-f2f7b68b2cbb?w=500&h=400&fit=crop",
+    "floor": 5,
+    "amenities": ["WiFi Premium", "AC", "TV Smart", "Bañera con pétalos", "Champagne", "Rosas", "Balcón con jacuzzi", "Servicio de habitación gourmet"],
+    "description": "Suite especialmente diseñada para parejas, con detalles románticos"
+  },
+  {
+    "id": 12,
+    "name": "Habitación Standard Plus",
+    "type": "standard",
+    "price": 180,
+    "capacity": 2,
+    "image": "https://images.unsplash.com/photo-1571508601166-72f95cb89b7d?w=500&h=400&fit=crop",
+    "floor": 3,
+    "amenities": ["WiFi", "AC", "TV Smart 50\"", "Baño con bañera", "Mini bar", "Nespresso", "Balcón"],
+    "description": "Habitación estándar mejorada con comodidades adicionales"
+  },
+  {
+    "id": 13,
+    "name": "Habitación Mountain View",
+    "type": "deluxe",
+    "price": 240,
+    "capacity": 2,
+    "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&h=400&fit=crop",
+    "floor": 4,
+    "amenities": ["WiFi Premium", "AC", "TV Smart", "Baño de mármol", "Terraza", "Mini bar", "Vistas panorámicas"],
+    "description": "Habitación con vistas espectaculares a las montañas"
+  },
+  {
+    "id": 14,
+    "name": "Suite Spa",
+    "type": "suite",
+    "price": 550,
+    "capacity": 2,
+    "image": "https://images.unsplash.com/photo-1604274059533-475ef57f8a53?w=500&h=400&fit=crop",
+    "floor": 5,
+    "amenities": ["WiFi Premium", "Bañera spa con hidromasaje", "Ducha lluvia", "Sauna privada", "Productos spa premium", "Sala de tratamientos", "Ropa de cama de lujo"],
+    "description": "Suite con spa privado y acceso a tratamientos de bienestar"
+  },
+  {
+    "id": 15,
+    "name": "Habitación Loft",
+    "type": "premium",
+    "price": 320,
+    "capacity": 3,
+    "image": "https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=500&h=400&fit=crop",
+    "floor": 4,
+    "amenities": ["WiFi Premium", "AC", "TV Smart", "Sala de estar", "Cocina americana", "Ropa de cama premium", "Escritorio moderno"],
+    "description": "Habitación tipo loft con diseño moderno y espacios amplios"
   }
 ]

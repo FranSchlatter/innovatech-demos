@@ -1,0 +1,10 @@
+{
+  "buildCommand": "npm install && npm run build:$SERVICE_NAME",
+  "outputDirectory": "apps/$SERVICE_NAME/dist",
+  "routes": [
+    {
+      "src": "^/(.*)$",
+      "destination": "/index.html"
+    }
+  ]
+}

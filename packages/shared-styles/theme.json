@@ -1,0 +1,48 @@
+{
+  "name": "InnovaTech Demos",
+  "version": "1.0.0",
+  "description": "Centralized design system for service demos",
+  "palette": {
+    "primary": "#0B74FF",
+    "primary-contrast": "#FFFFFF",
+    "accent": "#00C2FF",
+    "background": "#FFFFFF",
+    "surface": "#F6F8FB",
+    "text": "#0F1724",
+    "muted": "#6B7280"
+  },
+  "darkPalette": {
+    "primary": "#4DA3FF",
+    "primary-contrast": "#071022",
+    "accent": "#66E0FF",
+    "background": "#071022",
+    "surface": "#0D1724",
+    "text": "#E6F0FF",
+    "muted": "#9AA7B6"
+  },
+  "typography": {
+    "font-family-primary": "Montserrat, Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+    "font-sizes": {
+      "h1": "2.25rem",
+      "h2": "1.5rem",
+      "base": "1rem",
+      "small": "0.875rem"
+    },
+    "weights": {
+      "regular": 400,
+      "medium": 500,
+      "semibold": 600,
+      "bold": 700
+    }
+  },
+  "layout": {
+    "container-width": "1200px",
+    "gutter": "1rem",
+    "radius": "12px",
+    "shadow-soft": "0 6px 18px rgba(11, 29, 55, 0.06)"
+  },
+  "transitions": {
+    "fast": "180ms",
+    "medium": "350ms"
+  }
+}

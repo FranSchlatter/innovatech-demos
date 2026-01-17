@@ -1,0 +1,10 @@
+{
+  "name": "@innovatech/shared-data",
+  "version": "1.0.0",
+  "private": true,
+  "files": [
+    "rooms.json",
+    "doctors.json",
+    "dishes.json"
+  ]
+}

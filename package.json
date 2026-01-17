@@ -1,0 +1,22 @@
+{
+  "name": "innovatech-demos",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Service demos monorepo for InnovaTech",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:hoteleria": "cd apps/hoteleria && npm run dev",
+    "dev:salud": "cd apps/salud && npm run dev",
+    "dev:gastronomia": "cd apps/gastronomia && npm run dev",
+    "build:hoteleria": "cd apps/hoteleria && npm run build",
+    "build:salud": "cd apps/salud && npm run build",
+    "build:gastronomia": "cd apps/gastronomia && npm run build"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,0 +1,122 @@
+/* ==========================================================================
+   GLOBAL STYLES - InnovaTech Demos
+   ========================================================================== */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+body,
+#root {
+  height: 100%;
+  max-width: 100%;
+  font-family: var(--font-family-base);
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* ==========================================================================
+   THEME VARIABLES (Light Mode)
+   ========================================================================== */
+
+:root {
+  --color-primary: #0b74ff;
+  --color-primary-contrast: #ffffff;
+  --color-accent: #00c2ff;
+  --color-bg: #ffffff;
+  --color-surface: #f6f8fb;
+  --color-text: #0f1724;
+  --color-muted: #6b7280;
+  --color-border: #e5e7eb;
+
+  --font-family-base: 'Montserrat', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-size-h1: 2.25rem;
+  --font-size-h2: 1.5rem;
+  --font-size-base: 1rem;
+  --font-size-sm: 0.875rem;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --container-width: 1200px;
+  --gutter: 1rem;
+  --radius: 12px;
+  --shadow-soft: 0 6px 18px rgba(11, 29, 55, 0.06);
+
+  --transition-fast: 180ms;
+  --transition-medium: 350ms;
+}
+
+/* ==========================================================================
+   DARK MODE
+   ========================================================================== */
+[data-theme="dark"] {
+  --color-primary: #4da3ff;
+  --color-primary-contrast: #071022;
+  --color-accent: #66e0ff;
+  --color-bg: #071022;
+  --color-surface: #0d1724;
+  --color-text: #e6f0ff;
+  --color-muted: #9aa7b6;
+  --color-border: #1a2a42;
+}
+
+/* ==========================================================================
+   UTILITY CLASSES
+   ========================================================================== */
+
+.card {
+  @apply bg-surface rounded-lg border border-border p-6 shadow transition-all duration-300;
+}
+
+.card-hover {
+  @apply hover:shadow-lg hover:border-primary transition-all duration-300;
+}
+
+.btn-primary {
+  @apply px-6 py-3 rounded-lg bg-primary text-primary-contrast font-semibold hover:opacity-90 transition-all duration-150;
+}
+
+.btn-secondary {
+  @apply px-6 py-3 rounded-lg bg-surface border border-border text-text hover:bg-primary hover:text-primary-contrast font-semibold transition-all duration-150;
+}
+
+.container {
+  @apply w-full max-w-[var(--container-width)] mx-auto px-[var(--gutter)];
+}
+
+/* ==========================================================================
+   SCROLLBAR STYLING
+   ========================================================================== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-muted);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text);
+}

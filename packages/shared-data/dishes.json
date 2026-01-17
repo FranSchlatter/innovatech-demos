@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "name": "Milanesa a caballo",
+    "category": "Platos principales",
+    "price": 18,
+    "image": "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=500&h=400&fit=crop",
+    "description": "Milanesa con jamón y queso fundido",
+    "preparationTime": 15
+  },
+  {
+    "id": 2,
+    "name": "Ensalada César",
+    "category": "Ensaladas",
+    "price": 12,
+    "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&h=400&fit=crop",
+    "description": "Lechuga, croutones, queso y aderezo casero",
+    "preparationTime": 8
+  },
+  {
+    "id": 3,
+    "name": "Bife de Chorizo",
+    "category": "Platos principales",
+    "price": 24,
+    "image": "https://images.unsplash.com/photo-1432139555190-58524dae6a55?w=500&h=400&fit=crop",
+    "description": "Corte premium argentino a la parrilla",
+    "preparationTime": 20
+  },
+  {
+    "id": 4,
+    "name": "Pizza Margherita",
+    "category": "Pizzas",
+    "price": 14,
+    "image": "https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?w=500&h=400&fit=crop",
+    "description": "Mozzarella, tomate y albahaca fresca",
+    "preparationTime": 12
+  },
+  {
+    "id": 5,
+    "name": "Pasta a la Carbonara",
+    "category": "Pastas",
+    "price": 16,
+    "image": "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=500&h=400&fit=crop",
+    "description": "Tallarín con huevo, queso y panceta",
+    "preparationTime": 12
+  },
+  {
+    "id": 6,
+    "name": "Postre Tiramisú",
+    "category": "Postres",
+    "price": 8,
+    "image": "https://images.unsplash.com/photo-1571115764595-644a59e5aaaa?w=500&h=400&fit=crop",
+    "description": "Tradicional postre italiano",
+    "preparationTime": 5
+  }
+]

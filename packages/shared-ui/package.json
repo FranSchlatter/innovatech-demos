@@ -1,0 +1,12 @@
+{
+  "name": "@innovatech/shared-ui",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "exports": {
+    "./Navbar": "./components/Navbar.jsx",
+    "./Footer": "./components/Footer.jsx",
+    "./Hero": "./components/Hero.jsx",
+    "./ContactSection": "./components/ContactSection.jsx"
+  }
+}

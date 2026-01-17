@@ -1,0 +1,10 @@
+{
+  "name": "@innovatech/shared-styles",
+  "version": "1.0.0",
+  "private": true,
+  "files": [
+    "tailwind.config.js",
+    "theme.json",
+    "global.css"
+  ]
+}

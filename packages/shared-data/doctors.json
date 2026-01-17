@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "name": "Dra. María García",
+    "specialty": "Medicina General",
+    "price": 50,
+    "image": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop",
+    "availability": ["09:00", "09:30", "10:00", "10:30", "14:00", "15:00", "16:00"],
+    "bio": "15 años de experiencia en medicina general"
+  },
+  {
+    "id": 2,
+    "name": "Dr. Juan Pérez",
+    "specialty": "Cardiología",
+    "price": 80,
+    "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+    "availability": ["10:00", "11:00", "15:00", "15:30", "16:00", "16:30"],
+    "bio": "Especialista en cardiología preventiva"
+  },
+  {
+    "id": 3,
+    "name": "Dra. Ana López",
+    "specialty": "Dermatología",
+    "price": 60,
+    "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
+    "availability": ["09:00", "10:00", "11:00", "14:00", "15:00"],
+    "bio": "Especialista en dermatología clínica y estética"
+  },
+  {
+    "id": 4,
+    "name": "Dr. Carlos Ruiz",
+    "specialty": "Traumatología",
+    "price": 70,
+    "image": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop",
+    "availability": ["10:00", "11:00", "12:00", "16:00", "17:00"],
+    "bio": "Traumatólogo con 20 años de experiencia"
+  }
+]

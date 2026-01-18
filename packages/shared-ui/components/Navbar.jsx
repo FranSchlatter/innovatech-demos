@@ -28,6 +28,7 @@ export default function Navbar({ brand = 'InnovaTech', toggleTheme, isDark, link
         <motion.div
           className="text-2xl font-bold text-primary cursor-pointer"
           whileHover={{ scale: 1.05 }}
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         >
           {brand}
         </motion.div>
@@ -37,6 +38,12 @@ export default function Navbar({ brand = 'InnovaTech', toggleTheme, isDark, link
             <a
               key={link.name}
               href={link.href}
+              onClick={(e) => {
+                if (link.onClick) {
+                  e.preventDefault()
+                  link.onClick()
+                }
+              }}
               className="text-text hover:text-primary transition-colors font-medium"
             >
               {link.name}

@@ -42,11 +42,11 @@ export default function Footer({ brand = 'InnovaTech', currentYear = new Date().
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
           >
-            <h4 className="font-semibold text-text mb-4">Servicios</h4>
+            <h4 className="font-semibold text-text mb-4">Services</h4>
             <ul className="space-y-2 text-muted text-sm">
-              <li><a href="#" className="hover:text-primary transition-colors">Hotelería</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Salud</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Gastronomía</a></li>
+              <li><a href="#" className="hover:text-primary transition-colors">Hospitality</a></li>
+              <li><a href="#" className="hover:text-primary transition-colors">Health</a></li>
+              <li><a href="#" className="hover:text-primary transition-colors">Gastronomy</a></li>
             </ul>
           </motion.div>
 
@@ -58,15 +58,15 @@ export default function Footer({ brand = 'InnovaTech', currentYear = new Date().
           >
             <h4 className="font-semibold text-text mb-4">Legal</h4>
             <ul className="space-y-2 text-muted text-sm">
-              <li><a href="#" className="hover:text-primary transition-colors">Términos</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Privacidad</a></li>
+              <li><a href="#" className="hover:text-primary transition-colors">Terms</a></li>
+              <li><a href="#" className="hover:text-primary transition-colors">Privacy</a></li>
               <li><a href="#" className="hover:text-primary transition-colors">Cookies</a></li>
             </ul>
           </motion.div>
         </div>
 
         <div className="border-t border-border pt-8 text-center text-muted text-sm">
-          <p>© {currentYear} {brand}. Hecho con <Heart className="w-4 h-4 inline text-accent" /> por el equipo.</p>
+          <p>© {currentYear} Hotel Luxury. Made with <Heart className="w-4 h-4 inline text-accent" /> by innovatech.</p>
         </div>
       </div>
     </footer>

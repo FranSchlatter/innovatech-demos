@@ -11,19 +11,22 @@ export default function HeroCarousel() {
       title: "A Sanctuary of Elegance",
       subtitle: "Where luxury meets refined simplicity",
       image: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=1600&h=900&fit=crop",
-      cta: "Explore Accommodations"
+      cta: "Explore Accommodations",
+      action: () => document.getElementById('accommodation')?.scrollIntoView({ behavior: 'smooth' })
     },
     {
       title: "Unforgettable Moments Await",
       subtitle: "Curated experiences designed for discerning guests",
       image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&h=900&fit=crop",
-      cta: "View Amenities"
+      cta: "View Amenities",
+      action: () => document.getElementById('amenities')?.scrollIntoView({ behavior: 'smooth' })
     },
     {
       title: "Your Perfect Escape Awaits",
       subtitle: "Discover the art of luxurious hospitality",
       image: "https://images.unsplash.com/photo-1591088398332-8c5ebbf30f2f?w=1600&h=900&fit=crop",
-      cta: "Book Your Stay"
+      cta: "Book Your Stay",
+      action: () => document.getElementById('accommodation')?.scrollIntoView({ behavior: 'smooth' })
     }
   ]
 
@@ -102,6 +105,7 @@ export default function HeroCarousel() {
 
           {/* CTA */}
           <motion.button
+            onClick={slides[current].action}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.98 }}
             className="btn-primary uppercase tracking-widest text-sm font-semibold px-10 py-4"

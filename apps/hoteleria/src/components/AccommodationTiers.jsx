@@ -12,7 +12,7 @@ export default function AccommodationTiers({ onSelectRoom }) {
         name: 'Deluxe Room',
         size: 45,
         guests: 2,
-        price: 180,
+        price: 189,
         image: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&q=80',
         description: 'Spacious rooms with modern amenities and city views'
       },
@@ -22,7 +22,7 @@ export default function AccommodationTiers({ onSelectRoom }) {
         name: 'Superior Room',
         size: 55,
         guests: 2,
-        price: 220,
+        price: 239,
         image: 'https://images.unsplash.com/photo-1566195992212-34ff59d1e81c?w=600&q=80',
         description: 'Premium accommodations with enhanced comfort'
       },
@@ -32,7 +32,7 @@ export default function AccommodationTiers({ onSelectRoom }) {
         name: 'Executive Room',
         size: 65,
         guests: 3,
-        price: 280,
+        price: 299,
         image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&q=80',
         description: 'Executive rooms featuring work areas and lounge access'
       }
@@ -183,12 +183,20 @@ export default function AccommodationTiers({ onSelectRoom }) {
 
                 <p className="text-muted text-sm mb-6 line-clamp-2">{item.description}</p>
 
-                <button
-                  onClick={() => onSelectRoom?.(item)}
-                  className="btn-secondary w-full text-center"
-                >
-                  View Details
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => onSelectRoom?.(item, 'details')}
+                    className="btn-secondary flex-1 text-center"
+                  >
+                    View Details
+                  </button>
+                  <button
+                    onClick={() => onSelectRoom?.(item, 'reserve')}
+                    className="btn-gold flex-1 text-center"
+                  >
+                    Reserve
+                  </button>
+                </div>
               </div>
             </motion.div>
           ))}

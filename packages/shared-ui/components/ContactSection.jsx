@@ -25,17 +25,17 @@ export default function ContactSection() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-4xl font-bold text-text mb-4">Contactá con nosotros</h2>
+          <h2 className="text-4xl font-bold text-text mb-4">Get in Touch</h2>
           <p className="text-lg text-muted max-w-2xl mx-auto">
-            ¿Te interesa? Charlemos sobre tu proyecto
+            Have questions? Our concierge team is ready to assist you 24/7
           </p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           {[
             { icon: Mail, label: 'Email', value: 'dm.innovatech@gmail.com' },
-            { icon: Phone, label: 'Whatsapp', value: '+54 342 436 5585' },
-            { icon: MapPin, label: 'Ubicación', value: 'Paraná, Argentina' }
+            { icon: Phone, label: 'WhatsApp', value: '+54 342 436 5585' },
+            { icon: MapPin, label: 'Location', value: 'Paraná, Argentina' }
           ].map((contact, idx) => {
             const Icon = contact.icon
             return (
@@ -68,14 +68,14 @@ export default function ContactSection() {
               animate={{ opacity: 1 }}
               className="mb-6 p-4 bg-green-100 border border-green-200 rounded-lg text-green-800"
             >
-              ✓ Mensaje enviado. Te contactaremos pronto.
+              ✓ Message sent successfully. We'll be in touch shortly.
             </motion.div>
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <input
               type="text"
-              placeholder="Tu nombre"
+              placeholder="Your name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
@@ -83,7 +83,7 @@ export default function ContactSection() {
             />
             <input
               type="email"
-              placeholder="tu@email.com"
+              placeholder="your@email.com"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
@@ -92,7 +92,7 @@ export default function ContactSection() {
           </div>
 
           <textarea
-            placeholder="Tu mensaje..."
+            placeholder="Tell us how we can help you..."
             value={formData.message}
             onChange={(e) => setFormData({ ...formData, message: e.target.value })}
             required
@@ -101,7 +101,7 @@ export default function ContactSection() {
           />
 
           <button type="submit" className="btn-primary w-full">
-            Enviar mensaje
+            Send Message
           </button>
         </motion.form>
       </div>

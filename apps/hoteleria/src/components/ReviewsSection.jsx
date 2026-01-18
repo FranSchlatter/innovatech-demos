@@ -50,7 +50,7 @@ export default function ReviewsSection() {
             <div className="h-12 w-px bg-border hidden md:block" />
             <div className="text-left md:text-center">
               <p className="text-lg text-muted max-w-xl">
-                Read authentic experiences from our valued guests
+                Discover authentic experiences from guests who've experienced our exceptional hospitality
               </p>
             </div>
           </div>
@@ -110,9 +110,9 @@ export default function ReviewsSection() {
           viewport={{ once: true }}
           className="text-center mt-20"
         >
-          <p className="text-muted mb-6 text-lg">Had an exceptional stay? Share your experience</p>
+          <p className="text-muted mb-6 text-lg">Had an unforgettable experience? We'd love to hear your story</p>
           <button className="btn-secondary">
-            Leave a Review
+            Share Your Review
           </button>
         </motion.div>
       </div>

@@ -1,7 +1,10 @@
 import { motion } from 'framer-motion'
-import { Dumbbell, Waves, Utensils, Wifi, Accessibility, Car } from 'lucide-react'
+import { Dumbbell, Waves, Utensils, Wifi, Accessibility, Car, Check, ChevronDown } from 'lucide-react'
+import { useState } from 'react'
 
 export default function HotelAmenities() {
+  const [showExtended, setShowExtended] = useState(false)
+
   const amenities = [
     {
       id: 1,
@@ -45,6 +48,25 @@ export default function HotelAmenities() {
       icon: Car,
       image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600&q=80'
     }
+  ]
+
+  const extendedAmenities = [
+    'Room Service (24/7)',
+    'Concierge Assistance',
+    'Business Center',
+    'Conference Facilities',
+    'Spa & Wellness',
+    'Kids Club',
+    'Guest Laundry Service',
+    'Currency Exchange',
+    'Travel Desk',
+    'Car Rental Service',
+    'Airport Transfers',
+    'Housekeeping (Daily)',
+    'Turndown Service',
+    'Minibar Selection',
+    'Premium Bedding',
+    'In-Room Entertainment'
   ]
 
   return (
@@ -99,6 +121,50 @@ export default function HotelAmenities() {
             )
           })}
         </div>
+
+        {/* Extended Amenities */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="mt-16 bg-bg rounded-lg p-8 border border-border"
+        >
+          <button
+            onClick={() => setShowExtended(!showExtended)}
+            className="w-full flex items-center justify-between mb-6"
+          >
+            <h3 className="text-2xl font-serif font-light text-primary">Additional Services & Amenities</h3>
+            <motion.div
+              animate={{ rotate: showExtended ? 180 : 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <ChevronDown className="w-6 h-6 text-accent" />
+            </motion.div>
+          </button>
+
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: showExtended ? 1 : 0, height: showExtended ? 'auto' : 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {extendedAmenities.map((amenity, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: showExtended ? 1 : 0, x: showExtended ? 0 : -10 }}
+                  transition={{ duration: 0.4, delay: idx * 0.05 }}
+                  className="flex items-center gap-3 p-3 bg-surface rounded-lg"
+                >
+                  <Check className="w-5 h-5 text-accent flex-shrink-0" />
+                  <span className="text-sm text-muted">{amenity}</span>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   )

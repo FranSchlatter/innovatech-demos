@@ -92,7 +92,8 @@ img {
    ========================================================================== */
 
 .card {
-  @apply bg-surface rounded-[8px] border border-border p-6 transition-all duration-400;
+  @apply bg-surface rounded-[8px] border border-border p-6;
+  transition: all var(--transition-medium);
   box-shadow: var(--shadow-soft);
 }
 
@@ -109,15 +110,18 @@ img {
 }
 
 .btn-primary {
-  @apply px-8 py-3 rounded-[4px] bg-primary text-primary-contrast font-semibold tracking-wide hover:bg-accent transition-all duration-400 uppercase text-sm letter-spacing-1;
+  @apply px-8 py-3 rounded-[4px] bg-primary text-primary-contrast font-semibold tracking-wide hover:bg-accent uppercase text-sm letter-spacing-1;
+  transition: all var(--transition-medium);
 }
 
 .btn-secondary {
-  @apply px-8 py-3 rounded-[4px] bg-transparent border-2 border-primary text-text hover:bg-primary hover:text-primary-contrast font-semibold transition-all duration-400 uppercase text-sm;
+  @apply px-8 py-3 rounded-[4px] bg-transparent border-2 border-primary text-text hover:bg-primary hover:text-primary-contrast font-semibold uppercase text-sm;
+  transition: all var(--transition-medium);
 }
 
 .btn-gold {
-  @apply px-8 py-3 rounded-[4px] bg-gold text-primary font-semibold tracking-wide hover:opacity-90 transition-all duration-400 uppercase text-sm;
+  @apply px-8 py-3 rounded-[4px] bg-gold text-primary font-semibold tracking-wide hover:opacity-90 uppercase text-sm;
+  transition: all var(--transition-medium);
 }
 
 .heading-serif {

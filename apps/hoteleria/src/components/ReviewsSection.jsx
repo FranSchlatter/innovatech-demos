@@ -21,8 +21,8 @@ export default function ReviewsSection() {
   ).toFixed(1)
 
   return (
-    <section className="py-20 bg-surface/30">
-      <div className="container mx-auto px-4">
+    <section className="py-20 md:py-32 bg-bg">
+      <div className="container mx-auto px-4 md:px-6">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -30,30 +30,30 @@ export default function ReviewsSection() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Lo que Nuestros Huéspedes Dicen
-          </h2>
+          <h2 className="heading-md mb-8">Guest Voices</h2>
           
           {/* Rating Summary */}
-          <div className="flex items-center justify-center gap-4 mb-8">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center gap-6 mb-12 flex-col md:flex-row">
+            <div className="flex flex-col items-center gap-3">
               <div className="flex gap-1">
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
                     size={24}
-                    className={i < Math.round(avgRating) ? 'fill-accent text-accent' : 'text-gray-400'}
+                    className={i < Math.round(avgRating) ? 'fill-gold text-gold' : 'text-muted'}
                   />
                 ))}
               </div>
-              <span className="text-3xl font-bold">{avgRating}</span>
-              <span className="text-muted">({reviewsData.length} reseñas verificadas)</span>
+              <span className="text-4xl font-light text-primary">{avgRating}</span>
+              <span className="text-sm text-muted">Based on {reviewsData.length} verified reviews</span>
+            </div>
+            <div className="h-12 w-px bg-border hidden md:block" />
+            <div className="text-left md:text-center">
+              <p className="text-lg text-muted max-w-xl">
+                Read authentic experiences from our valued guests
+              </p>
             </div>
           </div>
-          
-          <p className="text-lg text-muted max-w-2xl mx-auto">
-            Experiencias reales de huéspedes satisfechos que confiaron en nosotros
-          </p>
         </motion.div>
 
         {/* Reviews Grid */}
@@ -68,39 +68,37 @@ export default function ReviewsSection() {
             <motion.div
               key={review.id}
               variants={itemVariants}
-              className="bg-bg rounded-xl p-6 shadow-md hover:shadow-lg transition-all"
+              className="bg-surface rounded-lg p-8 shadow-soft hover:shadow-medium transition-all border border-border"
             >
-              {/* Header */}
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="font-bold text-lg">{review.author}</h3>
-                    {review.verified && (
-                      <CheckCircle size={18} className="text-accent" />
-                    )}
-                  </div>
-                  <p className="text-sm text-muted">{review.date}</p>
+              {/* Verified Badge */}
+              {review.verified && (
+                <div className="flex items-center gap-2 mb-4 text-accent text-sm">
+                  <CheckCircle size={16} />
+                  <span className="font-medium">Verified Guest</span>
                 </div>
-                <div className="text-right">
-                  <div className="flex justify-end gap-1 mb-2">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        size={16}
-                        className={i < review.rating ? 'fill-accent text-accent' : 'text-gray-400'}
-                      />
-                    ))}
-                  </div>
-                </div>
+              )}
+
+              {/* Stars */}
+              <div className="flex gap-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    size={16}
+                    className={i < review.rating ? 'fill-gold text-gold' : 'text-border'}
+                  />
+                ))}
               </div>
 
-              {/* Title */}
-              <h4 className="font-semibold text-lg mb-3">{review.title}</h4>
-
-              {/* Comment */}
-              <p className="text-muted leading-relaxed">
+              {/* Review */}
+              <p className="text-muted italic mb-6 leading-relaxed">
                 "{review.comment}"
               </p>
+
+              {/* Author */}
+              <div className="pt-6 border-t border-border">
+                <p className="font-semibold text-primary">{review.author}</p>
+                <p className="text-sm text-muted">{review.date}</p>
+              </div>
             </motion.div>
           ))}
         </motion.div>
@@ -110,14 +108,15 @@ export default function ReviewsSection() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mt-16"
+          className="text-center mt-20"
         >
-          <p className="text-muted mb-4">¿Quieres dejar tu reseña?</p>
-          <button className="bg-accent hover:bg-accent/90 text-white px-8 py-3 rounded-lg font-semibold transition-all">
-            Compartir Experiencia
+          <p className="text-muted mb-6 text-lg">Had an exceptional stay? Share your experience</p>
+          <button className="btn-secondary">
+            Leave a Review
           </button>
         </motion.div>
       </div>
     </section>
   )
 }
+

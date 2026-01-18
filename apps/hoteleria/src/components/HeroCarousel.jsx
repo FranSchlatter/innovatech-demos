@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react'
 
 export default function HeroCarousel() {
   const [current, setCurrent] = useState(0)
@@ -8,22 +8,22 @@ export default function HeroCarousel() {
 
   const slides = [
     {
-      title: "Bienvenido a InnovaTech Luxury Resort",
-      subtitle: "Experiencia hotelera premium con tecnología de punta",
-      image: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=1400&h=700&fit=crop",
-      cta: "Explorar Habitaciones"
+      title: "A Sanctuary of Elegance",
+      subtitle: "Where luxury meets refined simplicity",
+      image: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=1600&h=900&fit=crop",
+      cta: "Explore Accommodations"
     },
     {
-      title: "Playas Privadas y Vistas Espectaculares",
-      subtitle: "Disfruta de nuestras exclusivas amenities y servicios de 5 estrellas",
-      image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1400&h=700&fit=crop",
-      cta: "Descubre Más"
+      title: "Unforgettable Moments Await",
+      subtitle: "Curated experiences designed for discerning guests",
+      image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&h=900&fit=crop",
+      cta: "View Amenities"
     },
     {
-      title: "Suites de Lujo y Comodidad",
-      subtitle: "Cada detalle diseñado para tu máxima satisfacción",
-      image: "https://images.unsplash.com/photo-1591088398332-8c5ecd3971d7?w=1400&h=700&fit=crop",
-      cta: "Reservar Ahora"
+      title: "Your Perfect Escape Awaits",
+      subtitle: "Discover the art of luxurious hospitality",
+      image: "https://images.unsplash.com/photo-1591088398332-8c5ebbf30f2f?w=1600&h=900&fit=crop",
+      cta: "Book Your Stay"
     }
   ]
 
@@ -31,7 +31,7 @@ export default function HeroCarousel() {
     if (!autoPlay) return
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % slides.length)
-    }, 5000)
+    }, 6000)
     return () => clearInterval(timer)
   }, [autoPlay, slides.length])
 
@@ -47,9 +47,10 @@ export default function HeroCarousel() {
 
   return (
     <div 
-      className="relative h-screen w-full overflow-hidden"
+      className="relative w-full h-screen overflow-hidden bg-primary"
       onMouseEnter={() => setAutoPlay(false)}
       onMouseLeave={() => setAutoPlay(true)}
+      id="hero"
     >
       <AnimatePresence mode="wait">
         <motion.div
@@ -57,7 +58,7 @@ export default function HeroCarousel() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 1.2, ease: "easeInOut" }}
           className="absolute inset-0"
         >
           <img
@@ -65,82 +66,95 @@ export default function HeroCarousel() {
             alt={slides[current].title}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-black/40" />
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-primary/30 via-primary/20 to-primary/40" />
         </motion.div>
       </AnimatePresence>
 
       {/* Content */}
-      <div className="absolute inset-0 flex items-center justify-center">
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -30 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-center text-white px-4 max-w-3xl"
+          exit={{ opacity: 0, y: -40 }}
+          transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+          className="text-center text-primary-contrast px-4 max-w-4xl z-10"
         >
-          <h1 className="text-5xl md:text-6xl font-bold mb-4 tracking-tight">
+          {/* Icon */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="mb-6 flex justify-center"
+          >
+            <Sparkles className="w-8 h-8 text-gold" />
+          </motion.div>
+
+          {/* Heading */}
+          <h1 className="font-serif text-5xl md:text-7xl font-light mb-6 tracking-tight leading-tight">
             {slides[current].title}
           </h1>
-          <p className="text-xl md:text-2xl text-gray-100 mb-8 font-light">
+
+          {/* Subtitle */}
+          <p className="text-lg md:text-2xl font-light mb-12 text-primary-contrast/90 tracking-wide">
             {slides[current].subtitle}
           </p>
-          <button className="bg-accent hover:bg-accent/90 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all hover:scale-105">
+
+          {/* CTA */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.98 }}
+            className="btn-primary uppercase tracking-widest text-sm font-semibold px-10 py-4"
+          >
             {slides[current].cta}
-          </button>
+          </motion.button>
+        </motion.div>
+
+        {/* Scroll Indicator */}
+        <motion.div
+          animate={{ y: [0, 10, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 text-primary-contrast/60"
+        >
+          <ChevronLeft className="w-6 h-6 rotate-90" />
         </motion.div>
       </div>
 
       {/* Navigation Buttons */}
       <button
         onClick={prev}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full transition-all"
-        aria-label="Slide anterior"
+        className="absolute left-8 top-1/2 -translate-y-1/2 z-20 bg-white/15 hover:bg-white/30 text-primary-contrast p-3 rounded-full transition-all duration-300 backdrop-blur-sm"
+        aria-label="Previous slide"
       >
-        <ChevronLeft size={32} />
-      </button>
-      <button
-        onClick={next}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full transition-all"
-        aria-label="Slide siguiente"
-      >
-        <ChevronRight size={32} />
+        <ChevronLeft size={24} strokeWidth={3} />
       </button>
 
-      {/* Dots */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3 z-10">
+      <button
+        onClick={next}
+        className="absolute right-8 top-1/2 -translate-y-1/2 z-20 bg-white/15 hover:bg-white/30 text-primary-contrast p-3 rounded-full transition-all duration-300 backdrop-blur-sm"
+        aria-label="Next slide"
+      >
+        <ChevronRight size={24} strokeWidth={3} />
+      </button>
+
+      {/* Dots Indicator */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-3">
         {slides.map((_, idx) => (
-          <button
+          <motion.button
             key={idx}
             onClick={() => {
               setCurrent(idx)
               setAutoPlay(false)
             }}
-            className={`w-3 h-3 rounded-full transition-all ${
-              idx === current ? 'bg-white w-8' : 'bg-white/50'
+            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              idx === current
+                ? 'bg-white w-8'
+                : 'bg-white/40 hover:bg-white/60'
             }`}
-            aria-label={`Ir a slide ${idx + 1}`}
+            whileHover={{ scale: 1.2 }}
+            aria-label={`Go to slide ${idx + 1}`}
           />
         ))}
-      </div>
-
-      {/* Stats */}
-      <div className="absolute bottom-24 left-0 right-0 z-10">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto text-white text-center">
-            <div className="bg-white/10 backdrop-blur-md p-4 rounded-lg">
-              <div className="text-3xl font-bold">250+</div>
-              <div className="text-sm text-gray-200">Habitaciones</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-md p-4 rounded-lg">
-              <div className="text-3xl font-bold">98%</div>
-              <div className="text-sm text-gray-200">Satisfacción</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-md p-4 rounded-lg">
-              <div className="text-3xl font-bold">⭐5.0</div>
-              <div className="text-sm text-gray-200">Calificación</div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   )

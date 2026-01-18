@@ -1,6 +1,8 @@
 /* ==========================================================================
-   GLOBAL STYLES - InnovaTech Demos
+   GLOBAL STYLES - Hotel Luxury Design System
    ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -15,6 +17,7 @@
 html {
   max-width: 100%;
   overflow-x: hidden;
+  scroll-behavior: smooth;
 }
 
 body,
@@ -22,6 +25,8 @@ body,
   height: 100%;
   max-width: 100%;
   font-family: var(--font-family-base);
+  background-color: var(--color-bg);
+  color: var(--color-text);
 }
 
 img {
@@ -30,22 +35,25 @@ img {
 }
 
 /* ==========================================================================
-   THEME VARIABLES (Light Mode)
+   THEME VARIABLES (Light Mode - Hotel Luxury)
    ========================================================================== */
 
 :root {
-  --color-primary: #0b74ff;
+  --color-primary: #2c2c2c;
   --color-primary-contrast: #ffffff;
-  --color-accent: #00c2ff;
-  --color-bg: #ffffff;
-  --color-surface: #f6f8fb;
-  --color-text: #0f1724;
-  --color-muted: #6b7280;
-  --color-border: #e5e7eb;
+  --color-accent: #8b7355;
+  --color-gold: #d4af37;
+  --color-bg: #fafaf8;
+  --color-surface: #f3f0ed;
+  --color-text: #3d3d3c;
+  --color-muted: #8b8b89;
+  --color-border: #e8e5e0;
 
-  --font-family-base: 'Montserrat', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-size-h1: 2.25rem;
-  --font-size-h2: 1.5rem;
+  --font-family-base: 'Inter', 'Montserrat', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-family-serif: 'Playfair Display', 'Didot', Georgia, serif;
+  --font-size-h1: 3rem;
+  --font-size-h2: 2rem;
+  --font-size-h3: 1.5rem;
   --font-size-base: 1rem;
   --font-size-sm: 0.875rem;
   --font-weight-regular: 400;
@@ -53,47 +61,70 @@ img {
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
 
-  --container-width: 1200px;
-  --gutter: 1rem;
-  --radius: 12px;
-  --shadow-soft: 0 6px 18px rgba(11, 29, 55, 0.06);
+  --container-width: 1400px;
+  --gutter: 1.5rem;
+  --radius: 8px;
+  --shadow-soft: 0 4px 12px rgba(60, 60, 60, 0.08);
+  --shadow-medium: 0 10px 30px rgba(60, 60, 60, 0.12);
 
-  --transition-fast: 180ms;
-  --transition-medium: 350ms;
+  --transition-fast: 200ms;
+  --transition-medium: 400ms;
+  --transition-slow: 600ms;
 }
 
 /* ==========================================================================
-   DARK MODE
+   DARK MODE (Hotel Luxury)
    ========================================================================== */
 [data-theme="dark"] {
-  --color-primary: #4da3ff;
-  --color-primary-contrast: #071022;
-  --color-accent: #66e0ff;
-  --color-bg: #071022;
-  --color-surface: #0d1724;
-  --color-text: #e6f0ff;
-  --color-muted: #9aa7b6;
-  --color-border: #1a2a42;
+  --color-primary: #f5f5f5;
+  --color-primary-contrast: #1a1a1a;
+  --color-accent: #c9a26d;
+  --color-gold: #e8c547;
+  --color-bg: #1a1a1a;
+  --color-surface: #262623;
+  --color-text: #e8e6e3;
+  --color-muted: #a4a3a0;
+  --color-border: #3a3a37;
 }
 
 /* ==========================================================================
-   UTILITY CLASSES
+   UTILITY CLASSES (Hotel Luxury Aesthetic)
    ========================================================================== */
 
 .card {
-  @apply bg-surface rounded-lg border border-border p-6 shadow transition-all duration-300;
+  @apply bg-surface rounded-[8px] border border-border p-6 shadow-soft transition-all duration-400 hover:shadow-medium;
 }
 
 .card-hover {
-  @apply hover:shadow-lg hover:border-primary transition-all duration-300;
+  @apply hover:shadow-medium transition-all duration-400;
 }
 
 .btn-primary {
-  @apply px-6 py-3 rounded-lg bg-primary text-primary-contrast font-semibold hover:opacity-90 transition-all duration-150;
+  @apply px-8 py-3 rounded-[4px] bg-primary text-primary-contrast font-semibold tracking-wide hover:bg-accent transition-all duration-400 uppercase text-sm letter-spacing-1;
 }
 
 .btn-secondary {
-  @apply px-6 py-3 rounded-lg bg-surface border border-border text-text hover:bg-primary hover:text-primary-contrast font-semibold transition-all duration-150;
+  @apply px-8 py-3 rounded-[4px] bg-transparent border-2 border-primary text-text hover:bg-primary hover:text-primary-contrast font-semibold transition-all duration-400 uppercase text-sm;
+}
+
+.btn-gold {
+  @apply px-8 py-3 rounded-[4px] bg-gold text-primary font-semibold tracking-wide hover:opacity-90 transition-all duration-400 uppercase text-sm;
+}
+
+.heading-serif {
+  @apply font-serif text-primary font-regular tracking-normal;
+}
+
+.heading-lg {
+  @apply heading-serif text-[3rem] md:text-[3.5rem] leading-tight;
+}
+
+.heading-md {
+  @apply heading-serif text-[2rem] md:text-[2.5rem] leading-snug;
+}
+
+.heading-sm {
+  @apply heading-serif text-[1.5rem] md:text-[1.75rem] leading-normal;
 }
 
 .container {

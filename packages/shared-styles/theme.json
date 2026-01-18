@@ -1,30 +1,34 @@
 {
-  "name": "InnovaTech Demos",
-  "version": "1.0.0",
-  "description": "Centralized design system for service demos",
+  "name": "Hotel Luxury Design System",
+  "version": "2.0.0",
+  "description": "Premium hotel aesthetic - elegant, minimal but refined",
   "palette": {
-    "primary": "#0B74FF",
+    "primary": "#2C2C2C",
     "primary-contrast": "#FFFFFF",
-    "accent": "#00C2FF",
-    "background": "#FFFFFF",
-    "surface": "#F6F8FB",
-    "text": "#0F1724",
-    "muted": "#6B7280"
+    "accent": "#8B7355",
+    "gold": "#D4AF37",
+    "background": "#FAFAF8",
+    "surface": "#F3F0ED",
+    "text": "#3D3D3C",
+    "muted": "#8B8B89"
   },
   "darkPalette": {
-    "primary": "#4DA3FF",
-    "primary-contrast": "#071022",
-    "accent": "#66E0FF",
-    "background": "#071022",
-    "surface": "#0D1724",
-    "text": "#E6F0FF",
-    "muted": "#9AA7B6"
+    "primary": "#F5F5F5",
+    "primary-contrast": "#1A1A1A",
+    "accent": "#C9A26D",
+    "gold": "#E8C547",
+    "background": "#1A1A1A",
+    "surface": "#262623",
+    "text": "#E8E6E3",
+    "muted": "#A4A3A0"
   },
   "typography": {
-    "font-family-primary": "Montserrat, Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+    "font-family-serif": "'Playfair Display', 'Didot', 'Cormorant', Georgia, serif",
+    "font-family-sans": "'Inter', 'Montserrat', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "font-sizes": {
-      "h1": "2.25rem",
-      "h2": "1.5rem",
+      "h1": "3rem",
+      "h2": "2rem",
+      "h3": "1.5rem",
       "base": "1rem",
       "small": "0.875rem"
     },
@@ -36,13 +40,15 @@
     }
   },
   "layout": {
-    "container-width": "1200px",
-    "gutter": "1rem",
-    "radius": "12px",
-    "shadow-soft": "0 6px 18px rgba(11, 29, 55, 0.06)"
+    "container-width": "1400px",
+    "gutter": "1.5rem",
+    "radius": "8px",
+    "shadow-soft": "0 4px 12px rgba(60, 60, 60, 0.08)",
+    "shadow-medium": "0 10px 30px rgba(60, 60, 60, 0.12)"
   },
   "transitions": {
-    "fast": "180ms",
-    "medium": "350ms"
+    "fast": "200ms",
+    "medium": "400ms",
+    "slow": "600ms"
   }
 }

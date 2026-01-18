@@ -11,6 +11,7 @@ export default {
         primary: 'var(--color-primary)',
         'primary-contrast': 'var(--color-primary-contrast)',
         accent: 'var(--color-accent)',
+        gold: 'var(--color-gold)',
         bg: 'var(--color-bg)',
         surface: 'var(--color-surface)',
         text: 'var(--color-text)',
@@ -18,7 +19,8 @@ export default {
         border: 'var(--color-border)'
       },
       fontFamily: {
-        sans: 'var(--font-family-base)'
+        sans: 'var(--font-family-base)',
+        serif: 'var(--font-family-serif)'
       },
       fontSize: {
         'h1': 'var(--font-size-h1)',
@@ -30,11 +32,13 @@ export default {
         'theme': 'var(--radius)'
       },
       boxShadow: {
-        'soft': 'var(--shadow-soft)'
+        'soft': 'var(--shadow-soft)',
+        'medium': 'var(--shadow-medium)'
       },
       transitionDuration: {
         'fast': 'var(--transition-fast)',
-        'medium': 'var(--transition-medium)'
+        'medium': 'var(--transition-medium)',
+        'slow': 'var(--transition-slow)'
       }
     }
   },

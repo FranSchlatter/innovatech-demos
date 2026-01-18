@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react'
+import { ChevronDown, Sparkles } from 'lucide-react'
 
 export default function HeroCarousel() {
   const [current, setCurrent] = useState(0)
@@ -45,6 +45,11 @@ export default function HeroCarousel() {
 
   const prev = () => {
     setCurrent((prev) => (prev - 1 + slides.length) % slides.length)
+    setAutoPlay(false)
+  }
+
+  const goToSlide = (idx) => {
+    setCurrent(idx)
     setAutoPlay(false)
   }
 
@@ -120,36 +125,16 @@ export default function HeroCarousel() {
           transition={{ duration: 2, repeat: Infinity }}
           className="absolute bottom-8 left-1/2 -translate-x-1/2 text-primary-contrast/60"
         >
-          <ChevronLeft className="w-6 h-6 rotate-90" />
+          <ChevronDown className="w-6 h-6" />
         </motion.div>
       </div>
 
-      {/* Navigation Buttons */}
-      <button
-        onClick={prev}
-        className="absolute left-8 top-1/2 -translate-y-1/2 z-20 bg-white/15 hover:bg-white/30 text-primary-contrast p-3 rounded-full transition-all duration-300 backdrop-blur-sm"
-        aria-label="Previous slide"
-      >
-        <ChevronLeft size={24} strokeWidth={3} />
-      </button>
-
-      <button
-        onClick={next}
-        className="absolute right-8 top-1/2 -translate-y-1/2 z-20 bg-white/15 hover:bg-white/30 text-primary-contrast p-3 rounded-full transition-all duration-300 backdrop-blur-sm"
-        aria-label="Next slide"
-      >
-        <ChevronRight size={24} strokeWidth={3} />
-      </button>
-
-      {/* Dots Indicator */}
+      {/* Dots Indicator - Sin botones de navegación left/right */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-3">
         {slides.map((_, idx) => (
           <motion.button
             key={idx}
-            onClick={() => {
-              setCurrent(idx)
-              setAutoPlay(false)
-            }}
+            onClick={() => goToSlide(idx)}
             className={`w-2 h-2 rounded-full transition-all duration-300 ${
               idx === current
                 ? 'bg-white w-8'

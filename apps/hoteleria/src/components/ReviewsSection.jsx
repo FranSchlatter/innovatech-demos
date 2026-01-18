@@ -1,20 +1,11 @@
 import { motion } from 'framer-motion'
 import { Star, CheckCircle } from 'lucide-react'
+import { useState, useRef } from 'react'
 import reviewsData from '@shared-data/reviews.json'
 
 export default function ReviewsSection() {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 }
-    }
-  }
-
-  const itemVariants = {
-    hidden: { opacity: 0, x: -30 },
-    visible: { opacity: 1, x: 0 }
-  }
+  const [scrollPosition, setScrollPosition] = useState(0)
+  const scrollContainerRef = useRef(null)
 
   const avgRating = (
     reviewsData.reduce((sum, r) => sum + r.rating, 0) / reviewsData.length
@@ -56,64 +47,67 @@ export default function ReviewsSection() {
           </div>
         </motion.div>
 
-        {/* Reviews Grid */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-        >
-          {reviewsData.map((review) => (
-            <motion.div
-              key={review.id}
-              variants={itemVariants}
-              className="bg-surface rounded-lg p-8 shadow-soft hover:shadow-medium transition-all border border-border"
-            >
-              {/* Verified Badge */}
-              {review.verified && (
-                <div className="flex items-center gap-2 mb-4 text-accent text-sm">
-                  <CheckCircle size={16} />
-                  <span className="font-medium">Verified Guest</span>
+        {/* Reviews Carousel */}
+        <div className="relative group">
+          <div
+            ref={scrollContainerRef}
+            className="flex gap-6 overflow-x-auto scroll-smooth pb-8 md:pb-4"
+            style={{ scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch' }}
+          >
+            {reviewsData.map((review) => (
+              <motion.div
+                key={review.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="flex-shrink-0 w-80 bg-surface rounded-lg p-6 shadow-soft hover:shadow-medium transition-all border border-border"
+              >
+                {/* Verified Badge */}
+                {review.verified && (
+                  <div className="flex items-center gap-2 mb-3 text-accent text-xs">
+                    <CheckCircle size={14} />
+                    <span className="font-medium">Verified Guest</span>
+                  </div>
+                )}
+
+                {/* Stars */}
+                <div className="flex gap-1 mb-3">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      size={14}
+                      className={i < review.rating ? 'fill-gold text-gold' : 'text-border'}
+                    />
+                  ))}
                 </div>
-              )}
 
-              {/* Stars */}
-              <div className="flex gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    size={16}
-                    className={i < review.rating ? 'fill-gold text-gold' : 'text-border'}
-                  />
-                ))}
-              </div>
+                {/* Review */}
+                <p className="text-muted text-sm italic mb-4 leading-relaxed line-clamp-3">
+                  "{review.comment}"
+                </p>
 
-              {/* Review */}
-              <p className="text-muted italic mb-6 leading-relaxed">
-                "{review.comment}"
-              </p>
+                {/* Author */}
+                <div className="pt-4 border-t border-border">
+                  <p className="font-semibold text-primary text-sm">{review.author}</p>
+                  <p className="text-xs text-muted">{review.date}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
 
-              {/* Author */}
-              <div className="pt-6 border-t border-border">
-                <p className="font-semibold text-primary">{review.author}</p>
-                <p className="text-sm text-muted">{review.date}</p>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
+          {/* Sin botones de navegación - scroll natural */}
+        </div>
 
-        {/* CTA */}
+        {/* Scroll Hint */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="text-center mt-20"
+          className="text-center mt-6"
         >
-          <p className="text-muted mb-6 text-lg">Had an unforgettable experience? We'd love to hear your story</p>
-          <button className="btn-secondary">
-            Share Your Review
-          </button>
+          <p className="text-sm text-muted font-medium">
+            Scroll to view more reviews
+          </p>
         </motion.div>
       </div>
     </section>

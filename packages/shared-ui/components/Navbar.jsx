@@ -59,11 +59,49 @@ export default function Navbar({ brand = 'InnovaTech', toggleTheme, isDark, link
 
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden p-2 rounded-lg"
+          className="md:hidden p-2 rounded-lg text-primary"
         >
           {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
       </div>
+
+      {/* Mobile Menu */}
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          className="md:hidden bg-surface border-t border-border"
+        >
+          <div className="container py-4 flex flex-col gap-4">
+            {links.map((link) => (
+              <a
+                key={link.name}
+                href={link.href}
+                onClick={(e) => {
+                  if (link.onClick) {
+                    e.preventDefault()
+                    link.onClick()
+                  }
+                  setIsOpen(false)
+                }}
+                className="text-text hover:text-primary transition-colors font-medium px-2 py-2"
+              >
+                {link.name}
+              </a>
+            ))}
+            <div className="pt-2 border-t border-border">
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-lg bg-bg hover:bg-primary hover:text-primary-contrast transition-colors w-full flex items-center justify-center gap-2"
+              >
+                {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                <span className="text-sm font-medium">{isDark ? 'Light Mode' : 'Dark Mode'}</span>
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
     </motion.nav>
   )
 }

@@ -92,11 +92,20 @@ img {
    ========================================================================== */
 
 .card {
-  @apply bg-surface rounded-[8px] border border-border p-6 shadow-soft transition-all duration-400 hover:shadow-medium;
+  @apply bg-surface rounded-[8px] border border-border p-6 transition-all duration-400;
+  box-shadow: var(--shadow-soft);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-medium);
 }
 
 .card-hover {
-  @apply hover:shadow-medium transition-all duration-400;
+  transition: all var(--transition-medium);
+}
+
+.card-hover:hover {
+  box-shadow: var(--shadow-medium);
 }
 
 .btn-primary {

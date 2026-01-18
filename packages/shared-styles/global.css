@@ -92,7 +92,10 @@ img {
    ========================================================================== */
 
 .card {
-  @apply bg-surface rounded-[8px] border border-border p-6;
+  background-color: var(--color-surface);
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  padding: 1.5rem;
   transition: all var(--transition-medium);
   box-shadow: var(--shadow-soft);
 }
@@ -110,38 +113,111 @@ img {
 }
 
 .btn-primary {
-  @apply px-8 py-3 rounded-[4px] bg-primary text-primary-contrast font-semibold tracking-widest hover:bg-accent uppercase text-sm;
+  padding: 0.75rem 2rem;
+  border-radius: 4px;
+  background-color: var(--color-primary);
+  color: var(--color-primary-contrast);
+  font-weight: 600;
+  letter-spacing: 0.1em;
   transition: all var(--transition-medium);
+  text-transform: uppercase;
+  font-size: 0.875rem;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-accent);
 }
 
 .btn-secondary {
-  @apply px-8 py-3 rounded-[4px] bg-transparent border-2 border-primary text-text hover:bg-primary hover:text-primary-contrast font-semibold uppercase text-sm;
+  padding: 0.75rem 2rem;
+  border-radius: 4px;
+  background-color: transparent;
+  border: 2px solid var(--color-primary);
+  color: var(--color-text);
+  font-weight: 600;
   transition: all var(--transition-medium);
+  text-transform: uppercase;
+  font-size: 0.875rem;
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-primary);
+  color: var(--color-primary-contrast);
 }
 
 .btn-gold {
-  @apply px-8 py-3 rounded-[4px] bg-gold text-primary font-semibold tracking-wide hover:opacity-90 uppercase text-sm;
+  padding: 0.75rem 2rem;
+  border-radius: 4px;
+  background-color: var(--color-gold);
+  color: var(--color-primary);
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  opacity: 1;
   transition: all var(--transition-medium);
+  text-transform: uppercase;
+  font-size: 0.875rem;
+}
+
+.btn-gold:hover {
+  opacity: 0.9;
 }
 
 .heading-serif {
-  @apply font-serif text-primary font-regular tracking-normal;
+  font-family: var(--font-family-serif);
+  color: var(--color-primary);
+  font-weight: 400;
+  letter-spacing: normal;
 }
 
 .heading-lg {
-  @apply heading-serif text-[3rem] md:text-[3.5rem] leading-tight;
+  font-family: var(--font-family-serif);
+  color: var(--color-primary);
+  font-weight: 400;
+  font-size: 3rem;
+  line-height: 1.25;
+}
+
+@media (min-width: 768px) {
+  .heading-lg {
+    font-size: 3.5rem;
+  }
 }
 
 .heading-md {
-  @apply heading-serif text-[2rem] md:text-[2.5rem] leading-snug;
+  font-family: var(--font-family-serif);
+  color: var(--color-primary);
+  font-weight: 400;
+  font-size: 2rem;
+  line-height: 1.375;
+}
+
+@media (min-width: 768px) {
+  .heading-md {
+    font-size: 2.5rem;
+  }
 }
 
 .heading-sm {
-  @apply heading-serif text-[1.5rem] md:text-[1.75rem] leading-normal;
+  font-family: var(--font-family-serif);
+  color: var(--color-primary);
+  font-weight: 400;
+  font-size: 1.5rem;
+  line-height: 1.5;
+}
+
+@media (min-width: 768px) {
+  .heading-sm {
+    font-size: 1.75rem;
+  }
 }
 
 .container {
-  @apply w-full max-w-[var(--container-width)] mx-auto px-[var(--gutter)];
+  width: 100%;
+  max-width: var(--container-width);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
 }
 
 /* ==========================================================================

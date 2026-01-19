@@ -15,8 +15,8 @@ export default function HeroCarousel() {
       action: () => document.getElementById('accommodation')?.scrollIntoView({ behavior: 'smooth' })
     },
     {
-      title: "Unforgettable Moments Await",
-      subtitle: "Curated experiences designed for discerning guests",
+      title: "Unforgettable Moments",
+      subtitle: "Curated experiences for discerning guests",
       image: "https://cdn.pixabay.com/photo/2018/02/22/08/05/palma-3172367_1280.jpg?w=1600&q=90&auto=format&fit=crop",
       cta: "View Amenities",
       action: () => document.getElementById('amenities')?.scrollIntoView({ behavior: 'smooth' })

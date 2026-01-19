@@ -22,9 +22,9 @@ export default function RoomDetailPage({ room, onBack, onReserve }) {
   // Extended images for gallery
   const images = [
     room.image,
-    'https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=800&q=80',
-    'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80',
-    'https://images.unsplash.com/photo-1584622181563-430f63602d4b?w=800&q=80'
+    room.image,
+    room.image,
+    room.image
   ]
 
   // Room amenities

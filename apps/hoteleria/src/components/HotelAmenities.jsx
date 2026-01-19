@@ -25,7 +25,7 @@ export default function HotelAmenities() {
       name: 'Fine Dining',
       description: 'Multiple Michelin-starred restaurants and bars',
       icon: Utensils,
-      image: 'https://cdn.pixabay.com/photo/2017/08/10/04/49/restaurant-2618315_1280.jpg?w=600&q=80'
+      image: 'https://images.unsplash.com/photo-1676716260600-217008b2e00a?w=600&q=80'
     },
     {
       id: 4,
@@ -39,7 +39,7 @@ export default function HotelAmenities() {
       name: 'Conference Facilities',
       description: 'Full-service meeting rooms with modern technology',
       icon: Users,
-      image: 'https://cdn.pixabay.com/photo/2014/05/05/20/29/conference-room-338563_1280.jpg?w=600&q=80'
+      image: 'https://images.unsplash.com/photo-1621020512837-280d1c1ccc7b?w=600&q=80'
     },
     {
       id: 6,

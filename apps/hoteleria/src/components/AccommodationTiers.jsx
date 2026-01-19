@@ -55,7 +55,7 @@ export default function AccommodationTiers({ onSelectRoom }) {
         size: 120,
         guests: 4,
         price: 520,
-        image: 'https://cdn.pixabay.com/photo/2015/06/29/13/03/hotel-hall-825561_1280.jpg?w=600&q=80',
+        image: 'https://images.unsplash.com/photo-1685592437742-3b56edb46b15?w=600&q=80',
         description: 'Spacious suites with premium finishes'
       },
       {

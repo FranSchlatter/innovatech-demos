@@ -18,7 +18,7 @@ export default function OffersSection() {
       icon: Heart,
       price: 'Included',
       highlight: true,
-      image: 'https://images.unsplash.com/photo-1599950945-78292df751c6?w=800&q=80'
+      image: 'https://cdn.pixabay.com/photo/2016/11/18/22/21/bride-1837148_1280.jpg?w=800&q=80'
     },
     {
       id: 2,

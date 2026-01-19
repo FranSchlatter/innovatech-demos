@@ -23,7 +23,7 @@ export default function AccommodationTiers({ onSelectRoom }) {
         size: 55,
         guests: 2,
         price: 239,
-        image: 'https://images.unsplash.com/photo-1566195992212-34ff59d1e81c?w=600&q=80',
+        image: 'https://cdn.pixabay.com/photo/2021/12/18/06/13/hotel-6878054_1280.jpg?w=600&q=80',
         description: 'Premium accommodations with enhanced comfort'
       },
       {
@@ -33,7 +33,7 @@ export default function AccommodationTiers({ onSelectRoom }) {
         size: 65,
         guests: 3,
         price: 299,
-        image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&q=80',
+        image: 'https://cdn.pixabay.com/photo/2023/04/13/07/27/bedroom-7921915_1280.jpg?w=600&q=80',
         description: 'Executive rooms featuring work areas and lounge access'
       }
     ],
@@ -45,7 +45,7 @@ export default function AccommodationTiers({ onSelectRoom }) {
         size: 85,
         guests: 2,
         price: 380,
-        image: 'https://images.unsplash.com/photo-1591088398332-8c5ebbf30f2f?w=600&q=80',
+        image: 'https://cdn.pixabay.com/photo/2016/10/13/09/06/travel-1737168_1280.jpg?w=600&q=80',
         description: 'Elegant suites with separate living areas'
       },
       {
@@ -55,7 +55,7 @@ export default function AccommodationTiers({ onSelectRoom }) {
         size: 120,
         guests: 4,
         price: 520,
-        image: 'https://images.unsplash.com/photo-1578683078519-94d5e1f48d79?w=600&q=80',
+        image: 'https://cdn.pixabay.com/photo/2015/06/29/13/03/hotel-hall-825561_1280.jpg?w=600&q=80',
         description: 'Spacious suites with premium finishes'
       },
       {
@@ -65,7 +65,7 @@ export default function AccommodationTiers({ onSelectRoom }) {
         size: 150,
         guests: 4,
         price: 680,
-        image: 'https://images.unsplash.com/photo-1569858226282-641e56af4467?w=600&q=80',
+        image: 'https://cdn.pixabay.com/photo/2017/08/27/10/16/interior-2685521_1280.jpg?w=600&q=80',
         description: 'Luxury suites with panoramic views'
       }
     ],
@@ -77,7 +77,7 @@ export default function AccommodationTiers({ onSelectRoom }) {
         size: 200,
         guests: 4,
         price: 980,
-        image: 'https://images.unsplash.com/photo-1512207736139-c1a6ff113d74?w=600&q=80',
+        image: 'https://cdn.pixabay.com/photo/2020/11/28/02/17/lagoon-5783445_1280.jpg?w=600&q=80',
         description: 'Private villas with manicured gardens and pools'
       },
       {
@@ -87,7 +87,7 @@ export default function AccommodationTiers({ onSelectRoom }) {
         size: 280,
         guests: 6,
         price: 1380,
-        image: 'https://images.unsplash.com/photo-1512207736139-c1a6ff113d74?w=600&q=80',
+        image: 'https://cdn.pixabay.com/photo/2020/03/21/20/04/real-estate-4955093_1280.jpg?w=600&q=80',
         description: 'Ultimate luxury with private terraces'
       },
       {
@@ -97,7 +97,7 @@ export default function AccommodationTiers({ onSelectRoom }) {
         size: 350,
         guests: 8,
         price: 1980,
-        image: 'https://images.unsplash.com/photo-1512207736139-c1a6ff113d74?w=600&q=80',
+        image: 'https://cdn.pixabay.com/photo/2020/03/21/20/03/real-estate-4955087_1280.jpg?w=600&q=80',
         description: 'Exclusive estates with concierge service'
       }
     ]

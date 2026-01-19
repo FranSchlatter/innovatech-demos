@@ -2,9 +2,9 @@ import { motion } from 'framer-motion'
 
 export default function HotelAbout() {
   const images = [
-    'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80',
-    'https://images.unsplash.com/photo-1566195992212-34ff59d1e81c?w=800&q=80',
-    'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80',
+    'https://plus.unsplash.com/premium_photo-1661929519129-7a76946c1d38?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?w=800&q=80',
+    'https://cdn.pixabay.com/photo/2020/12/24/19/11/hotel-room-5858069_1280.jpg?w=800&q=80',
+    'https://cdn.pixabay.com/photo/2019/07/23/09/49/hotel-4357159_1280.jpg?w=800&q=80',
   ]
 
   return (

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Dumbbell, Waves, Utensils, Wifi, Accessibility, Car, Check, ChevronDown } from 'lucide-react'
+import { Dumbbell, Waves, Utensils, Wifi, Accessibility, Car, Check, ChevronDown, Trophy, Users, Leaf } from 'lucide-react'
 import { useState } from 'react'
 
 export default function HotelAmenities() {
@@ -18,54 +18,54 @@ export default function HotelAmenities() {
       name: 'Infinity Pool',
       description: 'Panoramic rooftop pool with cabana service and city views',
       icon: Waves,
-      image: 'https://images.unsplash.com/photo-1576610616656-d3aa5d1f4534?w=600&q=80'
+      image: 'https://cdn.pixabay.com/photo/2014/08/17/23/45/hotel-420260_1280.jpg?w=600&q=80'
     },
     {
       id: 3,
       name: 'Fine Dining',
       description: 'Multiple Michelin-starred restaurants and bars',
       icon: Utensils,
-      image: 'https://images.unsplash.com/photo-1504674900152-b8b6c6d0c4a0?w=600&q=80'
+      image: 'https://cdn.pixabay.com/photo/2017/08/10/04/49/restaurant-2618315_1280.jpg?w=600&q=80'
     },
     {
       id: 4,
-      name: 'High-Speed WiFi',
-      description: 'Complimentary premium internet throughout the property',
-      icon: Wifi,
-      image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&q=80'
+      name: 'Game room',
+      description: 'Billiards, arcade games, and entertainment for all ages',
+      icon: Trophy,
+      image: 'https://cdn.pixabay.com/photo/2014/04/05/11/29/plaza-hotel-315892_1280.jpg?w=600&q=80'
     },
     {
       id: 5,
-      name: 'Accessibility',
-      description: 'Fully accessible facilities and specialized services',
-      icon: Accessibility,
-      image: 'https://images.unsplash.com/photo-1576091160550-112173f7f869?w=600&q=80'
+      name: 'Conference Facilities',
+      description: 'Full-service meeting rooms with modern technology',
+      icon: Users,
+      image: 'https://cdn.pixabay.com/photo/2014/05/05/20/29/conference-room-338563_1280.jpg?w=600&q=80'
     },
     {
       id: 6,
-      name: 'Parking',
-      description: 'Secure underground parking with valet service',
-      icon: Car,
-      image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600&q=80'
+      name: 'Spa & Wellness',
+      description: 'Relaxation and rejuvenation with spa treatments and therapies',
+      icon: Leaf,
+      image: 'https://cdn.pixabay.com/photo/2018/02/27/03/36/stones-3184610_1280.jpg?w=600&q=80'
     }
   ]
 
   const extendedAmenities = [
+    'Accessibility',
+    'High-Speed WiFi',
+    '24-Hour Fitness Center',
+    'Parking & Valet Service',
     'Room Service (24/7)',
     'Concierge Assistance',
     'Business Center',
-    'Conference Facilities',
-    'Spa & Wellness',
     'Kids Club',
     'Guest Laundry Service',
     'Currency Exchange',
     'Travel Desk',
     'Car Rental Service',
     'Airport Transfers',
-    'Housekeeping (Daily)',
     'Turndown Service',
     'Minibar Selection',
-    'Premium Bedding',
     'In-Room Entertainment'
   ]
 

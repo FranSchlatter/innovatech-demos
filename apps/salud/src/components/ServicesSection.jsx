@@ -1,32 +1,30 @@
 import { motion } from 'framer-motion'
-import * as Icons from 'lucide-react'
-import services from '@shared-data/services.json'
+import { TestTube, ScanLine, Activity, Dumbbell, Pill, Video, Ambulance, Syringe, Apple, Baby, Moon, Zap, HeartPulse, Stethoscope, ClipboardCheck } from 'lucide-react'
+import servicesData from '@shared-data/services.json'
+
+const iconMap = {
+  TestTube, ScanLine, Activity, Dumbbell, Pill, Video, Ambulance, Syringe, Apple, Baby, Moon, Zap, HeartPulse, Stethoscope, ClipboardCheck
+}
 
 export default function ServicesSection() {
-
-  const getCategoryColor = (category) => {
-    const colors = {
-      'Diagnostics': 'bg-blue-100 text-blue-700',
-      'Imaging': 'bg-purple-100 text-purple-700',
-      'Cardiac': 'bg-red-100 text-red-700',
-      'Procedures': 'bg-green-100 text-green-700',
-      'Treatment': 'bg-orange-100 text-orange-700',
-      'Rehabilitation': 'bg-teal-100 text-teal-700',
-      'Surgery': 'bg-pink-100 text-pink-700',
-      'Preventive': 'bg-yellow-100 text-yellow-700',
-      'Behavioral': 'bg-indigo-100 text-indigo-700',
-      'Wellness': 'bg-cyan-100 text-cyan-700'
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.05 }
     }
-    return colors[category] || 'bg-accent/10 text-accent'
   }
 
-  const getIcon = (iconName) => {
-    const icon = Icons[iconName]
-    return icon || Icons.Heart
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
   }
+
+  // Show only first 12 services for a more compact layout
+  const displayedServices = servicesData.slice(0, 12)
 
   return (
-    <section className="py-20 md:py-32 bg-surface">
+    <section id="services" className="py-16 md:py-20 bg-bg">
       <div className="container mx-auto px-4 md:px-6">
         {/* Header */}
         <motion.div
@@ -34,63 +32,75 @@ export default function ServicesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-12"
         >
-          <h2 className="heading-md mb-4">Medical Services</h2>
-          <p className="text-lg text-muted max-w-2xl mx-auto">
-            Comprehensive diagnostic, therapeutic, and surgical services available across all our locations
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-text">
+            Comprehensive Medical Services
+          </h2>
+          <p className="text-lg md:text-xl text-text-secondary max-w-3xl mx-auto">
+            From diagnostic testing to advanced treatments, we offer complete healthcare under one roof
           </p>
         </motion.div>
 
         {/* Services Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {services.map((service, idx) => {
-            const IconComponent = getIcon(service.icon)
-            const categoryColor = getCategoryColor(service.category)
-
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+        >
+          {displayedServices.map((service) => {
+            const Icon = iconMap[service.icon] || Activity
             return (
               <motion.div
                 key={service.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: idx * 0.05 }}
-                className="group bg-white rounded-xl p-6 shadow-soft hover:shadow-lg transition-all duration-300 hover:-translate-y-2"
+                variants={itemVariants}
+                whileHover={{ y: -4 }}
+                className="bg-surface border border-border rounded-xl p-5 hover:border-primary/50 hover:shadow-md transition-all"
               >
-                {/* Category Badge */}
-                <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-4 ${categoryColor}`}>
-                  <IconComponent className="w-3 h-3" />
-                  {service.category}
-                </div>
+                <div className="flex items-start gap-3">
+                  {/* Icon - colored without background like specialties */}
+                  <Icon className="w-7 h-7 text-primary flex-shrink-0" strokeWidth={1.5} />
 
-                {/* Title & Description */}
-                <h3 className="text-lg font-bold text-primary mb-2 group-hover:text-accent transition-colors">
-                  {service.name}
-                </h3>
-                <p className="text-sm text-muted mb-4 line-clamp-3">
-                  {service.description}
-                </p>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-base mb-1 text-text">
+                      {service.name}
+                    </h4>
+                    <p className="text-sm text-text-secondary mb-3 line-clamp-2">
+                      {service.description}
+                    </p>
 
-                {/* Details */}
-                <div className="space-y-2 text-xs mb-4 pb-4 border-t border-bg">
-                  <div className="flex items-center justify-between mt-4">
-                    <span className="text-muted">Turnaround Time</span>
-                    <span className="font-semibold text-text">{service.turnaround}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted">Cost Range</span>
-                    <span className="font-semibold text-accent">{service.cost}</span>
+                    {/* Compact Info */}
+                    <div className="flex items-center justify-between text-xs pt-3 border-t border-border">
+                      <span className="text-text-secondary">{service.availability}</span>
+                      <span className="font-semibold text-primary">{service.pricing}</span>
+                    </div>
                   </div>
                 </div>
-
-                {/* CTA */}
-                <button className="w-full bg-accent/10 hover:bg-accent hover:text-white text-accent font-semibold py-2 rounded-lg transition-all duration-300">
-                  Learn More
-                </button>
               </motion.div>
             )
           })}
-        </div>
+        </motion.div>
+
+        {/* Compact CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mt-12"
+        >
+          <p className="text-text-secondary mb-4">
+            Looking for a specific service?
+          </p>
+          <button
+            onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+            className="btn-secondary"
+          >
+            Contact Our Care Team
+          </button>
+        </motion.div>
       </div>
     </section>
   )

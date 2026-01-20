@@ -1,0 +1,48 @@
+/* Health Theme - Overwrites global styles */
+:root,
+html,
+body {
+  /* Primary Teal/Aqua Color Scheme - Healthy & Calming */
+  --color-primary: #0891B2 !important;
+  --color-primary-dark: #0E7490 !important;
+  --color-primary-light: #06B6D4 !important;
+  --color-primary-contrast: #ffffff !important;
+
+  --color-accent: #14B8A6 !important;
+  --color-accent-dark: #0D9488 !important;
+  --color-accent-light: #5EEAD4 !important;
+
+  /* Backgrounds - Clean & Airy */
+  --color-bg: #F0F9FF !important;
+  --color-surface: #FFFFFF !important;
+
+  /* Text Colors */
+  --color-text: #0F172A !important;
+  --color-text-secondary: #475569 !important;
+  --color-muted: #64748B !important;
+
+  /* Border */
+  --color-border: #E2E8F0 !important;
+
+  /* Status Colors */
+  --color-success: #10B981 !important;
+  --color-warning: #F59E0B !important;
+  --color-error: #EF4444 !important;
+  --color-info: #3B82F6 !important;
+
+  /* Override hotel-specific colors */
+  --color-gold: #14B8A6 !important;
+}
+
+/* Dark mode support */
+[data-theme="dark"] {
+  --color-primary: #06B6D4 !important;
+  --color-primary-contrast: #0F172A !important;
+  --color-accent: #14B8A6 !important;
+  --color-bg: #0F172A !important;
+  --color-surface: #1E293B !important;
+  --color-text: #F1F5F9 !important;
+  --color-text-secondary: #94A3B8 !important;
+  --color-muted: #64748B !important;
+  --color-border: #334155 !important;
+}

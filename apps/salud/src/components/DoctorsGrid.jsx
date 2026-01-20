@@ -1,118 +1,149 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Star, Users, Clock, CheckCircle } from 'lucide-react'
+import { Star, Clock, CheckCircle, Award, ChevronLeft, ChevronRight } from 'lucide-react'
 import doctors from '@shared-data/doctors.json'
 
-export default function DoctorsGrid({ onSelectDoctor }) {
-  const specialties = ['Todas', ...new Set(doctors.map(d => d.specialty))]
-  const [selectedSpecialty, setSelectedSpecialty] = useState('Todas')
+export default function DoctorsGrid({ onSelectDoctor, filterBySpecialty = null }) {
+  const scrollContainerRef = useRef(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(true)
 
-  const filteredDoctors = selectedSpecialty === 'Todas' 
-    ? doctors 
-    : doctors.filter(d => d.specialty === selectedSpecialty)
+  const filteredDoctors = filterBySpecialty
+    ? doctors.filter(d => d.specialty === filterBySpecialty)
+    : doctors
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 }
-    }
+  const scroll = (direction) => {
+    const container = scrollContainerRef.current
+    if (!container) return
+
+    const scrollAmount = container.offsetWidth * 0.8
+    const newScrollLeft = direction === 'left'
+      ? container.scrollLeft - scrollAmount
+      : container.scrollLeft + scrollAmount
+
+    container.scrollTo({ left: newScrollLeft, behavior: 'smooth' })
   }
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
+  const handleScroll = () => {
+    const container = scrollContainerRef.current
+    if (!container) return
+
+    setCanScrollLeft(container.scrollLeft > 10)
+    setCanScrollRight(
+      container.scrollLeft < container.scrollWidth - container.offsetWidth - 10
+    )
   }
 
   return (
-    <div>
-      {/* Specialty Filter */}
-      <div className="mb-12">
-        <div className="flex flex-wrap gap-3 justify-center">
-          {specialties.map((specialty) => (
-            <button
-              key={specialty}
-              onClick={() => setSelectedSpecialty(specialty)}
-              className={`px-6 py-2 rounded-full font-semibold transition-all ${
-                selectedSpecialty === specialty
-                  ? 'bg-accent text-white shadow-lg'
-                  : 'bg-surface hover:bg-surface/80'
-              }`}
-            >
-              {specialty}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Doctors Grid */}
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+    <div className="relative">
+      {/* Scroll Container */}
+      <div
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className="flex gap-6 overflow-x-scroll scroll-smooth pb-4 snap-x snap-mandatory hide-scrollbar px-1"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        {filteredDoctors.map((doctor) => (
+        {filteredDoctors.map((doctor, index) => (
           <motion.div
             key={doctor.id}
-            variants={itemVariants}
-            className="bg-surface rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all hover:-translate-y-2"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: index * 0.1 }}
+            className="group flex-shrink-0 w-[280px] bg-surface border-2 border-border rounded-2xl overflow-hidden hover:shadow-xl hover:border-primary/30 transition-all cursor-pointer snap-start"
+            onClick={() => onSelectDoctor(doctor)}
           >
             {/* Image */}
-            <div className="relative h-48 overflow-hidden">
+            <div className="relative h-52 overflow-hidden">
               <img
                 src={doctor.image}
                 alt={doctor.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+
+              {/* Badge */}
+              {doctor.certifications && (
+                <div className="absolute top-3 right-3 px-3 py-1.5 bg-primary/90 backdrop-blur-sm text-white text-xs font-bold rounded-full flex items-center gap-1">
+                  <Award size={12} />
+                  Certified
+                </div>
+              )}
             </div>
 
             {/* Content */}
-            <div className="p-5">
-              <h3 className="font-bold text-lg mb-1">{doctor.name}</h3>
-              <p className="text-sm text-accent font-semibold mb-2">{doctor.specialty}</p>
-              <p className="text-xs text-muted mb-4 line-clamp-2">{doctor.bio}</p>
+            <div className="p-6">
+              <h3 className="font-bold text-lg mb-1 text-text group-hover:text-primary transition-colors">
+                {doctor.name}
+              </h3>
+              <p className="text-sm text-primary font-semibold mb-3">{doctor.specialty}</p>
+              <p className="text-xs text-text-secondary mb-4 line-clamp-2 leading-relaxed">
+                {doctor.bio}
+              </p>
 
               {/* Rating */}
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-4 pb-4 border-b border-border">
                 <div className="flex">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
                       size={14}
-                      className={i < Math.round(doctor.rating) ? 'fill-accent text-accent' : 'text-gray-400'}
+                      className={i < Math.round(doctor.rating) ? 'fill-primary text-primary' : 'text-gray-300'}
                     />
                   ))}
                 </div>
-                <span className="text-xs font-semibold">{doctor.rating}</span>
-                <span className="text-xs text-muted">({doctor.reviews})</span>
+                <span className="text-xs font-bold text-text">{doctor.rating}</span>
+                <span className="text-xs text-text-secondary">({doctor.reviews} reviews)</span>
               </div>
 
               {/* Details */}
-              <div className="space-y-2 mb-4 text-xs">
-                <div className="flex items-center gap-2">
-                  <CheckCircle size={14} className="text-accent" />
-                  <span>{doctor.languages.join(', ')}</span>
+              <div className="space-y-2.5 mb-5 text-xs">
+                <div className="flex items-center gap-2 text-text-secondary">
+                  <CheckCircle size={14} className="text-primary flex-shrink-0" />
+                  <span className="truncate">{doctor.languages.join(', ')}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Clock size={14} className="text-accent" />
-                  <span>${doctor.price} por consulta</span>
+                <div className="flex items-center gap-2 text-text-secondary">
+                  <Clock size={14} className="text-primary flex-shrink-0" />
+                  <span className="font-semibold text-text">${doctor.price}</span> per visit
                 </div>
               </div>
 
               {/* CTA */}
-              <button
-                onClick={() => onSelectDoctor(doctor)}
-                className="w-full bg-accent hover:bg-accent/90 text-white py-2 rounded-lg font-semibold transition-all text-sm"
-              >
-                Agendar Cita
+              <button className="w-full btn-primary text-sm py-2.5">
+                Book Appointment
               </button>
             </div>
           </motion.div>
         ))}
-      </motion.div>
+      </div>
+
+      {/* Navigation Buttons */}
+      {canScrollLeft && (
+        <button
+          onClick={() => scroll('left')}
+          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-12 h-12 bg-white dark:bg-gray-800 rounded-full shadow-lg flex items-center justify-center text-primary hover:scale-110 transition-transform z-10"
+          aria-label="Scroll left"
+        >
+          <ChevronLeft size={24} />
+        </button>
+      )}
+
+      {canScrollRight && (
+        <button
+          onClick={() => scroll('right')}
+          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-12 h-12 bg-white dark:bg-gray-800 rounded-full shadow-lg flex items-center justify-center text-primary hover:scale-110 transition-transform z-10"
+          aria-label="Scroll right"
+        >
+          <ChevronRight size={24} />
+        </button>
+      )}
+
+      {/* Swipe Hint */}
+      <div className="text-center mt-6">
+        <p className="text-sm text-text-secondary">
+          Swipe to explore more physicians →
+        </p>
+      </div>
     </div>
   )
 }

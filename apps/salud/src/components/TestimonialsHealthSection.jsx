@@ -1,132 +1,149 @@
+import { useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Star, CheckCircle } from 'lucide-react'
 
 export default function TestimonialsHealthSection() {
+  const scrollContainerRef = useRef(null)
+
   const testimonials = [
     {
       id: 1,
       author: "Carlos Mendoza",
-      specialty: "Consulta Cardiología",
+      specialty: "Cardiology Consultation",
       rating: 5,
-      text: "Excelente atención. El Dr. Pérez fue muy profesional y me explicó todo detalladamente. Muy recomendado.",
+      text: "Excellent care. Dr. Pérez was very professional and explained everything in detail. Highly recommended.",
       verified: true
     },
     {
       id: 2,
       author: "Lucia Fernández",
-      specialty: "Consulta Dermatología",
+      specialty: "Dermatology Consultation",
       rating: 5,
-      text: "La Dra. López es excelente! Resolvió mi problema de piel en la primer consulta. Gracias!",
+      text: "Dr. López is excellent! She solved my skin problem in the first consultation. Thank you!",
       verified: true
     },
     {
       id: 3,
       author: "Roberto Silva",
-      specialty: "Seguimiento Medicina General",
+      specialty: "General Medicine Follow-up",
       rating: 5,
-      text: "Muy eficiente el sistema de turnos. La Dra. García siempre está disponible cuando la necesito.",
+      text: "Very efficient appointment system. Dr. García is always available when I need her.",
       verified: true
     },
     {
       id: 4,
       author: "Patricia Gómez",
-      specialty: "Consulta Psicología",
+      specialty: "Psychology Consultation",
       rating: 5,
-      text: "Dra. Sofía es empática y profesional. Me ayudó mucho en mis sesiones. Totalmente recomendada.",
+      text: "Dr. Sofía is empathetic and professional. She helped me a lot in my sessions. Totally recommended.",
       verified: true
     },
     {
       id: 5,
       author: "Miguel Torres",
-      specialty: "Consulta Oftalmología",
+      specialty: "Ophthalmology Consultation",
       rating: 5,
-      text: "Rápido, eficiente y profesional. El Dr. Díaz tiene excelente calidez con los pacientes.",
+      text: "Fast, efficient and professional. Dr. Díaz has excellent warmth with patients.",
       verified: true
     },
     {
       id: 6,
       author: "Sofía Ruiz",
-      specialty: "Pediatría - Mi hijo",
+      specialty: "Pediatrics - My son",
       rating: 5,
-      text: "El Dr. Fernando es muy bueno con los niños. Le encanta ir a las consultas. Muy confiable.",
+      text: "Dr. Fernando is very good with children. My son loves going to appointments. Very reliable.",
+      verified: true
+    },
+    {
+      id: 7,
+      author: "Jennifer Adams",
+      specialty: "Orthopedics",
+      rating: 5,
+      text: "Outstanding physical therapy program. My knee recovery exceeded all expectations.",
+      verified: true
+    },
+    {
+      id: 8,
+      author: "David Thompson",
+      specialty: "Neurology",
+      rating: 5,
+      text: "Dr. Martinez took time to thoroughly understand my condition. The care plan has been life-changing.",
       verified: true
     }
   ]
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 }
-    }
-  }
-
-  const itemVariants = {
-    hidden: { opacity: 0, x: -30 },
-    visible: { opacity: 1, x: 0 }
-  }
-
   return (
     <section className="py-20 bg-surface/30">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 md:px-6">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-12"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Experiencias de Nuestros Pacientes
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-text">
+            Patient Experiences
           </h2>
-          <p className="text-lg text-muted max-w-2xl mx-auto">
-            Miles de pacientes satisfechos confían en nuestros profesionales
+          <p className="text-lg text-text-secondary max-w-2xl mx-auto">
+            Thousands of satisfied patients trust our healthcare professionals
           </p>
         </motion.div>
 
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-          {testimonials.map((testimonial) => (
-            <motion.div
-              key={testimonial.id}
-              variants={itemVariants}
-              className="bg-bg rounded-xl p-6 shadow-md hover:shadow-lg transition-all"
-            >
-              {/* Header */}
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-bold">{testimonial.author}</h3>
-                    {testimonial.verified && (
-                      <CheckCircle size={16} className="text-accent" />
-                    )}
+        {/* Testimonials Slider */}
+        <div className="relative">
+          <div
+            ref={scrollContainerRef}
+            className="flex gap-6 overflow-x-scroll scroll-smooth pb-6 snap-x snap-mandatory hide-scrollbar px-1"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {testimonials.map((testimonial, index) => (
+              <motion.div
+                key={testimonial.id}
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="flex-shrink-0 w-[340px] bg-bg rounded-2xl p-6 shadow-md hover:shadow-lg transition-all snap-start border border-border"
+              >
+                {/* Header */}
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-bold text-text">{testimonial.author}</h3>
+                      {testimonial.verified && (
+                        <CheckCircle size={16} className="text-primary" />
+                      )}
+                    </div>
+                    <p className="text-xs text-text-secondary">{testimonial.specialty}</p>
                   </div>
-                  <p className="text-xs text-muted">{testimonial.specialty}</p>
                 </div>
-              </div>
 
-              {/* Rating */}
-              <div className="flex gap-1 mb-3">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    size={16}
-                    className={i < testimonial.rating ? 'fill-accent text-accent' : 'text-gray-400'}
-                  />
-                ))}
-              </div>
+                {/* Rating */}
+                <div className="flex gap-1 mb-3">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      size={16}
+                      className={i < testimonial.rating ? 'fill-primary text-primary' : 'text-gray-300'}
+                    />
+                  ))}
+                </div>
 
-              {/* Text */}
-              <p className="text-muted leading-relaxed">
-                "{testimonial.text}"
-              </p>
-            </motion.div>
-          ))}
-        </motion.div>
+                {/* Text */}
+                <p className="text-text-secondary leading-relaxed text-sm">
+                  "{testimonial.text}"
+                </p>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Swipe Indicator */}
+          <div className="text-center mt-6">
+            <p className="text-sm text-text-secondary">
+              Swipe to read more patient stories →
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   )

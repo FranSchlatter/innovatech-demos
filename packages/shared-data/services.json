@@ -1,0 +1,182 @@
+[
+  {
+    "id": 1,
+    "name": "Blood Tests & Laboratory Work",
+    "category": "Diagnostics",
+    "description": "Comprehensive blood testing including CBC, metabolic panel, lipid profile, and specialized blood work",
+    "icon": "Droplets",
+    "turnaround": "24-48 hours",
+    "cost": "$30 - $150"
+  },
+  {
+    "id": 2,
+    "name": "X-Ray Imaging",
+    "category": "Imaging",
+    "description": "Digital X-ray services for chest, bones, dental, and other diagnostic imaging needs",
+    "icon": "Zap",
+    "turnaround": "Same day",
+    "cost": "$50 - $200"
+  },
+  {
+    "id": 3,
+    "name": "Ultrasound Examination",
+    "category": "Imaging",
+    "description": "Ultrasound imaging for abdominal, obstetric, cardiac, and vascular diagnostics",
+    "icon": "Waves",
+    "turnaround": "Same day",
+    "cost": "$75 - $250"
+  },
+  {
+    "id": 4,
+    "name": "CT Scan",
+    "category": "Imaging",
+    "description": "Advanced CT imaging for detailed cross-sectional diagnosis of internal structures",
+    "icon": "Square",
+    "turnaround": "Same day - 2 days",
+    "cost": "$200 - $600"
+  },
+  {
+    "id": 5,
+    "name": "MRI Imaging",
+    "category": "Imaging",
+    "description": "High-resolution MRI scans for soft tissue, brain, spinal, and joint imaging",
+    "icon": "Radio",
+    "turnaround": "1-3 days",
+    "cost": "$300 - $800"
+  },
+  {
+    "id": 6,
+    "name": "Echocardiogram",
+    "category": "Cardiac",
+    "description": "Ultrasound examination of the heart to assess structure and function",
+    "icon": "Heart",
+    "turnaround": "Same day",
+    "cost": "$200 - $400"
+  },
+  {
+    "id": 7,
+    "name": "Stress Test",
+    "category": "Cardiac",
+    "description": "Cardiac stress testing to evaluate heart response to physical exertion",
+    "icon": "Activity",
+    "turnaround": "Same day",
+    "cost": "$150 - $300"
+  },
+  {
+    "id": 8,
+    "name": "Endoscopy",
+    "category": "Procedures",
+    "description": "Visual examination of the digestive tract using a thin, flexible tube with camera",
+    "icon": "Eye",
+    "turnaround": "1-2 days",
+    "cost": "$300 - $600"
+  },
+  {
+    "id": 9,
+    "name": "Colonoscopy",
+    "category": "Procedures",
+    "description": "Screening and examination of the colon and rectum",
+    "icon": "Eye",
+    "turnaround": "1-2 days",
+    "cost": "$250 - $500"
+  },
+  {
+    "id": 10,
+    "name": "Biopsy",
+    "category": "Procedures",
+    "description": "Tissue sampling for pathological examination and diagnosis",
+    "icon": "Microscope",
+    "turnaround": "3-5 days",
+    "cost": "$200 - $800"
+  },
+  {
+    "id": 11,
+    "name": "Vaccinations",
+    "category": "Preventive",
+    "description": "Routine and travel vaccinations including flu shots, COVID-19, and specialty vaccines",
+    "icon": "Syringe",
+    "turnaround": "Same day",
+    "cost": "$20 - $100"
+  },
+  {
+    "id": 12,
+    "name": "Physical Therapy",
+    "category": "Rehabilitation",
+    "description": "Physical rehabilitation and therapeutic exercise for injury recovery and mobility",
+    "icon": "Activity",
+    "turnaround": "Ongoing",
+    "cost": "$50 - $150 per session"
+  },
+  {
+    "id": 13,
+    "name": "Occupational Therapy",
+    "category": "Rehabilitation",
+    "description": "Therapy to help patients regain independence in daily activities",
+    "icon": "Hand",
+    "turnaround": "Ongoing",
+    "cost": "$60 - $150 per session"
+  },
+  {
+    "id": 14,
+    "name": "Surgical Operations",
+    "category": "Surgery",
+    "description": "General and specialized surgical procedures in our accredited operating rooms",
+    "icon": "Scalpel",
+    "turnaround": "Scheduled",
+    "cost": "$500 - $5000+"
+  },
+  {
+    "id": 15,
+    "name": "Laser Therapy",
+    "category": "Treatment",
+    "description": "Advanced laser treatments for skin conditions, vision correction, and surgical applications",
+    "icon": "Zap",
+    "turnaround": "Same day",
+    "cost": "$100 - $800 per session"
+  },
+  {
+    "id": 16,
+    "name": "Radiation Therapy",
+    "category": "Treatment",
+    "description": "Targeted radiation treatment for cancer and other conditions",
+    "icon": "Radio",
+    "turnaround": "Scheduled course",
+    "cost": "$200 - $500 per session"
+  },
+  {
+    "id": 17,
+    "name": "Mental Health Counseling",
+    "category": "Behavioral",
+    "description": "Individual and group counseling sessions with licensed mental health professionals",
+    "icon": "Brain",
+    "turnaround": "Ongoing",
+    "cost": "$75 - $150 per session"
+  },
+  {
+    "id": 18,
+    "name": "Nutritional Counseling",
+    "category": "Wellness",
+    "description": "Personalized nutrition planning with registered dietitians",
+    "icon": "Apple",
+    "turnaround": "Ongoing",
+    "cost": "$80 - $150 per session"
+  },
+  {
+    "id": 19,
+    "name": "Sleep Study",
+    "category": "Diagnostics",
+    "description": "Overnight sleep study to diagnose sleep disorders",
+    "icon": "Moon",
+    "turnaround": "3-7 days for results",
+    "cost": "$400 - $800"
+  },
+  {
+    "id": 20,
+    "name": "Allergy Testing",
+    "category": "Diagnostics",
+    "description": "Comprehensive allergy testing including skin pricks and blood tests",
+    "icon": "AlertCircle",
+    "turnaround": "1-2 days",
+    "cost": "$100 - $300"
+  }
+]

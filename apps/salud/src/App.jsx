@@ -3,101 +3,156 @@ import Navbar from '@shared-ui/components/Navbar'
 import Footer from '@shared-ui/components/Footer'
 import ContactSection from '@shared-ui/components/ContactSection'
 import { useDarkMode } from '@shared-hooks/useDarkMode'
-import DoctorsGrid from './components/DoctorsGrid'
+
+import HeroSection from './components/HeroSection'
+import AboutSection from './components/AboutSection'
+import SpecialtiesGrid from './components/SpecialtiesGrid'
+import SpecialtyDetailPage from './components/SpecialtyDetailPage'
+import ServicesCarousel from './components/ServicesCarousel'
+import LocationsSection from './components/LocationsSection'
+import EmergenciesSection from './components/EmergenciesSection'
+import DoctorsGridNew from './components/DoctorsGridNew'
+import AppointmentFormNew from './pages/AppointmentFormNew'
 import TestimonialsHealthSection from './components/TestimonialsHealthSection'
-import AppointmentForm from './pages/AppointmentForm'
+
 import './styles.css'
 
 export default function App() {
   const { isDark, toggleTheme } = useDarkMode()
+  const [selectedSpecialty, setSelectedSpecialty] = useState(null)
   const [selectedDoctor, setSelectedDoctor] = useState(null)
+  const [viewMode, setViewMode] = useState('main') // 'main', 'specialty', 'appointment'
 
   const navLinks = [
-    { name: 'Inicio', href: '#home' },
-    { name: 'Especialidades', href: '#doctors' },
-    { name: 'Testimonios', href: '#testimonios' },
-    { name: 'Contacto', href: '#contact' }
+    { 
+      name: 'Home', 
+      href: '#home', 
+      onClick: () => window.scrollTo({ top: 0, behavior: 'smooth' }) 
+    },
+    { 
+      name: 'Specialties', 
+      href: '#specialties-section',
+      onClick: () => document.getElementById('specialties-section')?.scrollIntoView({ behavior: 'smooth' })
+    },
+    { 
+      name: 'Services', 
+      href: '#services',
+      onClick: () => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })
+    },
+    { 
+      name: 'Locations', 
+      href: '#locations',
+      onClick: () => document.getElementById('locations')?.scrollIntoView({ behavior: 'smooth' })
+    },
+    { 
+      name: 'Contact', 
+      href: '#contact',
+      onClick: () => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })
+    }
   ]
 
+  const handleSelectSpecialty = (specialty) => {
+    setSelectedSpecialty(specialty)
+    setViewMode('specialty')
+  }
+
+  const handleBackToMain = () => {
+    setViewMode('main')
+    setSelectedSpecialty(null)
+    setSelectedDoctor(null)
+  }
+
+  const handleSelectDoctor = (doctor) => {
+    setSelectedDoctor(doctor)
+    setViewMode('appointment')
+  }
+
+  // Show specialty detail page
+  if (viewMode === 'specialty' && selectedSpecialty) {
+    return (
+      <div className="min-h-screen bg-bg text-text">
+        <Navbar
+          brand="InnovaTech Hospital"
+          toggleTheme={toggleTheme}
+          isDark={isDark}
+          links={navLinks}
+        />
+
+        <main>
+          <section id="specialty-detail" className="py-12 md:py-20 bg-bg">
+            <div className="container mx-auto px-4 md:px-6">
+              <SpecialtyDetailPage
+                specialty={selectedSpecialty}
+                onBack={handleBackToMain}
+                onSelectDoctor={handleSelectDoctor}
+              />
+            </div>
+          </section>
+
+          {selectedDoctor && (
+            <section id="appointment-section" className="py-16 md:py-24 bg-surface">
+              <div className="container mx-auto px-4 md:px-6">
+                <div className="text-center mb-12">
+                  <h2 className="heading-md mb-4">Book Your Appointment</h2>
+                  <p className="text-lg text-muted">Complete the form below to secure your consultation</p>
+                </div>
+                <AppointmentFormNew
+                  doctor={selectedDoctor}
+                  onBook={(appointment) => {
+                    alert(`✓ Appointment confirmed with ${selectedDoctor.name}\nDate: ${appointment.date} at ${appointment.time}`)
+                    handleBackToMain()
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}
+                />
+              </div>
+            </section>
+          )}
+
+          <section id="contact">
+            <ContactSection />
+          </section>
+        </main>
+
+        <Footer brand="InnovaTech Hospital" />
+      </div>
+    )
+  }
+
+  // Main landing page view
   return (
     <div className="min-h-screen bg-bg text-text">
-      <Navbar 
-        brand="Clínica InnovaTech" 
-        toggleTheme={toggleTheme} 
+      <Navbar
+        brand="InnovaTech Hospital"
+        toggleTheme={toggleTheme}
         isDark={isDark}
         links={navLinks}
       />
 
       <main>
-        {/* Hero */}
-        <div className="relative h-screen w-full overflow-hidden bg-gradient-to-b from-primary/20 to-bg flex items-center">
-          <div className="container mx-auto px-4 text-center z-10">
-            <div className="max-w-4xl mx-auto">
-              <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-                Tu Salud es Nuestra Prioridad
-              </h1>
-              <p className="text-xl md:text-2xl text-muted mb-8">
-                Sistema de turnos online disponible 24/7. Conecta con médicos especialistas certificados sin esperas.
-              </p>
-              <button
-                onClick={() => {
-                  document.getElementById('doctors-section').scrollIntoView({ behavior: 'smooth' })
-                }}
-                className="bg-accent hover:bg-accent/90 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all inline-block"
-              >
-                Agendar Turno Ahora
-              </button>
-            </div>
-          </div>
-          <div className="absolute inset-0 z-0 opacity-10">
-            <img
-              src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1400&h=900&fit=crop"
-              alt="Hospital"
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </div>
+        {/* Hero Section */}
+        <HeroSection />
 
-        {/* Doctors Section */}
-        <section id="doctors-section" className="py-20 bg-bg">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold mb-4">Nuestros Especialistas</h2>
-              <p className="text-lg text-muted max-w-2xl mx-auto">
-                Médicos certificados con experiencia, disponibles para atenderte cuando lo necesites
-              </p>
-            </div>
-            <DoctorsGrid onSelectDoctor={(doctor) => {
-              setSelectedDoctor(doctor)
-              document.getElementById('appointment-section').scrollIntoView({ behavior: 'smooth' })
-            }} />
-          </div>
+        {/* About Section */}
+        <AboutSection />
+
+        {/* Specialties */}
+        <SpecialtiesGrid onSelectSpecialty={handleSelectSpecialty} />
+
+        {/* Services */}
+        <section id="services" className="scroll-mt-20">
+          <ServicesCarousel />
+        </section>
+
+        {/* Emergency Banner */}
+        <EmergenciesSection />
+
+        {/* Locations */}
+        <section id="locations" className="scroll-mt-20">
+          <LocationsSection />
         </section>
 
         {/* Testimonials */}
-        <section id="testimonios">
-          <TestimonialsHealthSection />
-        </section>
-
-        {/* Appointment Form */}
-        {selectedDoctor && (
-          <section id="appointment-section" className="py-20 bg-surface/50">
-            <div className="container mx-auto px-4">
-              <div className="text-center mb-12">
-                <h2 className="text-4xl md:text-5xl font-bold mb-4">Agendar Turno</h2>
-                <p className="text-lg text-muted">Con {selectedDoctor.name}</p>
-              </div>
-              <AppointmentForm 
-                doctor={selectedDoctor}
-                onBook={(appointment) => {
-                  alert(`✓ Turno confirmado con ${selectedDoctor.name}\nFecha: ${appointment.date} a las ${appointment.time}`)
-                  setSelectedDoctor(null)
-                  window.scrollTo({ top: 0, behavior: 'smooth' })
-                }}
-              />
-            </div>
-          </section>
-        )}
+        <TestimonialsHealthSection />
 
         {/* Contact */}
         <section id="contact">
@@ -105,7 +160,7 @@ export default function App() {
         </section>
       </main>
 
-      <Footer brand="Clínica InnovaTech" />
+      <Footer brand="InnovaTech Hospital" />
     </div>
   )
 }

@@ -1,26 +1,34 @@
 {
-  "name": "Hotel Luxury Design System",
-  "version": "2.0.0",
-  "description": "Premium hotel aesthetic - elegant, minimal but refined",
+  "name": "Healthcare Professional Design System",
+  "version": "2.1.0",
+  "description": "Modern healthcare aesthetic - professional, trustworthy, accessible",
   "palette": {
-    "primary": "#2C2C2C",
+    "primary": "#0F3F4C",
     "primary-contrast": "#FFFFFF",
-    "accent": "#8B7355",
-    "gold": "#D4AF37",
-    "background": "#FAFAF8",
-    "surface": "#F3F0ED",
-    "text": "#3D3D3C",
-    "muted": "#8B8B89"
+    "accent": "#0B7377",
+    "accent-light": "#00D9FF",
+    "secondary": "#14919B",
+    "background": "#F8FAFB",
+    "surface": "#FFFFFF",
+    "text": "#1A2332",
+    "muted": "#6B7280",
+    "success": "#10B981",
+    "warning": "#F59E0B",
+    "danger": "#EF4444"
   },
   "darkPalette": {
-    "primary": "#F5F5F5",
-    "primary-contrast": "#1A1A1A",
-    "accent": "#C9A26D",
-    "gold": "#E8C547",
-    "background": "#1A1A1A",
-    "surface": "#262623",
-    "text": "#E8E6E3",
-    "muted": "#A4A3A0"
+    "primary": "#E8F4F8",
+    "primary-contrast": "#0F1419",
+    "accent": "#00D9FF",
+    "accent-light": "#38BDF8",
+    "secondary": "#22D3EE",
+    "background": "#0F1419",
+    "surface": "#1A2332",
+    "text": "#E8F4F8",
+    "muted": "#9CA3AF",
+    "success": "#6EE7B7",
+    "warning": "#FBBF24",
+    "danger": "#FECACA"
   },
   "typography": {
     "font-family-serif": "'Playfair Display', 'Didot', 'Cormorant', Georgia, serif",
@@ -42,9 +50,10 @@
   "layout": {
     "container-width": "1400px",
     "gutter": "1.5rem",
-    "radius": "8px",
-    "shadow-soft": "0 4px 12px rgba(60, 60, 60, 0.08)",
-    "shadow-medium": "0 10px 30px rgba(60, 60, 60, 0.12)"
+    "radius": "12px",
+    "shadow-soft": "0 2px 8px rgba(15, 63, 76, 0.06)",
+    "shadow-medium": "0 8px 24px rgba(15, 63, 76, 0.12)",
+    "shadow-lg": "0 16px 40px rgba(15, 63, 76, 0.16)"
   },
   "transitions": {
     "fast": "200ms",

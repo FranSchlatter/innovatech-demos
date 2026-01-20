@@ -1,13 +1,13 @@
 /* Health Theme - Overwrites global styles */
-:root,
-html,
-body {
+/* Higher specificity to ensure override */
+:root {
   /* Primary Teal/Aqua Color Scheme - Healthy & Calming */
   --color-primary: #0891B2 !important;
   --color-primary-dark: #0E7490 !important;
   --color-primary-light: #06B6D4 !important;
   --color-primary-contrast: #ffffff !important;
 
+  --color-secondary: #14B8A6 !important;
   --color-accent: #14B8A6 !important;
   --color-accent-dark: #0D9488 !important;
   --color-accent-light: #5EEAD4 !important;
@@ -30,19 +30,54 @@ body {
   --color-error: #EF4444 !important;
   --color-info: #3B82F6 !important;
 
-  /* Override hotel-specific colors */
+  /* Override ALL hotel-specific colors to teal/cyan */
   --color-gold: #14B8A6 !important;
+  --color-bronze: #14B8A6 !important;
 }
 
-/* Dark mode support */
-[data-theme="dark"] {
-  --color-primary: #06B6D4 !important;
-  --color-primary-contrast: #0F172A !important;
+html,
+body {
+  /* Ensure body also gets the variables */
+  --color-primary: #0891B2 !important;
   --color-accent: #14B8A6 !important;
+  --color-gold: #14B8A6 !important;
+  --color-bronze: #14B8A6 !important;
+}
+
+/* Dark mode support - Higher specificity */
+html[data-theme="dark"],
+html[data-theme="dark"] body,
+[data-theme="dark"] {
+  /* Primary Colors - Brighter teal/cyan for dark backgrounds */
+  --color-primary: #06B6D4 !important;
+  --color-primary-dark: #0891B2 !important;
+  --color-primary-light: #22D3EE !important;
+  --color-primary-contrast: #0F172A !important;
+
+  --color-secondary: #14B8A6 !important;
+  --color-accent: #14B8A6 !important;
+  --color-accent-dark: #0D9488 !important;
+  --color-accent-light: #2DD4BF !important;
+
+  /* Dark Backgrounds */
   --color-bg: #0F172A !important;
   --color-surface: #1E293B !important;
+
+  /* Text Colors - High contrast for readability */
   --color-text: #F1F5F9 !important;
   --color-text-secondary: #94A3B8 !important;
   --color-muted: #64748B !important;
+
+  /* Border */
   --color-border: #334155 !important;
+
+  /* Status Colors */
+  --color-success: #10B981 !important;
+  --color-warning: #F59E0B !important;
+  --color-error: #EF4444 !important;
+  --color-info: #3B82F6 !important;
+
+  /* Override ALL hotel colors in dark mode */
+  --color-gold: #14B8A6 !important;
+  --color-bronze: #14B8A6 !important;
 }

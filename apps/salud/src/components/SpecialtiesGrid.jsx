@@ -40,7 +40,7 @@ export default function SpecialtiesGrid({ onSelectSpecialty }) {
   }
 
   return (
-    <section id="specialties" className="py-20 md:py-28 bg-surface">
+    <section id="specialties" className="py-16 md:py-24 bg-surface">
       <div className="container mx-auto px-4 md:px-6">
         {/* Section Header */}
         <motion.div
@@ -48,12 +48,12 @@ export default function SpecialtiesGrid({ onSelectSpecialty }) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          className="text-center mb-10 md:mb-14"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-text">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4 text-text">
             Our Medical Specialties
           </h2>
-          <p className="text-lg md:text-xl text-text-secondary max-w-3xl mx-auto">
+          <p className="text-base md:text-lg lg:text-xl text-text-secondary max-w-3xl mx-auto">
             Expert care across 20 specialized medical departments
           </p>
         </motion.div>
@@ -64,7 +64,7 @@ export default function SpecialtiesGrid({ onSelectSpecialty }) {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-50px" }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5"
         >
           {specialtiesData.map((specialty) => {
             const Icon = iconMap[specialty.icon] || Heart
@@ -73,16 +73,16 @@ export default function SpecialtiesGrid({ onSelectSpecialty }) {
                 key={specialty.id}
                 variants={itemVariants}
                 whileHover={{ y: -6 }}
-                className="group cursor-pointer bg-bg border border-border rounded-xl p-5 hover:border-primary/50 hover:shadow-lg transition-all"
+                className="group cursor-pointer bg-bg border border-border rounded-xl p-4 md:p-5 hover:border-primary/50 hover:shadow-lg transition-all"
                 onClick={() => onSelectSpecialty(specialty)}
               >
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3 md:gap-4">
                   {/* Icon - just colored, no background */}
-                  <Icon className="w-8 h-8 text-primary flex-shrink-0 group-hover:scale-110 transition-transform" strokeWidth={1.5} />
+                  <Icon className="w-7 h-7 md:w-8 md:h-8 text-primary flex-shrink-0 group-hover:scale-110 transition-transform" strokeWidth={1.5} />
 
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     {/* Title */}
-                    <h3 className="text-lg font-bold mb-1 text-text group-hover:text-primary transition-colors">
+                    <h3 className="text-base md:text-lg font-bold mb-1 text-text group-hover:text-primary transition-colors">
                       {specialty.name}
                     </h3>
 
@@ -93,8 +93,9 @@ export default function SpecialtiesGrid({ onSelectSpecialty }) {
 
                     {/* Footer Info */}
                     <div className="flex items-center justify-between pt-3 border-t border-border">
-                      <div className="text-xs text-text-secondary">
-                        From ${specialty.consultationPrice}
+                      <div className="text-xs md:text-sm">
+                        <span className="text-muted">From </span>
+                        <span className="text-accent font-semibold">{specialty.cost}</span>
                       </div>
                       <div className="text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
                         Learn More →

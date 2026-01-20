@@ -1,9 +1,10 @@
-import { useRef } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Star, CheckCircle } from 'lucide-react'
 
 export default function TestimonialsHealthSection() {
-  const scrollContainerRef = useRef(null)
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [itemsPerView, setItemsPerView] = useState(3)
 
   const testimonials = [
     {
@@ -72,76 +73,123 @@ export default function TestimonialsHealthSection() {
     }
   ]
 
+  // Adjust items per view based on screen size
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 640) setItemsPerView(1)
+      else if (window.innerWidth < 1024) setItemsPerView(2)
+      else setItemsPerView(3)
+    }
+
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const totalSlides = Math.ceil(testimonials.length / itemsPerView)
+
+  const nextSlide = () => {
+    setCurrentIndex((prev) => (prev + 1) % totalSlides)
+  }
+
+  const prevSlide = () => {
+    setCurrentIndex((prev) => (prev - 1 + totalSlides) % totalSlides)
+  }
+
+  const visibleTestimonials = testimonials.slice(
+    currentIndex * itemsPerView,
+    currentIndex * itemsPerView + itemsPerView
+  )
+
   return (
-    <section className="py-20 bg-surface/30">
+    <section className="py-16 md:py-24 bg-surface">
       <div className="container mx-auto px-4 md:px-6">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-12"
+          className="text-center mb-10 md:mb-14"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-text">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4 text-text">
             Patient Experiences
           </h2>
-          <p className="text-lg text-text-secondary max-w-2xl mx-auto">
+          <p className="text-base md:text-lg text-text-secondary max-w-2xl mx-auto">
             Thousands of satisfied patients trust our healthcare professionals
           </p>
         </motion.div>
 
-        {/* Testimonials Slider */}
+        {/* Testimonials Carousel */}
         <div className="relative">
-          <div
-            ref={scrollContainerRef}
-            className="flex gap-6 overflow-x-scroll scroll-smooth pb-6 snap-x snap-mandatory hide-scrollbar px-1"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={testimonial.id}
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="flex-shrink-0 w-[340px] bg-bg rounded-2xl p-6 shadow-md hover:shadow-lg transition-all snap-start border border-border"
-              >
-                {/* Header */}
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold text-text">{testimonial.author}</h3>
-                      {testimonial.verified && (
-                        <CheckCircle size={16} className="text-primary" />
-                      )}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentIndex}
+              initial={{ opacity: 0, x: 100 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -100 }}
+              transition={{ duration: 0.4 }}
+              className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6"
+            >
+              {visibleTestimonials.map((testimonial, index) => (
+                <motion.div
+                  key={testimonial.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  className="bg-bg rounded-xl p-5 md:p-6 shadow-md hover:shadow-lg transition-all border border-border"
+                >
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-bold text-text text-sm md:text-base">{testimonial.author}</h3>
+                        {testimonial.verified && (
+                          <CheckCircle size={16} className="text-primary flex-shrink-0" />
+                        )}
+                      </div>
+                      <p className="text-xs text-text-secondary">{testimonial.specialty}</p>
                     </div>
-                    <p className="text-xs text-text-secondary">{testimonial.specialty}</p>
                   </div>
-                </div>
 
-                {/* Rating */}
-                <div className="flex gap-1 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      size={16}
-                      className={i < testimonial.rating ? 'fill-primary text-primary' : 'text-gray-300'}
-                    />
-                  ))}
-                </div>
+                  {/* Rating */}
+                  <div className="flex gap-1 mb-3">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        size={14}
+                        className={i < testimonial.rating ? 'fill-accent text-accent' : 'text-border'}
+                      />
+                    ))}
+                  </div>
 
-                {/* Text */}
-                <p className="text-text-secondary leading-relaxed text-sm">
-                  "{testimonial.text}"
-                </p>
-              </motion.div>
-            ))}
-          </div>
+                  {/* Text */}
+                  <p className="text-text-secondary leading-relaxed text-sm">
+                    "{testimonial.text}"
+                  </p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </AnimatePresence>
 
-          {/* Swipe Indicator */}
-          <div className="text-center mt-6">
-            <p className="text-sm text-text-secondary">
-              Swipe to read more patient stories →
-            </p>
+          {/* Minimal Navigation */}
+          <div className="flex flex-col items-center gap-3 mt-8 md:mt-10">
+            {/* Dot Indicators */}
+            <div className="flex gap-2">
+              {Array.from({ length: totalSlides }).map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentIndex(idx)}
+                  className={`h-1.5 transition-all duration-300 rounded-full ${
+                    idx === currentIndex
+                      ? 'bg-accent w-8'
+                      : 'bg-border w-1.5 hover:bg-accent/50'
+                  }`}
+                  aria-label={`Go to testimonial page ${idx + 1}`}
+                />
+              ))}
+            </div>
+
+            {/* Swipe Hint */}
+            <p className="text-xs text-muted">Swipe to read more reviews</p>
           </div>
         </div>
       </div>

@@ -15,6 +15,7 @@ export default function AppointmentForm({ doctor, onBook }) {
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isBooked, setIsBooked] = useState(false)
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -27,14 +28,19 @@ export default function AppointmentForm({ doctor, onBook }) {
   const handleSubmit = (e) => {
     e.preventDefault()
     if (!formData.patientName || !formData.email || !formData.date || !formData.time) {
-      alert('Please fill in all required fields')
+      alert('Por favor completa todos los campos requeridos')
       return
     }
     setIsSubmitting(true)
     setTimeout(() => {
-      onBook(formData)
       setIsSubmitting(false)
-    }, 800)
+      setIsBooked(true)
+      onBook(formData)
+      // Reset after 3 seconds
+      setTimeout(() => {
+        setIsBooked(false)
+      }, 3000)
+    }, 1000)
   }
 
   // Generate available dates (next 30 days)
@@ -231,12 +237,16 @@ export default function AppointmentForm({ doctor, onBook }) {
           {/* Submit Button */}
           <motion.button
             type="submit"
-            disabled={isSubmitting || !formData.agreeTerms}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="w-full bg-accent hover:bg-secondary disabled:bg-gray-400 text-white font-bold py-4 rounded-lg transition-all duration-300 shadow-lg"
+            disabled={isSubmitting || isBooked || !formData.agreeTerms}
+            whileHover={{ scale: isBooked ? 1 : 1.02 }}
+            whileTap={{ scale: isBooked ? 1 : 0.98 }}
+            className={`w-full font-bold py-4 rounded-lg transition-all duration-300 shadow-lg ${
+              isBooked
+                ? 'bg-success text-white cursor-default'
+                : 'bg-accent hover:bg-secondary disabled:bg-gray-400 text-white'
+            }`}
           >
-            {isSubmitting ? 'Booking...' : 'Confirm Appointment'}
+            {isBooked ? '✓ Turno Solicitado' : isSubmitting ? 'Procesando...' : 'Confirmar Turno'}
           </motion.button>
 
           {/* Info */}

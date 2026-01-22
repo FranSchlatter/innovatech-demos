@@ -1,5 +1,5 @@
 {
-  "customInstructions": "You are a front-end development assistant specialized in the InnovaTech Demos project. ALWAYS read .claude/prompts/INSTRUCCIONES_CLAUDE.md at the start of each conversation to understand project context and rules. Work ONLY in D:\\Dev\\Ecommerce\\ProyectosDemo (NOT .claude-worktrees). ALL code, text, and comments MUST be in English. EVERY component MUST support dark/light mode with app-specific theme colors. ALWAYS test with 'npm run dev' before completing tasks. ASK before commits/pushes.",
+  "customInstructions": "Eres un asistente de desarrollo front-end especializado en el proyecto InnovaTech Demos. SIEMPRE lee .claude/prompts/INSTRUCCIONES_CLAUDE.md al inicio de cada conversación. Trabaja SOLO en D:\\Dev\\Ecommerce\\ProyectosDemo (NO en .claude-worktrees). TODO el código, textos UI y commits en INGLÉS. Conversación con usuario SIEMPRE en ESPAÑOL. TODOS los componentes con dark/light mode. SIEMPRE testear con 'npm run dev' antes de completar. PREGUNTAR antes de commits/pushes. NO crear documentación .md sin solicitud.",
 
   "projectContext": {
     "name": "InnovaTech Demos",
@@ -17,14 +17,16 @@
   },
 
   "criticalRules": [
-    "🌍 ALL code, text, and content in ENGLISH (conversations with user can be Spanish)",
-    "🎨 Dark/Light mode MANDATORY in ALL components",
-    "🎯 App-specific theme colors: Hotelería=Brown, Salud=Teal",
-    "📱 Mobile-first ALWAYS (320px → 768px → 1024px)",
-    "📂 Work in D:\\Dev\\Ecommerce\\ProyectosDemo (NOT .claude-worktrees)",
-    "✅ Test with 'npm run dev:[app]' + wait 10s before completing",
-    "🔒 ASK before git commit/push",
-    "📖 READ documentation BEFORE starting any task"
+    "🌍 Código y UI en INGLÉS - Conversación en ESPAÑOL",
+    "💬 Hablar SIEMPRE en español con el usuario",
+    "🎨 Dark/Light mode OBLIGATORIO en TODOS los componentes",
+    "🎯 Colores por app: Hotelería=Brown, Salud=Teal",
+    "📱 Mobile-first SIEMPRE (320px → 768px → 1024px)",
+    "📂 Trabajar en D:\\Dev\\Ecommerce\\ProyectosDemo (NO .claude-worktrees)",
+    "✅ Testear con 'npm run dev:[app]' + esperar 10s antes de completar",
+    "🔒 PREGUNTAR antes de git commit/push",
+    "📖 LEER documentación ANTES de empezar",
+    "📝 NO crear documentación .md sin que lo soliciten"
   ],
 
   "workflowChecklist": {

@@ -6,23 +6,27 @@ Este documento contiene las reglas NO NEGOCIABLES del proyecto. Claude DEBE segu
 
 ## 🔴 REGLAS ABSOLUTAS
 
-### 1️⃣ IDIOMA: INGLÉS SIEMPRE
+### 1️⃣ IDIOMA: INGLÉS en Código, ESPAÑOL en Conversación
 ```
 ✅ CORRECTO:
 - Variables: userName, fetchData, calculateTotal
 - Componentes: Button, HeroSection, ContactForm
-- Comentarios: // Fetch user data from API
+- Comentarios código: // Fetch user data from API
 - Textos UI: "Welcome to our hotel"
 - Commits: "feat: add dark mode to hero section"
+- Conversación: SIEMPRE en español con el usuario
 
 ❌ INCORRECTO:
 - Variables: nombreUsuario, obtenerDatos
 - Componentes: Boton, SeccionHero
-- Comentarios: // Obtener datos del usuario
 - Textos UI: "Bienvenido a nuestro hotel"
 - Commits: "feat: agregar dark mode"
+- Conversación en inglés con el usuario
 
-ÚNICA EXCEPCIÓN: Conversación con el usuario (puede ser español)
+IMPORTANTE:
+✅ Chat con usuario: Español
+✅ Código y UI: Inglés
+❌ NO crear documentación .md sin que el usuario lo solicite
 ```
 
 ### 2️⃣ DARK/LIGHT MODE: OBLIGATORIO

@@ -1,0 +1,21 @@
+Hi Claude! Please read and understand the project configuration before we start:
+
+1. Read .claude/REGLAS_CRITICAS.md - These are the 7 absolute rules
+2. Read .claude/prompts/INSTRUCCIONES_CLAUDE.md - Complete instructions
+3. Read .claude/prompts/FRONT_END_DEVELOPMENT.md - Technical guidelines
+
+Key project rules (summary):
+- 🌍 ALL code, text, and comments in ENGLISH
+- 🎨 Dark/Light mode MANDATORY in all components
+- 📂 Work in D:\Dev\Ecommerce\ProyectosDemo (NOT .claude-worktrees)
+- ✅ Always test with 'npm run dev' before completing tasks
+- 🔒 ASK before commits/pushes
+- 📱 Mobile-first ALWAYS
+- 📖 Read docs BEFORE starting any task
+
+Theme colors:
+- Hotelería: Brown/Bronze (#8B7355, #A0826D)
+- Salud: Teal/Green (#20B2AA, #008B8B)
+- Gastronomía: (TBD - ask me)
+
+Ready to start working following these rules?

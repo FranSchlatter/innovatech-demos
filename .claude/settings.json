@@ -1,0 +1,108 @@
+{
+  "customInstructions": "You are a front-end development assistant specialized in the InnovaTech Demos project. ALWAYS read .claude/prompts/INSTRUCCIONES_CLAUDE.md at the start of each conversation to understand project context and rules. Work ONLY in D:\\Dev\\Ecommerce\\ProyectosDemo (NOT .claude-worktrees). ALL code, text, and comments MUST be in English. EVERY component MUST support dark/light mode with app-specific theme colors. ALWAYS test with 'npm run dev' before completing tasks. ASK before commits/pushes.",
+
+  "projectContext": {
+    "name": "InnovaTech Demos",
+    "type": "Monorepo de landing pages",
+    "workingDirectory": "D:\\Dev\\Ecommerce\\ProyectosDemo",
+    "apps": ["hoteleria", "salud", "gastronomia"],
+    "phase": "Landing pages hardcoded (next phase: management systems)",
+    "sharedPackages": ["shared-ui", "shared-styles", "shared-hooks", "shared-data"],
+    "language": "English (code, content, comments, commits)",
+    "themeColors": {
+      "hoteleria": "Brown/Bronze (#8B7355, #A0826D)",
+      "salud": "Teal/Green (#20B2AA, #008B8B)",
+      "gastronomia": "TBD - Ask user"
+    }
+  },
+
+  "criticalRules": [
+    "🌍 ALL code, text, and content in ENGLISH (conversations with user can be Spanish)",
+    "🎨 Dark/Light mode MANDATORY in ALL components",
+    "🎯 App-specific theme colors: Hotelería=Brown, Salud=Teal",
+    "📱 Mobile-first ALWAYS (320px → 768px → 1024px)",
+    "📂 Work in D:\\Dev\\Ecommerce\\ProyectosDemo (NOT .claude-worktrees)",
+    "✅ Test with 'npm run dev:[app]' + wait 10s before completing",
+    "🔒 ASK before git commit/push",
+    "📖 READ documentation BEFORE starting any task"
+  ],
+
+  "workflowChecklist": {
+    "beforeStarting": [
+      "Read .claude/prompts/INSTRUCCIONES_CLAUDE.md",
+      "Read .claude/prompts/FRONT_END_DEVELOPMENT.md",
+      "Read relevant existing code",
+      "Verify working in D:\\Dev\\Ecommerce\\ProyectosDemo"
+    ],
+    "duringDevelopment": [
+      "Check if component exists in shared-ui",
+      "Use design tokens from shared-styles",
+      "Implement dark/light mode",
+      "Use app-specific theme colors",
+      "Mobile-first responsive design",
+      "All text in English",
+      "Accessibility basics (semantic HTML, alt text)"
+    ],
+    "beforeCompleting": [
+      "Run npm run dev:[app]",
+      "Wait 10 seconds",
+      "Check for console errors",
+      "Verify responsive on mobile/tablet/desktop",
+      "Test dark/light mode toggle",
+      "Validate English text only"
+    ],
+    "beforeCommit": [
+      "ASK user for confirmation",
+      "Use conventional commits (feat:, fix:, refactor:)",
+      "Write commit message in English",
+      "Include Co-Authored-By: Claude"
+    ]
+  },
+
+  "designTokens": {
+    "spacing": "4px, 8px, 16px, 24px, 32px, 48px, 64px",
+    "breakpoints": {
+      "mobile": "320px - 767px",
+      "tablet": "768px - 1023px",
+      "desktop": "1024px+"
+    },
+    "transitions": "0.2s ease, 0.3s ease-in-out"
+  },
+
+  "namingConventions": {
+    "components": "PascalCase (Button, HeroSection)",
+    "files": "ComponentName.tsx, ComponentName.module.css",
+    "hooks": "camelCase with 'use' prefix (useTheme, useScroll)",
+    "utils": "camelCase (formatDate, validateEmail)",
+    "types": "PascalCase (ButtonProps, ThemeConfig)"
+  },
+
+  "importOrder": [
+    "1. External libraries (React, Next, third-party)",
+    "2. Shared packages (@shared/ui, @shared/hooks)",
+    "3. Local components",
+    "4. Types/Interfaces",
+    "5. Styles and assets"
+  ],
+
+  "reminders": [
+    "🌍 English everywhere",
+    "🎨 Dark/Light mode always",
+    "📱 Mobile-first always",
+    "📂 D:\\Dev\\Ecommerce\\ProyectosDemo location",
+    "✅ Test before completing",
+    "🔒 Ask before commit/push",
+    "📖 Read docs first",
+    "♻️ Reuse from shared-ui",
+    "🎯 Use design tokens, not hardcoded values",
+    "📝 Data in separate files, not inline JSX"
+  ],
+
+  "hooks": {
+    "description": "Hooks to automate common tasks",
+    "examples": {
+      "beforeCommit": "npm run lint",
+      "afterFileChange": "echo 'File modified: ${file}'"
+    }
+  }
+}

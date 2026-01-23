@@ -1,0 +1,389 @@
+{
+  "dishes": [
+    {
+      "id": 1,
+      "name": "Truffle Mushroom Risotto",
+      "category": "Appetizers",
+      "price": 18,
+      "image": "https://images.unsplash.com/photo-1476124369491-c656e90c2b61?w=600&h=400&fit=crop",
+      "description": "Luxurious Italian comfort food at its finest. Creamy Arborio rice slow-cooked to perfection, elevated with aromatic black truffle oil and a medley of wild forest mushrooms, finished with aged Parmesan.",
+      "ingredients": ["Arborio Rice", "Black Truffle Oil", "Wild Mushrooms", "Parmesan", "White Wine", "Vegetable Broth"],
+      "preparationTime": 25,
+      "rating": 4.8,
+      "reviews": 142,
+      "tags": ["Vegetarian", "Premium"]
+    },
+    {
+      "id": 2,
+      "name": "Crispy Calamari",
+      "category": "Appetizers",
+      "price": 16,
+      "image": "https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=600&h=400&fit=crop",
+      "description": "Mediterranean classic with a kick. Tender squid rings delicately breaded with seasoned flour and flash-fried until golden. Accompanied by homemade spicy aioli and fresh lemon wedges.",
+      "ingredients": ["Fresh Squid", "Seasoned Flour", "Garlic Aioli", "Lemon", "Paprika", "Parsley"],
+      "preparationTime": 15,
+      "rating": 4.6,
+      "reviews": 98,
+      "tags": ["Seafood", "Spicy"]
+    },
+    {
+      "id": 3,
+      "name": "Bruschetta Trio",
+      "category": "Appetizers",
+      "price": 14,
+      "image": "https://images.unsplash.com/photo-1572695157366-5e585ab2b69f?w=600&h=400&fit=crop",
+      "description": "A vibrant Italian appetizer featuring three flavor variations. Artisan sourdough toasted to perfection, topped with classic tomato basil, creamy mozzarella with basil pesto, and sweet roasted red peppers.",
+      "ingredients": ["Sourdough Bread", "Tomatoes", "Fresh Mozzarella", "Basil Pesto", "Roasted Peppers", "Olive Oil"],
+      "preparationTime": 12,
+      "rating": 4.7,
+      "reviews": 156,
+      "tags": ["Vegetarian", "Light"]
+    },
+    {
+      "id": 4,
+      "name": "Asian Lettuce Wraps",
+      "category": "Appetizers",
+      "price": 15,
+      "image": "https://images.unsplash.com/photo-1623428187969-5da2dcea5ebf?w=600&h=400&fit=crop",
+      "description": "Light and flavorful Asian-inspired appetizer. Crisp butter lettuce cups filled with wok-tossed chicken, water chestnuts, and fresh vegetables, glazed with sweet hoisin sauce.",
+      "ingredients": ["Butter Lettuce", "Chicken", "Water Chestnuts", "Carrots", "Hoisin Sauce", "Ginger", "Scallions"],
+      "preparationTime": 18,
+      "rating": 4.5,
+      "reviews": 89,
+      "tags": ["Gluten-Free", "Asian Fusion"]
+    },
+    {
+      "id": 5,
+      "name": "Shrimp Ceviche",
+      "category": "Appetizers",
+      "price": 17,
+      "image": "https://images.unsplash.com/photo-1595777216218-fef3a4e5d1e2?w=600&h=400&fit=crop",
+      "description": "Fresh and zesty Latin American delicacy. Wild-caught shrimp marinated in fresh citrus juices with cilantro, red onions, and creamy avocado. A refreshing burst of coastal flavors.",
+      "ingredients": ["Fresh Shrimp", "Lime Juice", "Lemon Juice", "Cilantro", "Red Onion", "Avocado", "Jalapeño"],
+      "preparationTime": 10,
+      "rating": 4.9,
+      "reviews": 201,
+      "tags": ["Seafood", "Light", "Gluten-Free"]
+    },
+    {
+      "id": 6,
+      "name": "Grilled Salmon Fillet",
+      "category": "Main Courses",
+      "price": 32,
+      "image": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=600&h=400&fit=crop",
+      "description": "Premium Atlantic salmon grilled to perfection with a beautiful char. Served atop tender asparagus spears and drizzled with classic lemon butter sauce. A heart-healthy choice that doesn't compromise on flavor.",
+      "ingredients": ["Atlantic Salmon", "Asparagus", "Butter", "Lemon", "Garlic", "White Wine", "Fresh Herbs"],
+      "preparationTime": 30,
+      "rating": 4.9,
+      "reviews": 287,
+      "tags": ["Seafood", "Gluten-Free", "Premium"]
+    },
+    {
+      "id": 7,
+      "name": "Beef Tenderloin Steak",
+      "category": "Main Courses",
+      "price": 42,
+      "image": "https://images.unsplash.com/photo-1546833998-877b37c2e5c6?w=600&h=400&fit=crop",
+      "description": "The crown jewel of steaks. Premium 8oz center-cut tenderloin, grilled to your exact preference and topped with compound herb butter. Accompanied by seasonal roasted vegetables and a rich red wine reduction.",
+      "ingredients": ["Beef Tenderloin", "Herb Butter", "Red Wine", "Roasted Vegetables", "Shallots", "Thyme"],
+      "preparationTime": 35,
+      "rating": 5.0,
+      "reviews": 412,
+      "tags": ["Premium", "Signature"]
+    },
+    {
+      "id": 8,
+      "name": "Chicken Parmesan",
+      "category": "Main Courses",
+      "price": 26,
+      "image": "https://images.unsplash.com/photo-1632778149955-e80f8ceca2e8?w=600&h=400&fit=crop",
+      "description": "Italian-American comfort classic. Tender chicken breast breaded with Italian herbs, pan-fried until golden, then blanketed with house-made marinara and melted mozzarella. Served over al dente spaghetti.",
+      "ingredients": ["Chicken Breast", "Marinara Sauce", "Mozzarella", "Breadcrumbs", "Spaghetti", "Parmesan", "Basil"],
+      "preparationTime": 28,
+      "rating": 4.7,
+      "reviews": 198,
+      "tags": ["Italian", "Comfort Food"]
+    },
+    {
+      "id": 9,
+      "name": "Vegetarian Buddha Bowl",
+      "category": "Main Courses",
+      "price": 22,
+      "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&h=400&fit=crop",
+      "description": "A colorful celebration of plant-based nutrition. Fluffy quinoa topped with rainbow roasted vegetables, crispy chickpeas, creamy avocado, and drizzled with nutty tahini dressing. Wholesome and satisfying.",
+      "ingredients": ["Quinoa", "Roasted Vegetables", "Chickpeas", "Avocado", "Tahini", "Kale", "Sweet Potato"],
+      "preparationTime": 20,
+      "rating": 4.6,
+      "reviews": 134,
+      "tags": ["Vegetarian", "Vegan", "Healthy"]
+    },
+    {
+      "id": 10,
+      "name": "Seafood Paella",
+      "category": "Main Courses",
+      "price": 36,
+      "image": "https://images.unsplash.com/photo-1534080564583-6be75777b70a?w=600&h=400&fit=crop",
+      "description": "Authentic Spanish coastal cuisine. Saffron-infused rice cooked in a traditional paella pan with jumbo shrimp, plump mussels, tender calamari, and aromatic Spanish spices. A feast for the senses.",
+      "ingredients": ["Bomba Rice", "Shrimp", "Mussels", "Calamari", "Saffron", "Bell Peppers", "Peas", "Garlic"],
+      "preparationTime": 40,
+      "rating": 4.8,
+      "reviews": 245,
+      "tags": ["Seafood", "Spanish", "Premium"]
+    },
+    {
+      "id": 11,
+      "name": "Lamb Rack with Mint Sauce",
+      "category": "Main Courses",
+      "price": 38,
+      "image": "https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=600&h=400&fit=crop",
+      "description": "Elegant New Zealand lamb rack, herb-crusted and roasted to tender perfection. Served with crispy rosemary potatoes and traditional mint jelly. A sophisticated choice for discerning palates.",
+      "ingredients": ["Lamb Rack", "Mint Jelly", "Rosemary Potatoes", "Garlic", "Dijon Mustard", "Breadcrumbs"],
+      "preparationTime": 32,
+      "rating": 4.9,
+      "reviews": 167,
+      "tags": ["Premium", "Gluten-Free"]
+    },
+    {
+      "id": 12,
+      "name": "Thai Red Curry",
+      "category": "Main Courses",
+      "price": 24,
+      "image": "https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?w=600&h=400&fit=crop",
+      "description": "Authentic Thai comfort in a bowl. Rich coconut curry simmered with tender chicken, bamboo shoots, Thai basil, and vibrant vegetables. Aromatic, spicy, and deeply satisfying. Served with fragrant jasmine rice.",
+      "ingredients": ["Chicken", "Coconut Milk", "Red Curry Paste", "Bamboo Shoots", "Thai Basil", "Bell Peppers", "Jasmine Rice"],
+      "preparationTime": 25,
+      "rating": 4.7,
+      "reviews": 189,
+      "tags": ["Spicy", "Asian Fusion"]
+    },
+    {
+      "id": 13,
+      "name": "Lobster Linguine",
+      "category": "Main Courses",
+      "price": 44,
+      "image": "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=600&h=400&fit=crop",
+      "description": "Luxurious Italian seafood masterpiece. Fresh lobster tail meat tossed with al dente linguine in a delicate garlic white wine sauce, finished with butter, fresh herbs, and a touch of cream. Pure indulgence.",
+      "ingredients": ["Lobster Tail", "Linguine", "White Wine", "Garlic", "Butter", "Cherry Tomatoes", "Parsley"],
+      "preparationTime": 35,
+      "rating": 5.0,
+      "reviews": 324,
+      "tags": ["Seafood", "Premium", "Signature"]
+    },
+    {
+      "id": 14,
+      "name": "Tiramisu",
+      "category": "Desserts",
+      "price": 12,
+      "image": "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=600&h=400&fit=crop",
+      "description": "The iconic Italian dessert done right. Delicate ladyfinger cookies soaked in espresso and coffee liqueur, layered with rich mascarpone cream, and dusted with premium cocoa powder. A coffee lover's dream.",
+      "ingredients": ["Ladyfingers", "Espresso", "Mascarpone", "Coffee Liqueur", "Cocoa Powder", "Eggs", "Sugar"],
+      "preparationTime": 5,
+      "rating": 4.8,
+      "reviews": 278,
+      "tags": ["Italian", "Coffee"]
+    },
+    {
+      "id": 15,
+      "name": "Chocolate Lava Cake",
+      "category": "Desserts",
+      "price": 14,
+      "image": "https://images.unsplash.com/photo-1624353365286-3f8d62daad51?w=600&h=400&fit=crop",
+      "description": "Decadent chocolate indulgence. Individual cake with a crispy exterior hiding a molten chocolate center that flows like lava when cut. Served warm with a scoop of vanilla bean ice cream. Pure bliss.",
+      "ingredients": ["Dark Chocolate", "Butter", "Eggs", "Sugar", "Flour", "Vanilla Ice Cream"],
+      "preparationTime": 15,
+      "rating": 4.9,
+      "reviews": 412,
+      "tags": ["Signature", "Chocolate"]
+    },
+    {
+      "id": 16,
+      "name": "Crème Brûlée",
+      "category": "Desserts",
+      "price": 11,
+      "image": "https://images.unsplash.com/photo-1470124182917-cc6e71b22ecc?w=600&h=400&fit=crop",
+      "description": "Classic French elegance in dessert form. Silky vanilla bean custard topped with a perfectly caramelized sugar crust that cracks under your spoon. Garnished with fresh seasonal berries.",
+      "ingredients": ["Heavy Cream", "Vanilla Bean", "Egg Yolks", "Sugar", "Fresh Berries"],
+      "preparationTime": 8,
+      "rating": 4.7,
+      "reviews": 196,
+      "tags": ["French", "Vegetarian"]
+    },
+    {
+      "id": 17,
+      "name": "Mango Cheesecake",
+      "category": "Desserts",
+      "price": 13,
+      "image": "https://images.unsplash.com/photo-1533134486753-c833f0ed4866?w=600&h=400&fit=crop",
+      "description": "Tropical twist on a timeless favorite. Velvety cream cheese filling swirled with fresh mango purée, resting on a buttery graham cracker crust. Topped with mango compote and fresh fruit.",
+      "ingredients": ["Cream Cheese", "Fresh Mango", "Graham Crackers", "Sugar", "Butter", "Sour Cream"],
+      "preparationTime": 6,
+      "rating": 4.6,
+      "reviews": 145,
+      "tags": ["Tropical", "Vegetarian"]
+    },
+    {
+      "id": 18,
+      "name": "Espresso Martini",
+      "category": "Drinks",
+      "price": 14,
+      "image": "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600&h=400&fit=crop",
+      "description": "The perfect pick-me-up cocktail. Premium vodka shaken with freshly pulled espresso, coffee liqueur, and a touch of simple syrup. Served ice-cold with a beautiful crema foam top.",
+      "ingredients": ["Vodka", "Fresh Espresso", "Coffee Liqueur", "Simple Syrup", "Ice"],
+      "preparationTime": 5,
+      "rating": 4.8,
+      "reviews": 234,
+      "tags": ["Cocktail", "Coffee"]
+    },
+    {
+      "id": 19,
+      "name": "Passion Fruit Mojito",
+      "category": "Drinks",
+      "price": 12,
+      "image": "https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=600&h=400&fit=crop",
+      "description": "Tropical refreshment with a twist. Fresh mint leaves muddled with lime and exotic passion fruit pulp, mixed with premium white rum and topped with sparkling soda water. Summer in a glass.",
+      "ingredients": ["White Rum", "Fresh Mint", "Passion Fruit", "Lime", "Sugar", "Soda Water", "Ice"],
+      "preparationTime": 5,
+      "rating": 4.7,
+      "reviews": 178,
+      "tags": ["Cocktail", "Tropical"]
+    },
+    {
+      "id": 20,
+      "name": "Organic Green Smoothie",
+      "category": "Drinks",
+      "price": 9,
+      "image": "https://images.unsplash.com/photo-1610970881699-44a5587cabec?w=600&h=400&fit=crop",
+      "description": "A refreshing organic juice made with fresh fruits and vegetables, perfect for hot summer days. This nutrient-packed smoothie combines the earthy goodness of leafy greens with the natural sweetness of tropical fruits.",
+      "ingredients": ["Spinach", "Kale", "Banana", "Mango", "Coconut Water"],
+      "preparationTime": 3,
+      "rating": 4.5,
+      "reviews": 89,
+      "tags": ["Healthy", "Vegan", "Gluten-Free"]
+    },
+    {
+      "id": 21,
+      "name": "Artisan Lemonade",
+      "category": "Drinks",
+      "price": 7,
+      "image": "https://images.unsplash.com/photo-1523677011781-c91d1bbe2f8d?w=600&h=400&fit=crop",
+      "description": "House-made from scratch with freshly squeezed lemons and your choice of aromatic herbs. Options include classic mint, fragrant basil, or earthy rosemary. Perfectly balanced sweet and tart.",
+      "ingredients": ["Fresh Lemons", "Sugar", "Water", "Fresh Herbs (Mint/Basil/Rosemary)", "Ice"],
+      "preparationTime": 3,
+      "rating": 4.6,
+      "reviews": 112,
+      "tags": ["Non-Alcoholic", "Refreshing"]
+    }
+  ],
+  "tables": [
+    {
+      "id": "table-1",
+      "name": "Indoor Table (2 people)",
+      "capacity": 2,
+      "location": "Indoor",
+      "available": true
+    },
+    {
+      "id": "table-2",
+      "name": "Indoor Table (4 people)",
+      "capacity": 4,
+      "location": "Indoor",
+      "available": true
+    },
+    {
+      "id": "table-3",
+      "name": "Outdoor Patio (2 people)",
+      "capacity": 2,
+      "location": "Outdoor",
+      "available": true
+    },
+    {
+      "id": "table-4",
+      "name": "Outdoor Patio (4 people)",
+      "capacity": 4,
+      "location": "Outdoor",
+      "available": true
+    },
+    {
+      "id": "table-5",
+      "name": "Bar Seating (2 people)",
+      "capacity": 2,
+      "location": "Bar Area",
+      "available": true
+    },
+    {
+      "id": "table-6",
+      "name": "Private Room (6-8 people)",
+      "capacity": 8,
+      "location": "Private",
+      "available": true
+    }
+  ],
+  "timeSlots": [
+    "11:00 AM",
+    "11:30 AM",
+    "12:00 PM",
+    "12:30 PM",
+    "1:00 PM",
+    "1:30 PM",
+    "2:00 PM",
+    "2:30 PM",
+    "6:00 PM",
+    "6:30 PM",
+    "7:00 PM",
+    "7:30 PM",
+    "8:00 PM",
+    "8:30 PM",
+    "9:00 PM",
+    "9:30 PM"
+  ],
+  "reviews": [
+    {
+      "id": 1,
+      "name": "Sarah Johnson",
+      "rating": 5,
+      "comment": "Absolutely incredible dining experience! The Lobster Linguine was the best I've ever had.",
+      "date": "2024-01-15",
+      "dish": "Lobster Linguine"
+    },
+    {
+      "id": 2,
+      "name": "Michael Chen",
+      "rating": 5,
+      "comment": "The Beef Tenderloin was cooked to perfection. Outstanding service and ambiance!",
+      "date": "2024-01-12",
+      "dish": "Beef Tenderloin Steak"
+    },
+    {
+      "id": 3,
+      "name": "Emma Williams",
+      "rating": 4,
+      "comment": "Great vegetarian options! The Buddha Bowl was fresh and delicious.",
+      "date": "2024-01-10",
+      "dish": "Vegetarian Buddha Bowl"
+    },
+    {
+      "id": 4,
+      "name": "David Martinez",
+      "rating": 5,
+      "comment": "Amazing Seafood Paella! Authentic Spanish flavor and generous portions.",
+      "date": "2024-01-08",
+      "dish": "Seafood Paella"
+    },
+    {
+      "id": 5,
+      "name": "Lisa Thompson",
+      "rating": 5,
+      "comment": "The Chocolate Lava Cake is to die for! Perfect ending to a perfect meal.",
+      "date": "2024-01-05",
+      "dish": "Chocolate Lava Cake"
+    },
+    {
+      "id": 6,
+      "name": "James Anderson",
+      "rating": 4,
+      "comment": "Excellent food and atmosphere. The Thai Red Curry had the perfect amount of spice!",
+      "date": "2024-01-03",
+      "dish": "Thai Red Curry"
+    }
+  ]
+}

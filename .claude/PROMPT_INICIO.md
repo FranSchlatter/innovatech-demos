@@ -53,7 +53,7 @@ Reglas clave del proyecto (resumen):
 Colores temáticos:
 - Hotelería: Marrón/Bronce (#8B7355, #A0826D)
 - Salud: Verde-Azulado (#20B2AA, #008B8B)
-- Gastronomía: (Por definir - pregúntame)
+- Gastronomía: (#E67E22, ...)
 
 ¿Listo para trabajar siguiendo estas reglas?
 ```

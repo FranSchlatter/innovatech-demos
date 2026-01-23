@@ -4,106 +4,169 @@ import Footer from '@shared-ui/components/Footer'
 import ContactSection from '@shared-ui/components/ContactSection'
 import { useDarkMode } from '@shared-hooks/useDarkMode'
 import { useCart } from '@shared-hooks/useCart'
+import HeroCarousel from './components/HeroCarousel'
+import AboutSection from './components/AboutSection'
 import MenuGrid from './components/MenuGrid'
-import ReviewsGastroSection from './components/ReviewsGastroSection'
-import CartDrawer from './pages/CartDrawer'
+import DishDetail from './components/DishDetail'
+import OrderForm from './components/OrderForm'
+import ReservationForm from './components/ReservationForm'
+import TestimonialsSection from './components/TestimonialsSection'
+import { ShoppingCart } from 'lucide-react'
 import './styles.css'
 
 export default function App() {
   const { isDark, toggleTheme } = useDarkMode()
-  const { cart, addItem, removeItem, clearCart, total } = useCart()
-  const [showCart, setShowCart] = useState(false)
+  const { cart, addItem, removeItem, updateQuantity, clearCart, total } = useCart()
 
+  // View states: 'main', 'detail', 'order', 'reservation'
+  const [view, setView] = useState('main')
+  const [selectedDish, setSelectedDish] = useState(null)
+
+  const handleViewMenu = () => {
+    const menuSection = document.getElementById('menu-section')
+    if (menuSection) {
+      menuSection.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  const handleViewDetails = (dish) => {
+    setSelectedDish(dish)
+    setView('detail')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleAddToCart = (item) => {
+    addItem({
+      ...item,
+      quantity: item.quantity || 1,
+      id: item.id
+    })
+    // Show success notification
+    alert(`✓ ${item.name} added to cart`)
+  }
+
+  const handleBackToMain = () => {
+    setView('main')
+    setSelectedDish(null)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  // Navigation links
   const navLinks = [
-    { name: 'Inicio', href: '#home' },
-    { name: 'Menú', href: '#menu' },
-    { name: 'Reseñas', href: '#reviews' },
-    { name: `🛒 ${cart.length}`, href: '#', onClick: (e) => {
-      e.preventDefault()
-      setShowCart(true)
-    }}
+    {
+      name: 'Home',
+      href: '#home',
+      onClick: () => {
+        setView('main')
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    },
+    {
+      name: 'Menu',
+      href: '#menu',
+      onClick: () => {
+        if (view !== 'main') {
+          setView('main')
+          setTimeout(handleViewMenu, 100)
+        } else {
+          handleViewMenu()
+        }
+      }
+    },
+    {
+      name: 'Reservations',
+      href: '#reservation',
+      onClick: () => {
+        setView('reservation')
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    },
+    {
+      name: `Cart (${cart.length})`,
+      href: '#cart',
+      onClick: () => {
+        setView('order')
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      },
+      icon: ShoppingCart
+    }
   ]
 
   return (
     <div className="min-h-screen bg-bg text-text">
-      <Navbar 
-        brand="Restaurante InnovaTech" 
-        toggleTheme={toggleTheme} 
+      <Navbar
+        brand="InnovaTech Gastronomy"
+        toggleTheme={toggleTheme}
         isDark={isDark}
         links={navLinks}
       />
 
       <main>
-        {/* Hero */}
-        <div className="relative h-screen w-full overflow-hidden bg-gradient-to-b from-primary/20 to-bg flex items-center">
-          <div className="container mx-auto px-4 text-center z-10">
-            <div className="max-w-4xl mx-auto">
-              <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-                Sabor Que Enamora
-              </h1>
-              <p className="text-xl md:text-2xl text-muted mb-8">
-                Sistema de pedidos online con entrega rápida. Cada plato preparado con los mejores ingredientes y pasión.
-              </p>
-              <button
-                onClick={() => {
-                  document.getElementById('menu-section').scrollIntoView({ behavior: 'smooth' })
-                }}
-                className="bg-accent hover:bg-accent/90 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all inline-block"
-              >
-                Ver Menú Completo
-              </button>
-            </div>
-          </div>
-          <div className="absolute inset-0 z-0 opacity-10">
-            <img
-              src="https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=1400&h=900&fit=crop"
-              alt="Restaurante"
-              className="w-full h-full object-cover"
+        {/* Main View */}
+        {view === 'main' && (
+          <>
+            <HeroCarousel
+              onViewMenu={handleViewMenu}
+              onBookTable={() => {
+                setView('reservation')
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }}
             />
-          </div>
-        </div>
+            <AboutSection />
 
-        {/* Menu Section */}
-        <section id="menu-section" className="py-20 bg-bg">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold mb-4">Nuestro Menú</h2>
-              <p className="text-lg text-muted max-w-2xl mx-auto">
-                Descubre nuestras especialidades preparadas con ingredientes frescos de la mejor calidad
-              </p>
-            </div>
-            <MenuGrid onAddToCart={(item) => {
-              addItem({
-                ...item,
-                quantity: 1,
-                id: item.id
-              })
-              alert(`✓ ${item.name} agregado al carrito`)
-            }} />
-          </div>
-        </section>
+            <section id="menu-section" className="py-20 bg-bg">
+              <div className="container mx-auto px-4">
+                <div className="text-center mb-16">
+                  <h2 className="text-4xl md:text-5xl font-bold mb-4">Our Menu</h2>
+                  <p className="text-lg text-muted max-w-2xl mx-auto">
+                    Discover our signature dishes prepared with the finest fresh ingredients
+                  </p>
+                </div>
+                <MenuGrid
+                  onAddToCart={handleAddToCart}
+                  onViewDetails={handleViewDetails}
+                />
+              </div>
+            </section>
 
-        {/* Reviews Section */}
-        <section id="reviews">
-          <ReviewsGastroSection />
-        </section>
+            <TestimonialsSection />
+            <ContactSection />
+          </>
+        )}
 
-        {/* Contact */}
-        <ContactSection />
+        {/* Dish Detail View */}
+        {view === 'detail' && selectedDish && (
+          <DishDetail
+            dish={selectedDish}
+            onBack={handleBackToMain}
+            onAddToCart={(item) => {
+              handleAddToCart(item)
+              handleBackToMain()
+            }}
+          />
+        )}
+
+        {/* Order Form View */}
+        {view === 'order' && (
+          <OrderForm
+            cart={cart}
+            total={total}
+            onBack={handleBackToMain}
+            onRemoveItem={removeItem}
+            onUpdateQuantity={updateQuantity}
+            onClearCart={clearCart}
+          />
+        )}
+
+        {/* Reservation Form View */}
+        {view === 'reservation' && (
+          <ReservationForm
+            onBack={handleBackToMain}
+          />
+        )}
       </main>
 
-      <Footer brand="Restaurante InnovaTech" />
-
-      {/* Cart Drawer */}
-      {showCart && (
-        <CartDrawer 
-          cart={cart}
-          total={total}
-          onClose={() => setShowCart(false)}
-          onRemove={removeItem}
-          onClear={clearCart}
-        />
-      )}
+      {view === 'main' && <Footer brand="InnovaTech Gastronomy" />}
     </div>
   )
 }

@@ -6,7 +6,9 @@
       "Bash(lsof:*)",
       "Bash(npm run dev:hoteleria:*)",
       "Bash(npm run dev:salud:*)",
-      "Bash(npm run dev:gastronomia:*)"
+      "Bash(npm run dev:gastronomia:*)",
+      "Bash(perl -e:*)",
+      "Bash(curl:*)"
     ]
   }
 }

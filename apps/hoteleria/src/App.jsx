@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Navbar from '@shared-ui/components/Navbar'
 import Footer from '@shared-ui/components/Footer'
 import { useDarkMode } from '@shared-hooks/useDarkMode'
@@ -10,6 +10,7 @@ import HotelAmenities from './components/HotelAmenities'
 import OffersSection from './components/OffersSection'
 import ReviewsSection from './components/ReviewsSection'
 import HotelContactSection from './components/HotelContactSection'
+import GuestServicesSection from './components/GuestServicesSection'
 import BookingForm from './pages/BookingForm'
 import RoomDetailPage from './pages/RoomDetailPage'
 import './styles.css'
@@ -23,8 +24,8 @@ export default function App() {
   const navLinks = [
     { name: 'Home', href: '#home', onClick: () => window.scrollTo({ top: 0, behavior: 'smooth' }) },
     { name: 'Accommodation', href: '#accommodation' },
+    { name: 'Services', href: '#services' },
     { name: 'Amenities', href: '#amenities' },
-    { name: 'Offers', href: '#offers' },
     { name: 'Contact', href: '#contact' }
   ]
 
@@ -51,6 +52,7 @@ export default function App() {
   const handleBackToMain = () => {
     setViewMode('main')
     setSelectedRoom(null)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   // Show room detail page if in detail mode
@@ -92,6 +94,11 @@ export default function App() {
         {/* Accommodation Tiers */}
         <AccommodationTiers onSelectRoom={handleSelectRoom} />
 
+        {/* Guest Services */}
+        <section id="services">
+          <GuestServicesSection />
+        </section>
+
         {/* Hotel Amenities */}
         <section id="amenities">
           <HotelAmenities />
@@ -109,19 +116,14 @@ export default function App() {
         {selectedRoom && viewMode === 'booking' && (
           <section id="booking-section" className="py-20 md:py-32 bg-surface">
             <div className="container mx-auto px-4 md:px-6">
-              <div className="text-center mb-12">
-                <h2 className="heading-md mb-4">Confirm Your Reservation</h2>
-                <p className="text-lg text-muted">Complete your booking details below</p>
-              </div>
-              <BookingForm 
-                room={selectedRoom} 
+              <BookingForm
+                room={selectedRoom}
                 onBook={(booking) => {
                   addItem({
                     ...selectedRoom,
                     ...booking,
                     quantity: 1
                   })
-                  alert('Reservation confirmed! We will contact you shortly.')
                   setSelectedRoom(null)
                   setViewMode('main')
                   window.scrollTo({ top: 0, behavior: 'smooth' })

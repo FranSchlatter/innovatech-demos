@@ -65,30 +65,30 @@ export default function AboutSection() {
             className="space-y-6"
           >
             <div>
-              <h3 className="text-3xl font-bold text-primary dark:text-white mb-4">Our Mission</h3>
-              <p className="text-muted dark:text-gray-300 mb-4">
+              <h3 className="text-3xl font-bold text-text mb-4">Our Mission</h3>
+              <p className="text-text-secondary mb-4">
                 To provide accessible, affordable, and high-quality healthcare to every patient, leveraging technology and medical expertise to ensure the best outcomes.
               </p>
             </div>
 
             <div>
-              <h3 className="text-3xl font-bold text-primary dark:text-white mb-4">Why Choose Us</h3>
+              <h3 className="text-3xl font-bold text-text mb-4">Why Choose Us</h3>
               <ul className="space-y-3">
                 <li className="flex items-start gap-3">
                   <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-1" />
-                  <span className="text-text dark:text-gray-200">ISO 9001 certified medical facilities</span>
+                  <span className="text-text">ISO 9001 certified medical facilities</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-1" />
-                  <span className="text-text dark:text-gray-200">All insurance plans accepted</span>
+                  <span className="text-text">All insurance plans accepted</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-1" />
-                  <span className="text-text dark:text-gray-200">Emergency services available 24/7</span>
+                  <span className="text-text">Emergency services available 24/7</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-1" />
-                  <span className="text-text dark:text-gray-200">Multilingual medical staff</span>
+                  <span className="text-text">Multilingual medical staff</span>
                 </li>
               </ul>
             </div>
@@ -104,13 +104,13 @@ export default function AboutSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: idx * 0.1 }}
-              className="bg-white dark:bg-primary/10 rounded-xl p-6 shadow-soft hover:shadow-md transition-shadow"
+              className="bg-surface rounded-xl p-6 shadow-soft hover:shadow-md transition-shadow border border-border"
             >
               <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-accent/10 mb-4">
                 <feature.icon className="w-6 h-6 text-accent" />
               </div>
-              <h4 className="font-semibold text-primary dark:text-white mb-2">{feature.title}</h4>
-              <p className="text-sm text-muted dark:text-gray-300">{feature.description}</p>
+              <h4 className="font-semibold text-text mb-2">{feature.title}</h4>
+              <p className="text-sm text-text-secondary">{feature.description}</p>
             </motion.div>
           ))}
         </div>

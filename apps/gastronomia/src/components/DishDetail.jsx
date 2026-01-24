@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Star, Clock, Minus, Plus, ShoppingCart } from 'lucide-react'
+import { ArrowLeft, Star, Clock, Minus, Plus, ShoppingCart, ChevronLeft, CheckCircle, Award, Shield } from 'lucide-react'
 
 export default function DishDetail({ dish, onBack, onAddToCart }) {
   const [quantity, setQuantity] = useState(1)
+  const [selectedImage, setSelectedImage] = useState(0)
 
   const handleIncrement = () => setQuantity(prev => prev + 1)
   const handleDecrement = () => setQuantity(prev => prev > 1 ? prev - 1 : 1)
@@ -15,168 +16,282 @@ export default function DishDetail({ dish, onBack, onAddToCart }) {
     })
   }
 
+  // Gallery images - using dish image multiple times (can be expanded later with real images)
+  const galleryImages = [
+    dish.image,
+    dish.image,
+    dish.image,
+    dish.image
+  ]
+
+  // Key highlights
+  const keyHighlights = [
+    'Fresh ingredients sourced daily',
+    'Prepared by expert chefs',
+    'Can be customized to preferences',
+    'Allergen information available',
+    'Nutritional details provided',
+    'Sustainable sourcing'
+  ]
+
   return (
-    <div className="min-h-screen bg-bg py-20">
-      <div className="container mx-auto px-4">
-        {/* Back Button */}
-        <motion.button
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          onClick={onBack}
-          className="flex items-center gap-2 text-primary hover:text-primary/80 mb-8 font-semibold"
-        >
-          <ArrowLeft size={20} />
-          Back to Menu
-        </motion.button>
+    <div className="min-h-screen bg-surface">
+      {/* Back Button - Fixed */}
+      <motion.button
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        onClick={onBack}
+        className="fixed top-24 left-6 z-40 flex items-center gap-2 text-accent hover:text-primary transition bg-bg px-4 py-2 rounded-lg shadow-soft"
+      >
+        <ChevronLeft className="w-5 h-5" />
+        <span className="text-sm font-medium">Back</span>
+      </motion.button>
 
-        <div className="grid md:grid-cols-2 gap-12 max-w-6xl mx-auto">
-          {/* Image Section */}
+      {/* Image Gallery */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        className="h-screen md:h-96 relative overflow-hidden"
+      >
+        <img
+          src={galleryImages[selectedImage]}
+          alt={dish.name}
+          className="w-full h-full object-cover"
+        />
+
+        {/* Category Badge */}
+        <div className="absolute top-6 left-6 bg-primary text-primary-contrast px-4 py-2 rounded-full font-bold shadow-lg">
+          {dish.category}
+        </div>
+
+        {/* Gallery Navigation Dots */}
+        <div className="absolute bottom-6 left-6 right-6 flex gap-2 justify-center">
+          {galleryImages.map((img, idx) => (
+            <button
+              key={idx}
+              onClick={() => setSelectedImage(idx)}
+              className={`h-2 transition-all ${
+                idx === selectedImage
+                  ? 'w-8 bg-accent'
+                  : 'w-2 bg-white/50 hover:bg-white/75'
+              }`}
+            />
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Content */}
+      <div className="container mx-auto px-4 md:px-6 py-12 md:py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          {/* Main Content */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            className="relative"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="lg:col-span-2"
           >
-            <div className="relative h-96 md:h-[500px] rounded-2xl overflow-hidden shadow-2xl">
-              <img
-                src={dish.image}
-                alt={dish.name}
-                className="w-full h-full object-cover"
-              />
-              {/* Category Badge */}
-              <div className="absolute top-4 left-4 bg-primary text-primary-contrast px-4 py-2 rounded-full font-bold shadow-lg">
-                {dish.category}
-              </div>
-            </div>
-
-            {/* Tags */}
-            <div className="flex gap-2 flex-wrap mt-6">
-              {dish.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="bg-surface text-text px-4 py-2 rounded-full text-sm font-medium border-2 border-primary/20"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Content Section */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            className="flex flex-col"
-          >
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">{dish.name}</h1>
-
-            {/* Rating and Prep Time */}
-            <div className="flex items-center gap-6 mb-6">
-              <div className="flex items-center gap-2">
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      size={20}
-                      className={i < Math.round(dish.rating) ? 'fill-accent text-accent' : 'text-gray-400'}
-                    />
-                  ))}
+            {/* Header */}
+            <div className="mb-8">
+              <h1 className="heading-md mb-4">{dish.name}</h1>
+              <div className="flex flex-wrap gap-6 text-muted mb-6">
+                <div className="flex items-center gap-2">
+                  <div className="flex">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        size={20}
+                        className={i < Math.round(dish.rating) ? 'fill-accent text-accent' : 'text-gray-400'}
+                      />
+                    ))}
+                  </div>
+                  <span className="font-bold text-lg text-accent">{dish.rating}</span>
+                  <span className="text-muted">({dish.reviews} reviews)</span>
                 </div>
-                <span className="font-bold text-lg">{dish.rating}</span>
-                <span className="text-muted">({dish.reviews} reviews)</span>
+                <div className="flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-accent" />
+                  <span>{dish.preparationTime} min</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-muted">
-                <Clock size={20} />
-                <span>{dish.preparationTime} min</span>
+
+              {/* Tags */}
+              <div className="flex gap-2 flex-wrap">
+                {dish.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium"
+                  >
+                    {tag}
+                  </span>
+                ))}
               </div>
             </div>
 
             {/* Description */}
-            <p className="text-lg text-muted mb-6 leading-relaxed">
-              {dish.description}
-            </p>
+            <div className="mb-12">
+              <h2 className="text-xl font-semibold text-primary mb-4">About This Dish</h2>
+              <p className="text-muted leading-relaxed mb-4">
+                {dish.description}
+              </p>
+              <p className="text-muted leading-relaxed">
+                Crafted with passion and precision by our expert chefs, this dish represents
+                the perfect balance of flavors and textures. Each ingredient is carefully selected
+                to ensure the highest quality and an unforgettable dining experience.
+              </p>
+            </div>
 
-            {/* Ingredients Section */}
+            {/* Ingredients */}
             {dish.ingredients && (
-              <div className="mb-8">
-                <h3 className="font-bold text-lg mb-3">Ingredients</h3>
-                <div className="flex flex-wrap gap-2">
-                  {dish.ingredients.map((ingredient) => (
-                    <span
-                      key={ingredient}
-                      className="bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium"
+              <div className="mb-12">
+                <h2 className="text-xl font-semibold text-primary mb-6">Main Ingredients</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {dish.ingredients.map((ingredient, idx) => (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: idx * 0.05 }}
+                      className="flex items-center gap-3 p-4 rounded-lg bg-bg"
                     >
-                      {ingredient}
-                    </span>
+                      <CheckCircle className="w-5 h-5 text-accent flex-shrink-0" />
+                      <span className="text-sm text-muted">{ingredient}</span>
+                    </motion.div>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Price */}
-            <div className="mb-8">
-              <div className="text-5xl font-bold text-primary mb-2">
-                ${dish.price}
+            {/* What Makes This Special */}
+            <div className="mb-12">
+              <h2 className="text-xl font-semibold text-primary mb-6">What Makes This Special</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {keyHighlights.map((highlight, idx) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: idx * 0.05 }}
+                    className="flex items-start gap-3"
+                  >
+                    <span className="text-accent mt-0.5">✓</span>
+                    <span className="text-sm text-muted">{highlight}</span>
+                  </motion.div>
+                ))}
               </div>
-              <p className="text-sm text-muted">Price per serving</p>
             </div>
 
-            {/* Quantity Selector */}
-            <div className="mb-8">
-              <label className="block text-sm font-semibold mb-3">Quantity</label>
-              <div className="flex items-center gap-4">
+            {/* Dish Specifications */}
+            <div className="bg-bg p-8 rounded-lg">
+              <h2 className="text-xl font-semibold text-primary mb-6">Dish Details</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
+                <div>
+                  <div className="text-sm text-muted mb-2">Category</div>
+                  <div className="text-lg font-semibold text-primary">{dish.category}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted mb-2">Prep Time</div>
+                  <div className="text-lg font-semibold text-primary">{dish.preparationTime} min</div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted mb-2">Serving Size</div>
+                  <div className="text-lg font-semibold text-primary">1 person</div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted mb-2">Rating</div>
+                  <div className="text-lg font-semibold text-primary">{dish.rating}/5.0</div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted mb-2">Reviews</div>
+                  <div className="text-lg font-semibold text-primary">{dish.reviews}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted mb-2">Customizable</div>
+                  <div className="text-lg font-semibold text-primary">Yes</div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Sidebar - Order Card */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="h-fit"
+          >
+            <div className="bg-bg p-8 rounded-lg shadow-soft sticky top-24">
+              {/* Price */}
+              <div className="mb-8 pb-8 border-b border-surface">
+                <div className="text-sm text-muted mb-2">Price per serving</div>
+                <div className="flex items-end gap-2">
+                  <span className="text-4xl font-bold text-accent">${dish.price}</span>
+                </div>
+              </div>
+
+              {/* Quantity Selector */}
+              <div className="mb-8">
+                <h3 className="font-semibold text-primary mb-4">Quantity</h3>
+                <div className="flex items-center justify-between gap-4 bg-surface p-4 rounded-lg">
+                  <button
+                    onClick={handleDecrement}
+                    className="w-10 h-10 bg-bg hover:bg-accent hover:text-white rounded-lg flex items-center justify-center transition-all"
+                    disabled={quantity === 1}
+                  >
+                    <Minus size={20} />
+                  </button>
+                  <span className="text-2xl font-bold text-primary">{quantity}</span>
+                  <button
+                    onClick={handleIncrement}
+                    className="w-10 h-10 bg-bg hover:bg-accent hover:text-white rounded-lg flex items-center justify-center transition-all"
+                  >
+                    <Plus size={20} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Total */}
+              <div className="mb-8 bg-surface p-6 rounded-lg">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-muted">Subtotal</span>
+                  <span className="font-semibold">${dish.price * quantity}</span>
+                </div>
+                <div className="flex justify-between items-center text-lg font-bold">
+                  <span>Total</span>
+                  <span className="text-accent text-2xl">${dish.price * quantity}</span>
+                </div>
+              </div>
+
+              {/* CTA Buttons */}
+              <div className="space-y-3">
                 <button
-                  onClick={handleDecrement}
-                  className="w-12 h-12 bg-surface hover:bg-primary/10 rounded-lg flex items-center justify-center transition-colors"
-                  disabled={quantity === 1}
+                  onClick={handleAddToCart}
+                  className="btn-primary w-full text-center inline-flex items-center justify-center gap-3"
                 >
-                  <Minus size={20} />
+                  <ShoppingCart size={20} />
+                  Add to Order
                 </button>
-                <span className="text-2xl font-bold w-16 text-center">{quantity}</span>
                 <button
-                  onClick={handleIncrement}
-                  className="w-12 h-12 bg-surface hover:bg-primary/10 rounded-lg flex items-center justify-center transition-colors"
+                  onClick={onBack}
+                  className="btn-secondary w-full text-center"
                 >
-                  <Plus size={20} />
+                  Back to Menu
                 </button>
               </div>
-            </div>
 
-            {/* Total Price */}
-            <div className="bg-surface p-6 rounded-lg mb-8">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-muted">Subtotal</span>
-                <span className="font-semibold">${dish.price * quantity}</span>
+              {/* Trust Badges */}
+              <div className="mt-8 pt-8 border-t border-surface">
+                <p className="text-xs text-muted mb-3 font-semibold">QUALITY CERTIFICATIONS</p>
+                <div className="flex items-center justify-around gap-2">
+                  <div className="flex flex-col items-center gap-1">
+                    <Award className="w-6 h-6 text-accent" />
+                    <span className="text-xs text-muted">Chef Selected</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-1">
+                    <Shield className="w-6 h-6 text-accent" />
+                    <span className="text-xs text-muted">Food Safe</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between items-center text-lg font-bold">
-                <span>Total</span>
-                <span className="text-primary text-2xl">${dish.price * quantity}</span>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex gap-4">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleAddToCart}
-                className="flex-1 bg-accent hover:bg-accent/90 text-white px-8 py-4 rounded-lg text-lg font-bold transition-all inline-flex items-center justify-center gap-3 shadow-lg"
-              >
-                <ShoppingCart size={24} />
-                Add to Order
-              </motion.button>
-            </div>
-
-            {/* Additional Info */}
-            <div className="mt-8 pt-8 border-t border-border">
-              <h3 className="font-bold text-lg mb-4">Additional Information</h3>
-              <ul className="space-y-2 text-muted">
-                <li>• Fresh ingredients sourced daily</li>
-                <li>• Prepared by our expert chefs</li>
-                <li>• Can be customized upon request</li>
-                <li>• Allergen information available</li>
-              </ul>
             </div>
           </motion.div>
         </div>

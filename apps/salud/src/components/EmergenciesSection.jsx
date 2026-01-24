@@ -28,7 +28,7 @@ export default function EmergenciesSection() {
   ]
 
   return (
-    <section id="emergency" className="py-12 md:py-16 bg-gradient-to-br from-error/5 via-bg to-error/5">
+    <section id="emergency" className="py-12 md:py-16 bg-gradient-to-br from-red-50 via-bg to-red-50 dark:from-red-950/20 dark:via-bg dark:to-red-950/20">
       <div className="container mx-auto px-4 md:px-6">
         {/* Compact Emergency Banner */}
         <motion.div
@@ -36,16 +36,16 @@ export default function EmergenciesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="bg-gradient-to-r from-error to-error/90 text-white rounded-2xl p-6 md:p-8 mb-8 shadow-lg"
+          className="bg-gradient-to-r from-red-600 to-red-700 rounded-2xl p-6 md:p-8 mb-8 shadow-lg"
         >
           <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
             <div className="flex-shrink-0">
               <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                <AlertCircle className="w-10 h-10 md:w-12 md:h-12" strokeWidth={2} />
+                <AlertCircle className="w-10 h-10 md:w-12 md:h-12 text-white" strokeWidth={2} />
               </div>
             </div>
             <div className="flex-1">
-              <h2 className="text-2xl md:text-3xl font-bold mb-2">
+              <h2 className="text-2xl md:text-3xl font-bold mb-2 text-white">
                 24/7 Emergency Care
               </h2>
               <p className="text-base md:text-lg text-white/95 mb-4">
@@ -53,7 +53,7 @@ export default function EmergenciesSection() {
               </p>
               <a
                 href="tel:911"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-error font-bold text-base md:text-lg rounded-lg hover:bg-white/95 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-red-600 font-bold text-base md:text-lg rounded-lg hover:bg-white/95 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
               >
                 <Phone className="w-5 h-5" />
                 Call 911

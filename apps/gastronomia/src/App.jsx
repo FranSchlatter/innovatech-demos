@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import Navbar from '@shared-ui/components/Navbar'
 import Footer from '@shared-ui/components/Footer'
-import ContactSection from '@shared-ui/components/ContactSection'
 import { useDarkMode } from '@shared-hooks/useDarkMode'
 import { useCart } from '@shared-hooks/useCart'
 import HeroCarousel from './components/HeroCarousel'
@@ -11,6 +10,7 @@ import DishDetail from './components/DishDetail'
 import OrderForm from './components/OrderForm'
 import ReservationForm from './components/ReservationForm'
 import TestimonialsSection from './components/TestimonialsSection'
+import GastronomyContactSection from './components/GastronomyContactSection'
 import { ShoppingCart } from 'lucide-react'
 import './styles.css'
 
@@ -130,7 +130,7 @@ export default function App() {
             </section>
 
             <TestimonialsSection />
-            <ContactSection />
+            <GastronomyContactSection />
           </>
         )}
 

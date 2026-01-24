@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import Navbar from '@shared-ui/components/Navbar'
 import Footer from '@shared-ui/components/Footer'
-import ContactSection from '@shared-ui/components/ContactSection'
 import { useDarkMode } from '@shared-hooks/useDarkMode'
 import { useCart } from '@shared-hooks/useCart'
 import HeroCarousel from './components/HeroCarousel'
@@ -10,6 +9,7 @@ import AccommodationTiers from './components/AccommodationTiers'
 import HotelAmenities from './components/HotelAmenities'
 import OffersSection from './components/OffersSection'
 import ReviewsSection from './components/ReviewsSection'
+import HotelContactSection from './components/HotelContactSection'
 import BookingForm from './pages/BookingForm'
 import RoomDetailPage from './pages/RoomDetailPage'
 import './styles.css'
@@ -133,7 +133,7 @@ export default function App() {
 
         {/* Contact */}
         <section id="contact">
-          <ContactSection />
+          <HotelContactSection />
         </section>
       </main>
 

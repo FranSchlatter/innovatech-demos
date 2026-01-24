@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import Navbar from '@shared-ui/components/Navbar'
 import Footer from '@shared-ui/components/Footer'
-import ContactSection from '@shared-ui/components/ContactSection'
 import { useDarkMode } from '@shared-hooks/useDarkMode'
 
 import HeroSection from './components/HeroSection'
@@ -14,6 +13,7 @@ import LocationsSection from './components/LocationsSection'
 import EmergenciesSection from './components/EmergenciesSection'
 import AppointmentFormNew from './pages/AppointmentFormNew'
 import TestimonialsHealthSection from './components/TestimonialsHealthSection'
+import HealthContactSection from './components/HealthContactSection'
 
 import './styles.css'
 
@@ -142,7 +142,7 @@ export default function App() {
           )}
 
           <section id="contact">
-            <ContactSection />
+            <HealthContactSection />
           </section>
         </main>
 
@@ -229,7 +229,7 @@ export default function App() {
 
         {/* Contact */}
         <section id="contact">
-          <ContactSection />
+          <HealthContactSection />
         </section>
       </main>
 

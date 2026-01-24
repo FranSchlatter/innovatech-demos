@@ -9,6 +9,7 @@ import SpecialtiesGrid from './components/SpecialtiesGrid'
 import SpecialtyDetailPage from './components/SpecialtyDetailPage'
 import DoctorsSlider from './components/DoctorsSlider'
 import ServicesCarousel from './components/ServicesCarousel'
+import PatientServicesSection from './components/PatientServicesSection'
 import LocationsSection from './components/LocationsSection'
 import EmergenciesSection from './components/EmergenciesSection'
 import AppointmentFormNew from './pages/AppointmentFormNew'
@@ -57,14 +58,14 @@ export default function App() {
       }
     },
     {
-      name: 'Services',
-      href: '#services',
+      name: 'Patient Portal',
+      href: '#patient-services',
       onClick: () => {
         if (viewMode !== 'main') {
           handleBackToMain()
-          setTimeout(() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' }), 200)
+          setTimeout(() => document.getElementById('patient-services')?.scrollIntoView({ behavior: 'smooth' }), 200)
         } else {
-          document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })
+          document.getElementById('patient-services')?.scrollIntoView({ behavior: 'smooth' })
         }
       }
     },
@@ -125,16 +126,15 @@ export default function App() {
           {selectedDoctor && (
             <section id="appointment-section" className="py-16 md:py-24 bg-surface">
               <div className="container mx-auto px-4 md:px-6">
-                <div className="text-center mb-12">
-                  <h2 className="heading-md mb-4">Book Your Appointment</h2>
-                  <p className="text-lg text-muted">Complete the form below to secure your consultation</p>
-                </div>
                 <AppointmentFormNew
                   doctor={selectedDoctor}
+                  specialty={selectedSpecialty}
                   onBook={(appointment) => {
-                    alert(`✓ Appointment confirmed with ${selectedDoctor.name}\nDate: ${appointment.date} at ${appointment.time}`)
-                    handleBackToMain()
-                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                    console.log('Appointment booked:', appointment)
+                    setTimeout(() => {
+                      handleBackToMain()
+                      window.scrollTo({ top: 0, behavior: 'smooth' })
+                    }, 4000)
                   }}
                 />
               </div>
@@ -178,7 +178,12 @@ export default function App() {
           <DoctorsSlider onSelectDoctor={handleSelectDoctor} />
         </section>
 
-        {/* Services */}
+        {/* Patient Services */}
+        <section id="patient-services" className="scroll-mt-20">
+          <PatientServicesSection />
+        </section>
+
+        {/* Medical Services */}
         <section id="services" className="scroll-mt-20">
           <ServicesCarousel />
         </section>

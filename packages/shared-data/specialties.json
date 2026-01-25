@@ -5,7 +5,7 @@
     "slug": "cardiology",
     "description": "Expert cardiovascular care including diagnosis and treatment of heart diseases, arrhythmias, and hypertension management.",
     "icon": "Heart",
-    "image": "https://images.unsplash.com/photo-1631217314830-4e3015b58387?w=800&h=600&fit=crop",
+    "image": "https://images.unsplash.com/photo-1628348070889-cb656235b4eb?w=800&h=600&fit=crop",
     "details": "Our cardiologists use cutting-edge technology including echocardiograms, stress tests, and cardiac catheterization to provide comprehensive heart health assessment and treatment.",
     "cost": "$150 - $300",
     "insuranceAccepted": true
@@ -16,7 +16,7 @@
     "slug": "dermatology",
     "description": "Complete skin, hair, and nail care using advanced dermatological treatments and cosmetic procedures.",
     "icon": "Zap",
-    "image": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&h=600&fit=crop",
+    "image": "https://images.unsplash.com/photo-1713085085470-fba013d67e65?w=800&h=600&fit=crop",
     "details": "Specialists in treating acne, psoriasis, eczema, and offering cosmetic treatments including laser therapy, chemical peels, and injectables.",
     "cost": "$100 - $250",
     "insuranceAccepted": true
@@ -27,7 +27,7 @@
     "slug": "orthopedics",
     "description": "Surgical and non-surgical treatment of bone, joint, and ligament injuries.",
     "icon": "Bone",
-    "image": "https://images.unsplash.com/photo-1576091160403-112173faf32e?w=800&h=600&fit=crop",
+    "image": "https://images.unsplash.com/photo-1597764690523-15bea4c581c9?w=800&h=600&fit=crop",
     "details": "Expert orthopedic surgeons providing treatment for fractures, arthritis, sports injuries, and joint replacement procedures.",
     "cost": "$180 - $400",
     "insuranceAccepted": true
@@ -38,7 +38,7 @@
     "slug": "pediatrics",
     "description": "Comprehensive healthcare for infants, children, and adolescents from birth through teenage years.",
     "icon": "Baby",
-    "image": "https://images.unsplash.com/photo-1559831214-4402bdd774c9?w=800&h=600&fit=crop",
+    "image": "https://images.unsplash.com/photo-1708687045030-26702e62fc65?w=800&h=600&fit=crop",
     "details": "Pediatricians specializing in vaccinations, growth monitoring, infectious diseases, and developmental assessments for children.",
     "cost": "$80 - $150",
     "insuranceAccepted": true
@@ -49,7 +49,7 @@
     "slug": "neurology",
     "description": "Diagnosis and treatment of nervous system disorders including migraines, epilepsy, and Parkinson's disease.",
     "icon": "Brain",
-    "image": "https://images.unsplash.com/photo-1559821481-2f0fa6c8e36c?w=800&h=600&fit=crop",
+    "image": "https://images.unsplash.com/photo-1631563019676-dade0dbdb8fc?w=800&h=600&fit=crop",
     "details": "Neurologists with expertise in headache management, sleep disorders, stroke prevention, and neurodegenerative diseases.",
     "cost": "$140 - $280",
     "insuranceAccepted": true
@@ -60,7 +60,7 @@
     "slug": "gastroenterology",
     "description": "Specialized care for digestive system disorders and gastrointestinal health.",
     "icon": "Stomach",
-    "image": "https://images.unsplash.com/photo-1631217314830-4e3015b58387?w=800&h=600&fit=crop",
+    "image": "https://images.unsplash.com/photo-1743767587835-7a80fe384236?w=800&h=600&fit=crop",
     "details": "Experts in treating acid reflux, IBS, ulcers, Crohn's disease, and performing endoscopies and colonoscopies.",
     "cost": "$120 - $300",
     "insuranceAccepted": true
@@ -71,7 +71,7 @@
     "slug": "pulmonology",
     "description": "Treatment of respiratory and lung diseases including asthma, COPD, and lung cancer.",
     "icon": "Wind",
-    "image": "https://images.unsplash.com/photo-1631217314830-4e3015b58387?w=800&h=600&fit=crop",
+    "image": "https://images.unsplash.com/photo-1743767587847-08c42b31cdec?w=800&h=600&fit=crop",
     "details": "Pulmonologists offering comprehensive lung function testing, sleep apnea treatment, and respiratory rehabilitation.",
     "cost": "$130 - $260",
     "insuranceAccepted": true
@@ -82,7 +82,7 @@
     "slug": "oncology",
     "description": "Cancer diagnosis, treatment, and support services including chemotherapy and radiation therapy.",
     "icon": "Microscope",
-    "image": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&h=600&fit=crop",
+    "image": "https://images.unsplash.com/photo-1578496781985-452d4a934d50?w=800&h=600&fit=crop",
     "details": "Multidisciplinary cancer care team providing personalized treatment plans and supportive care for cancer patients.",
     "cost": "$200 - $500",
     "insuranceAccepted": true
@@ -93,7 +93,7 @@
     "slug": "gynecology",
     "description": "Women's reproductive health including obstetrics, fertility treatment, and gynecological surgery.",
     "icon": "Heart",
-    "image": "https://images.unsplash.com/photo-1631217314830-4e3015b58387?w=800&h=600&fit=crop",
+    "image": "https://images.unsplash.com/photo-1691934338591-9575aa800288?w=800&h=600&fit=crop",
     "details": "Gynecologists specializing in prenatal care, contraception counseling, menopausal management, and reproductive surgeries.",
     "cost": "$110 - $250",
     "insuranceAccepted": true
@@ -104,7 +104,7 @@
     "slug": "psychiatry",
     "description": "Mental health and behavioral disorder treatment including therapy and medication management.",
     "icon": "Brain",
-    "image": "https://images.unsplash.com/photo-1579154204601-01d8fb8ab606?w=800&h=600&fit=crop",
+    "image": "https://images.unsplash.com/photo-1559757175-5700dde675bc?w=800&h=600&fit=crop",
     "details": "Psychiatrists treating depression, anxiety, bipolar disorder, PTSD, and other mental health conditions with evidence-based approaches.",
     "cost": "$95 - $200",
     "insuranceAccepted": true
@@ -115,7 +115,7 @@
     "slug": "ophthalmology",
     "description": "Eye care including vision correction, cataract surgery, and treatment of eye diseases.",
     "icon": "Eye",
-    "image": "https://images.unsplash.com/photo-1584308666744-24d5f400f6f4?w=800&h=600&fit=crop",
+    "image": "https://images.unsplash.com/photo-1679496124804-93a9ba92795d?w=800&h=600&fit=crop",
     "details": "Ophthalmologists offering comprehensive eye exams, LASIK surgery, glaucoma management, and retinal treatments.",
     "cost": "$125 - $350",
     "insuranceAccepted": true
@@ -126,7 +126,7 @@
     "slug": "urology",
     "description": "Specialized care for urinary tract and male reproductive system disorders.",
     "icon": "Droplet",
-    "image": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&h=600&fit=crop",
+    "image": "https://images.unsplash.com/photo-1715527498487-85f97b828616?w=800&h=600&fit=crop",
     "details": "Urologists treating kidney stones, prostate conditions, urinary incontinence, and performing urological surgeries.",
     "cost": "$140 - $320",
     "insuranceAccepted": true
@@ -137,7 +137,7 @@
     "slug": "rheumatology",
     "description": "Treatment of joint, bone, and autoimmune diseases including arthritis and lupus.",
     "icon": "Activity",
-    "image": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&h=600&fit=crop",
+    "image": "https://images.unsplash.com/photo-1659353887907-000c9a92377d?w=800&h=600&fit=crop",
     "details": "Rheumatologists managing arthritis, autoimmune conditions, and inflammatory joint diseases with advanced therapeutics.",
     "cost": "$135 - $270",
     "insuranceAccepted": true
@@ -148,7 +148,7 @@
     "slug": "endocrinology",
     "description": "Management of hormonal and metabolic disorders including diabetes and thyroid diseases.",
     "icon": "Zap",
-    "image": "https://images.unsplash.com/photo-1631217314830-4e3015b58387?w=800&h=600&fit=crop",
+    "image": "https://images.unsplash.com/photo-1715111183886-5048b76cc917?w=800&h=600&fit=crop",
     "details": "Endocrinologists specializing in diabetes management, thyroid disorders, hormone replacement therapy, and metabolic conditions.",
     "cost": "$120 - $240",
     "insuranceAccepted": true
@@ -159,7 +159,7 @@
     "slug": "nephrology",
     "description": "Kidney disease management including dialysis and transplant coordination.",
     "icon": "Droplet",
-    "image": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&h=600&fit=crop",
+    "image": "https://images.unsplash.com/photo-1559757175-0828e13882ed?w=800&h=600&fit=crop",
     "details": "Nephrologists treating chronic kidney disease, managing hypertension in renal patients, and coordinating kidney transplants.",
     "cost": "$130 - $280",
     "insuranceAccepted": true
@@ -170,7 +170,7 @@
     "slug": "otolaryngology",
     "description": "Treatment of ear, nose, and throat disorders including hearing loss and sinusitis.",
     "icon": "Ear",
-    "image": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&h=600&fit=crop",
+    "image": "https://images.unsplash.com/photo-1602703651892-7f0e73a14302?w=800&h=600&fit=crop",
     "details": "ENT specialists treating hearing impairment, balance disorders, chronic sinusitis, and performing head and neck surgeries.",
     "cost": "$115 - $260",
     "insuranceAccepted": true
@@ -181,7 +181,7 @@
     "slug": "general-surgery",
     "description": "Surgical treatment of abdominal, breast, and soft tissue conditions.",
     "icon": "Scalpel",
-    "image": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&h=600&fit=crop",
+    "image": "https://images.unsplash.com/photo-1504813184591-01572f98c85f?w=800&h=600&fit=crop",
     "details": "General surgeons performing appendectomies, hernia repairs, gallbladder removal, and other general surgical procedures.",
     "cost": "$200 - $450",
     "insuranceAccepted": true
@@ -192,7 +192,7 @@
     "slug": "sports-medicine",
     "description": "Treatment and prevention of sports-related injuries and athletic performance optimization.",
     "icon": "Activity",
-    "image": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop",
+    "image": "https://images.unsplash.com/photo-1659081469066-c88ca2dec240?w=800&h=600&fit=crop",
     "details": "Sports medicine specialists treating athletes with musculoskeletal injuries, offering rehabilitation and return-to-play protocols.",
     "cost": "$140 - $280",
     "insuranceAccepted": true
@@ -203,7 +203,7 @@
     "slug": "infectious-diseases",
     "description": "Diagnosis and treatment of bacterial, viral, and parasitic infections.",
     "icon": "Virus",
-    "image": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&h=600&fit=crop",
+    "image": "https://images.unsplash.com/photo-1631203884714-2eb146c2cccc?w=800&h=600&fit=crop",
     "details": "Infectious disease specialists managing complex infections, antibiotic stewardship, and travel medicine consultations.",
     "cost": "$125 - $250",
     "insuranceAccepted": true
@@ -214,7 +214,7 @@
     "slug": "immunology",
     "description": "Treatment of immune system disorders including allergies and immunodeficiencies.",
     "icon": "Shield",
-    "image": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&h=600&fit=crop",
+    "image": "https://images.unsplash.com/photo-1707079917509-af3177041e14?w=800&h=600&fit=crop",
     "details": "Immunologists treating allergic conditions, immunodeficiency disorders, and providing allergy testing and immunotherapy.",
     "cost": "$100 - $200",
     "insuranceAccepted": true

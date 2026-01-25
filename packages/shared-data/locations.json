@@ -41,7 +41,7 @@
     "specialties": ["Pediatrics", "Neurology", "Gastroenterology", "Psychiatry"],
     "parking": true,
     "wheelchair_accessible": true,
-    "image": "https://images.unsplash.com/photo-1631217314830-4e3015b58387?w=600&h=400&fit=crop"
+    "image": "https://images.unsplash.com/photo-1631248055158-edec7a3c072b?w=600&h=400&fit=crop"
   },
   {
     "id": 3,
@@ -63,7 +63,7 @@
     "specialties": ["Cardiology", "Pulmonology", "Oncology", "Ophthalmology"],
     "parking": true,
     "wheelchair_accessible": true,
-    "image": "https://images.unsplash.com/photo-1579154204601-01d8fb8ab606?w=600&h=400&fit=crop"
+    "image": "https://images.unsplash.com/photo-1596541223130-5d31a73fb6c6?w=600&h=400&fit=crop"
   },
   {
     "id": 4,
@@ -85,6 +85,6 @@
     "specialties": ["All Specialties Available", "Emergency Department", "Intensive Care", "Surgery"],
     "parking": true,
     "wheelchair_accessible": true,
-    "image": "https://images.unsplash.com/photo-1584308666744-24d5f400f6f4?w=600&h=400&fit=crop"
+    "image": "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=600&h=400&fit=crop"
   }
 ]

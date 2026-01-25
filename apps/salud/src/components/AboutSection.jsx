@@ -51,7 +51,7 @@ export default function AboutSection() {
             transition={{ duration: 0.6 }}
           >
             <img
-              src="https://images.unsplash.com/photo-1631217314830-4e3015b58387?w=600&h=600&fit=crop"
+              src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?w=600&h=400&fit=crop"
               alt="Hospital"
               className="rounded-2xl shadow-lg"
             />

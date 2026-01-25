@@ -11,8 +11,15 @@ export default function SpecialtyDetailPage({ specialty, onBack, onSelectDoctor 
 
   const IconComponent = getIcon(specialty.icon)
 
-  const handleBookAppointment = () => {
-    document.getElementById('appointment-section')?.scrollIntoView({ behavior: 'smooth' })
+  const handleBookAppointment = (doctor = null) => {
+    // If a specific doctor is passed, use it; otherwise select the first available
+    const doctorToBook = doctor || doctors[0]
+    if (doctorToBook && onSelectDoctor) {
+      onSelectDoctor(doctorToBook)
+      setTimeout(() => {
+        document.getElementById('appointment-section')?.scrollIntoView({ behavior: 'smooth' })
+      }, 100)
+    }
   }
 
   // Gallery images - using specialty image multiple times (can be expanded later with real images)

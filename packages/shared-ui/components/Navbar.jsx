@@ -44,7 +44,11 @@ export default function Navbar({ brand = 'InnovaTech', toggleTheme, isDark, link
                   link.onClick()
                 }
               }}
-              className="text-text hover:text-primary transition-colors font-medium"
+              className={`transition-colors font-medium ${
+                link.highlight
+                  ? 'px-4 py-2 bg-primary text-primary-contrast rounded-lg hover:opacity-90'
+                  : 'text-text hover:text-primary'
+              }`}
             >
               {link.name}
             </a>
@@ -85,7 +89,11 @@ export default function Navbar({ brand = 'InnovaTech', toggleTheme, isDark, link
                   }
                   setIsOpen(false)
                 }}
-                className="text-text hover:text-primary transition-colors font-medium px-2 py-2"
+                className={`transition-colors font-medium px-2 py-2 rounded-lg ${
+                  link.highlight
+                    ? 'bg-primary text-primary-contrast hover:opacity-90'
+                    : 'text-text hover:text-primary'
+                }`}
               >
                 {link.name}
               </a>

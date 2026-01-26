@@ -13,20 +13,22 @@ import HotelContactSection from './components/HotelContactSection'
 import GuestServicesSection from './components/GuestServicesSection'
 import BookingForm from './pages/BookingForm'
 import RoomDetailPage from './pages/RoomDetailPage'
+import AdminLayout from './components/admin/layout/AdminLayout'
 import './styles.css'
 
 export default function App() {
   const { isDark, toggleTheme } = useDarkMode()
   const { cart, addItem, removeItem } = useCart()
   const [selectedRoom, setSelectedRoom] = useState(null)
-  const [viewMode, setViewMode] = useState('main') // 'main', 'detail', 'booking'
+  const [viewMode, setViewMode] = useState('main') // 'main', 'detail', 'booking', 'admin'
 
   const navLinks = [
-    { name: 'Home', href: '#home', onClick: () => window.scrollTo({ top: 0, behavior: 'smooth' }) },
+    { name: 'Home', href: '#home', onClick: () => { setViewMode('main'); window.scrollTo({ top: 0, behavior: 'smooth' }) } },
     { name: 'Accommodation', href: '#accommodation' },
     { name: 'Services', href: '#services' },
     { name: 'Amenities', href: '#amenities' },
-    { name: 'Contact', href: '#contact' }
+    { name: 'Contact', href: '#contact' },
+    { name: 'Admin', href: '#admin', onClick: () => setViewMode('admin'), highlight: true }
   ]
 
   const handleSelectRoom = (room, action) => {
@@ -55,17 +57,28 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  // Show admin panel if in admin mode
+  if (viewMode === 'admin') {
+    return (
+      <AdminLayout
+        onExit={handleBackToMain}
+        isDark={isDark}
+        toggleTheme={toggleTheme}
+      />
+    )
+  }
+
   // Show room detail page if in detail mode
   if (viewMode === 'detail' && selectedRoom) {
     return (
       <div className="min-h-screen bg-bg text-text">
-        <Navbar 
-          brand="Hotel Luxury" 
-          toggleTheme={toggleTheme} 
+        <Navbar
+          brand="Hotel Luxury"
+          toggleTheme={toggleTheme}
           isDark={isDark}
           links={navLinks}
         />
-        <RoomDetailPage 
+        <RoomDetailPage
           room={selectedRoom}
           onBack={handleBackToMain}
           onReserve={handleReserveFromDetail}

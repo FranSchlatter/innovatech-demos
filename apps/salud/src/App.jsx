@@ -15,6 +15,7 @@ import EmergenciesSection from './components/EmergenciesSection'
 import AppointmentFormNew from './pages/AppointmentFormNew'
 import TestimonialsHealthSection from './components/TestimonialsHealthSection'
 import HealthContactSection from './components/HealthContactSection'
+import AdminLayout from './components/admin/layout/AdminLayout'
 
 import './styles.css'
 
@@ -22,7 +23,7 @@ export default function App() {
   const { isDark, toggleTheme } = useDarkMode()
   const [selectedSpecialty, setSelectedSpecialty] = useState(null)
   const [selectedDoctor, setSelectedDoctor] = useState(null)
-  const [viewMode, setViewMode] = useState('main') // 'main', 'specialty', 'appointment'
+  const [viewMode, setViewMode] = useState('main') // 'main', 'specialty', 'appointment', 'admin'
 
   const navLinks = [
     {
@@ -73,6 +74,12 @@ export default function App() {
       name: 'Contact',
       href: '#contact',
       onClick: () => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })
+    },
+    {
+      name: 'Admin',
+      href: '#admin',
+      highlight: true,
+      onClick: () => setViewMode('admin')
     }
   ]
 
@@ -85,6 +92,22 @@ export default function App() {
     setViewMode('main')
     setSelectedSpecialty(null)
     setSelectedDoctor(null)
+  }
+
+  const handleExitAdmin = () => {
+    setViewMode('main')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  // Admin view
+  if (viewMode === 'admin') {
+    return (
+      <AdminLayout
+        onExit={handleExitAdmin}
+        isDark={isDark}
+        toggleTheme={toggleTheme}
+      />
+    )
   }
 
   const handleSelectDoctor = (doctor) => {

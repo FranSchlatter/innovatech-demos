@@ -11,14 +11,15 @@ import OrderForm from './components/OrderForm'
 import ReservationForm from './components/ReservationForm'
 import TestimonialsSection from './components/TestimonialsSection'
 import GastronomyContactSection from './components/GastronomyContactSection'
-import { ShoppingCart } from 'lucide-react'
+import AdminLayout from './components/admin/layout/AdminLayout'
+import { ShoppingCart, ChefHat } from 'lucide-react'
 import './styles.css'
 
 export default function App() {
   const { isDark, toggleTheme } = useDarkMode()
   const { cart, addItem, removeItem, updateQuantity, clearCart, total } = useCart()
 
-  // View states: 'main', 'detail', 'order', 'reservation'
+  // View states: 'main', 'detail', 'order', 'reservation', 'admin'
   const [view, setView] = useState('main')
   const [selectedDish, setSelectedDish] = useState(null)
 
@@ -48,6 +49,11 @@ export default function App() {
   const handleBackToMain = () => {
     setView('main')
     setSelectedDish(null)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleExitAdmin = () => {
+    setView('main')
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -89,8 +95,29 @@ export default function App() {
         window.scrollTo({ top: 0, behavior: 'smooth' })
       },
       icon: ShoppingCart
+    },
+    {
+      name: 'Admin',
+      href: '#admin',
+      onClick: () => {
+        setView('admin')
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      },
+      icon: ChefHat,
+      highlight: true
     }
   ]
+
+  // Render Admin Layout
+  if (view === 'admin') {
+    return (
+      <AdminLayout
+        isDark={isDark}
+        toggleTheme={toggleTheme}
+        onExit={handleExitAdmin}
+      />
+    )
+  }
 
   return (
     <div className="min-h-screen bg-bg text-text">

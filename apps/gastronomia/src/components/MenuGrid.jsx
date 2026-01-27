@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { ShoppingCart, Star, Clock, Eye } from 'lucide-react'
+import { ShoppingCart, Star, Clock, Eye, Settings2 } from 'lucide-react'
 import gastronomyData from '@shared-data/gastronomy.json'
 
-export default function MenuGrid({ onAddToCart, onViewDetails }) {
+export default function MenuGrid({ onAddToCart, onCustomize, onViewDetails }) {
   const [selectedCategory, setSelectedCategory] = useState('All')
 
   const categories = ['All', 'Appetizers', 'Main Courses', 'Desserts', 'Drinks']
@@ -123,6 +123,15 @@ export default function MenuGrid({ onAddToCart, onViewDetails }) {
                   >
                     <Eye size={20} />
                   </button>
+                  {onCustomize && (
+                    <button
+                      onClick={() => onCustomize(dish)}
+                      className="bg-surface border-2 border-accent text-accent hover:bg-accent hover:text-white p-2 rounded-lg transition-all"
+                      title="Customize"
+                    >
+                      <Settings2 size={20} />
+                    </button>
+                  )}
                   <button
                     onClick={() => onAddToCart(dish)}
                     className="bg-accent hover:bg-accent/90 text-white px-4 py-2 rounded-lg transition-all inline-flex items-center gap-2 font-semibold"

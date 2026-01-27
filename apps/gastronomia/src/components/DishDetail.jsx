@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Star, Clock, Minus, Plus, ShoppingCart, ChevronLeft, CheckCircle, Award, Shield } from 'lucide-react'
+import { ArrowLeft, Star, Clock, Minus, Plus, ShoppingCart, ChevronLeft, CheckCircle, Award, Shield, Settings2 } from 'lucide-react'
 
-export default function DishDetail({ dish, onBack, onAddToCart }) {
+export default function DishDetail({ dish, onBack, onAddToCart, onCustomize }) {
   const [quantity, setQuantity] = useState(1)
   const [selectedImage, setSelectedImage] = useState(0)
 
@@ -270,6 +270,15 @@ export default function DishDetail({ dish, onBack, onAddToCart }) {
                   <ShoppingCart size={20} />
                   Add to Order
                 </button>
+                {onCustomize && (
+                  <button
+                    onClick={onCustomize}
+                    className="w-full bg-surface border-2 border-accent text-accent hover:bg-accent hover:text-white py-3 px-6 rounded-xl font-semibold transition inline-flex items-center justify-center gap-3"
+                  >
+                    <Settings2 size={20} />
+                    Customize Order
+                  </button>
+                )}
                 <button
                   onClick={onBack}
                   className="btn-secondary w-full text-center"

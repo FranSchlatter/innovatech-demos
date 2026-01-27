@@ -356,7 +356,7 @@ export default function OrderForm({ cart, onBack, onRemoveItem, onUpdateQuantity
                     <div className="space-y-4 mb-6 max-h-80 overflow-y-auto pr-2">
                       {cart.map((item) => (
                         <motion.div
-                          key={item.id}
+                          key={item.cartItemId || item.id}
                           layout
                           className="flex gap-4 bg-bg p-4 rounded-xl"
                         >
@@ -368,16 +368,38 @@ export default function OrderForm({ cart, onBack, onRemoveItem, onUpdateQuantity
                           <div className="flex-1 min-w-0">
                             <h3 className="font-bold text-primary truncate">{item.name}</h3>
                             <p className="text-sm text-muted">${item.price.toFixed(2)} each</p>
+
+                            {/* Show customizations if any */}
+                            {item.customizations && (
+                              <div className="mt-1 space-y-0.5">
+                                {item.customizations.additions?.length > 0 && (
+                                  <p className="text-xs text-green-600">
+                                    + {item.customizations.additions.map(a => a.name).join(', ')}
+                                  </p>
+                                )}
+                                {item.customizations.removals?.length > 0 && (
+                                  <p className="text-xs text-red-500">
+                                    No: {item.customizations.removals.map(r => r.replace('no-', '')).join(', ')}
+                                  </p>
+                                )}
+                                {item.customizations.specialInstructions && (
+                                  <p className="text-xs text-muted italic truncate">
+                                    "{item.customizations.specialInstructions}"
+                                  </p>
+                                )}
+                              </div>
+                            )}
+
                             <div className="flex items-center gap-2 mt-2">
                               <button
-                                onClick={() => onUpdateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                                onClick={() => onUpdateQuantity(item.cartItemId || item.id, Math.max(1, item.quantity - 1))}
                                 className="w-7 h-7 bg-surface hover:bg-accent/10 rounded-full flex items-center justify-center transition"
                               >
                                 <Minus className="w-4 h-4" />
                               </button>
                               <span className="font-semibold w-8 text-center">{item.quantity}</span>
                               <button
-                                onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                                onClick={() => onUpdateQuantity(item.cartItemId || item.id, item.quantity + 1)}
                                 className="w-7 h-7 bg-surface hover:bg-accent/10 rounded-full flex items-center justify-center transition"
                               >
                                 <Plus className="w-4 h-4" />
@@ -386,7 +408,7 @@ export default function OrderForm({ cart, onBack, onRemoveItem, onUpdateQuantity
                           </div>
                           <div className="flex flex-col justify-between items-end">
                             <button
-                              onClick={() => onRemoveItem(item.id)}
+                              onClick={() => onRemoveItem(item.cartItemId || item.id)}
                               className="text-muted hover:text-red-500 transition"
                             >
                               <Trash2 className="w-5 h-5" />

@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
-import { ChefHat, Utensils } from 'lucide-react'
+import { ChefHat, Utensils, ShoppingBag } from 'lucide-react'
 
-export default function HeroCarousel({ onViewMenu, onBookTable }) {
+export default function HeroCarousel({ onViewMenu, onBookTable, onOrderOnline }) {
   return (
     <div className="relative h-screen w-full overflow-hidden bg-gradient-to-b from-primary/20 to-bg flex items-center">
       {/* Background Image */}
@@ -61,16 +61,25 @@ export default function HeroCarousel({ onViewMenu, onBookTable }) {
             transition={{ delay: 0.8, duration: 0.8 }}
             className="flex flex-col sm:flex-row gap-4 justify-center items-center"
           >
+            {onOrderOnline && (
+              <button
+                onClick={onOrderOnline}
+                className="bg-accent hover:bg-accent/90 text-white px-8 py-4 rounded-xl text-lg font-bold transition-all inline-flex items-center gap-2 shadow-lg hover:shadow-xl w-full sm:w-auto justify-center animate-pulse hover:animate-none"
+              >
+                <ShoppingBag size={24} />
+                Order Online
+              </button>
+            )}
             <button
               onClick={onViewMenu}
-              className="bg-accent hover:bg-accent/90 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all inline-flex items-center gap-2 shadow-lg hover:shadow-xl w-full sm:w-auto justify-center"
+              className="bg-surface hover:bg-primary/10 text-primary border-2 border-primary px-8 py-4 rounded-xl text-lg font-semibold transition-all inline-flex items-center gap-2 w-full sm:w-auto justify-center"
             >
               <Utensils size={24} />
-              View Our Menu
+              View Menu
             </button>
             <button
               onClick={onBookTable}
-              className="bg-primary hover:bg-primary/90 text-primary-contrast px-8 py-4 rounded-lg text-lg font-semibold transition-all inline-flex items-center gap-2 shadow-lg hover:shadow-xl w-full sm:w-auto justify-center"
+              className="bg-primary hover:bg-primary/90 text-primary-contrast px-8 py-4 rounded-xl text-lg font-semibold transition-all inline-flex items-center gap-2 shadow-lg hover:shadow-xl w-full sm:w-auto justify-center"
             >
               <ChefHat size={24} />
               Book a Table

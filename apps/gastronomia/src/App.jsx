@@ -7,21 +7,27 @@ import HeroCarousel from './components/HeroCarousel'
 import AboutSection from './components/AboutSection'
 import MenuGrid from './components/MenuGrid'
 import DishDetail from './components/DishDetail'
+import DishCustomizeModal from './components/DishCustomizeModal'
+import FloatingCartButton from './components/FloatingCartButton'
 import OrderForm from './components/OrderForm'
 import ReservationForm from './components/ReservationForm'
 import TestimonialsSection from './components/TestimonialsSection'
 import GastronomyContactSection from './components/GastronomyContactSection'
 import AdminLayout from './components/admin/layout/AdminLayout'
+import { ToastProvider, useToast } from './context/ToastContext'
 import { ShoppingCart, ChefHat } from 'lucide-react'
 import './styles.css'
 
-export default function App() {
+function AppContent() {
   const { isDark, toggleTheme } = useDarkMode()
-  const { cart, addItem, removeItem, updateQuantity, clearCart, total } = useCart()
+  const { cart, addItem, removeItem, updateQuantity, clearCart, total, itemCount } = useCart()
+  const { showCartNotification } = useToast()
 
   // View states: 'main', 'detail', 'order', 'reservation', 'admin'
   const [view, setView] = useState('main')
   const [selectedDish, setSelectedDish] = useState(null)
+  const [customizeModalOpen, setCustomizeModalOpen] = useState(false)
+  const [dishToCustomize, setDishToCustomize] = useState(null)
 
   const handleViewMenu = () => {
     const menuSection = document.getElementById('menu-section')
@@ -36,14 +42,41 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const handleAddToCart = (item) => {
+  // Open customization modal instead of adding directly
+  const handleOpenCustomize = (dish) => {
+    setDishToCustomize(dish)
+    setCustomizeModalOpen(true)
+  }
+
+  // Quick add without customization (from menu grid)
+  const handleQuickAdd = (dish) => {
     addItem({
-      ...item,
-      quantity: item.quantity || 1,
-      id: item.id
+      id: dish.id,
+      name: dish.name,
+      price: dish.price,
+      image: dish.image,
+      quantity: 1
     })
-    // Show success notification
-    alert(`✓ ${item.name} added to cart`)
+    showCartNotification(`${dish.name} added to cart`)
+  }
+
+  // Add to cart with customizations (from modal)
+  const handleAddToCartWithCustomizations = (item) => {
+    addItem(item)
+    showCartNotification(`${item.name} added to cart`)
+  }
+
+  // Add from detail page
+  const handleAddFromDetail = (item) => {
+    addItem({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      image: item.image,
+      quantity: item.quantity || 1
+    })
+    showCartNotification(`${item.quantity || 1}x ${item.name} added to cart`)
+    handleBackToMain()
   }
 
   const handleBackToMain = () => {
@@ -54,6 +87,11 @@ export default function App() {
 
   const handleExitAdmin = () => {
     setView('main')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleGoToCart = () => {
+    setView('order')
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -88,12 +126,9 @@ export default function App() {
       }
     },
     {
-      name: `Cart (${cart.length})`,
+      name: `Cart (${itemCount})`,
       href: '#cart',
-      onClick: () => {
-        setView('order')
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-      },
+      onClick: handleGoToCart,
       icon: ShoppingCart
     },
     {
@@ -138,6 +173,7 @@ export default function App() {
                 setView('reservation')
                 window.scrollTo({ top: 0, behavior: 'smooth' })
               }}
+              onOrderOnline={handleGoToCart}
             />
             <AboutSection />
 
@@ -150,7 +186,8 @@ export default function App() {
                   </p>
                 </div>
                 <MenuGrid
-                  onAddToCart={handleAddToCart}
+                  onAddToCart={handleQuickAdd}
+                  onCustomize={handleOpenCustomize}
                   onViewDetails={handleViewDetails}
                 />
               </div>
@@ -166,10 +203,8 @@ export default function App() {
           <DishDetail
             dish={selectedDish}
             onBack={handleBackToMain}
-            onAddToCart={(item) => {
-              handleAddToCart(item)
-              handleBackToMain()
-            }}
+            onAddToCart={handleAddFromDetail}
+            onCustomize={() => handleOpenCustomize(selectedDish)}
           />
         )}
 
@@ -194,6 +229,34 @@ export default function App() {
       </main>
 
       {view === 'main' && <Footer brand="InnovaTech Gastronomy" />}
+
+      {/* Floating Cart Button - Shows on main view when cart has items */}
+      {view === 'main' && (
+        <FloatingCartButton
+          itemCount={itemCount}
+          total={total}
+          onClick={handleGoToCart}
+        />
+      )}
+
+      {/* Dish Customization Modal */}
+      <DishCustomizeModal
+        dish={dishToCustomize}
+        isOpen={customizeModalOpen}
+        onClose={() => {
+          setCustomizeModalOpen(false)
+          setDishToCustomize(null)
+        }}
+        onAddToCart={handleAddToCartWithCustomizations}
+      />
     </div>
+  )
+}
+
+export default function App() {
+  return (
+    <ToastProvider>
+      <AppContent />
+    </ToastProvider>
   )
 }

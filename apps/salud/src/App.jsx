@@ -10,12 +10,14 @@ import SpecialtyDetailPage from './components/SpecialtyDetailPage'
 import DoctorsSlider from './components/DoctorsSlider'
 import ServicesCarousel from './components/ServicesCarousel'
 import PatientServicesSection from './components/PatientServicesSection'
+import PatientPortal from './components/PatientPortal'
 import LocationsSection from './components/LocationsSection'
 import EmergenciesSection from './components/EmergenciesSection'
 import AppointmentFormNew from './pages/AppointmentFormNew'
 import TestimonialsHealthSection from './components/TestimonialsHealthSection'
 import HealthContactSection from './components/HealthContactSection'
 import AdminLayout from './components/admin/layout/AdminLayout'
+import { UserCircle } from 'lucide-react'
 
 import './styles.css'
 
@@ -23,7 +25,7 @@ export default function App() {
   const { isDark, toggleTheme } = useDarkMode()
   const [selectedSpecialty, setSelectedSpecialty] = useState(null)
   const [selectedDoctor, setSelectedDoctor] = useState(null)
-  const [viewMode, setViewMode] = useState('main') // 'main', 'specialty', 'appointment', 'admin'
+  const [viewMode, setViewMode] = useState('main') // 'main', 'specialty', 'appointment', 'admin', 'patient-portal'
 
   const navLinks = [
     {
@@ -60,15 +62,9 @@ export default function App() {
     },
     {
       name: 'Patient Portal',
-      href: '#patient-services',
-      onClick: () => {
-        if (viewMode !== 'main') {
-          handleBackToMain()
-          setTimeout(() => document.getElementById('patient-services')?.scrollIntoView({ behavior: 'smooth' }), 200)
-        } else {
-          document.getElementById('patient-services')?.scrollIntoView({ behavior: 'smooth' })
-        }
-      }
+      href: '#patient-portal',
+      icon: UserCircle,
+      onClick: () => setViewMode('patient-portal')
     },
     {
       name: 'Contact',
@@ -106,6 +102,15 @@ export default function App() {
         onExit={handleExitAdmin}
         isDark={isDark}
         toggleTheme={toggleTheme}
+      />
+    )
+  }
+
+  // Patient Portal view
+  if (viewMode === 'patient-portal') {
+    return (
+      <PatientPortal
+        onExit={handleBackToMain}
       />
     )
   }

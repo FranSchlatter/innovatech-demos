@@ -14,13 +14,15 @@ import GuestServicesSection from './components/GuestServicesSection'
 import BookingForm from './pages/BookingForm'
 import RoomDetailPage from './pages/RoomDetailPage'
 import AdminLayout from './components/admin/layout/AdminLayout'
+import GuestPortal from './components/GuestPortal'
+import { User } from 'lucide-react'
 import './styles.css'
 
 export default function App() {
   const { isDark, toggleTheme } = useDarkMode()
   const { cart, addItem, removeItem } = useCart()
   const [selectedRoom, setSelectedRoom] = useState(null)
-  const [viewMode, setViewMode] = useState('main') // 'main', 'detail', 'booking', 'admin'
+  const [viewMode, setViewMode] = useState('main') // 'main', 'detail', 'booking', 'admin', 'guest-portal'
 
   const navLinks = [
     { name: 'Home', href: '#home', onClick: () => { setViewMode('main'); window.scrollTo({ top: 0, behavior: 'smooth' }) } },
@@ -28,6 +30,7 @@ export default function App() {
     { name: 'Services', href: '#services' },
     { name: 'Amenities', href: '#amenities' },
     { name: 'Contact', href: '#contact' },
+    { name: 'Guest Portal', href: '#guest', onClick: () => setViewMode('guest-portal'), icon: User },
     { name: 'Admin', href: '#admin', onClick: () => setViewMode('admin'), highlight: true }
   ]
 
@@ -65,6 +68,13 @@ export default function App() {
         isDark={isDark}
         toggleTheme={toggleTheme}
       />
+    )
+  }
+
+  // Show guest portal if in guest-portal mode
+  if (viewMode === 'guest-portal') {
+    return (
+      <GuestPortal onExit={handleBackToMain} />
     )
   }
 

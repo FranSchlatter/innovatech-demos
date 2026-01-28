@@ -1,55 +1,115 @@
-# InnovaTech Demos — Monorepo 
+# InnovaTech Demos — Monorepo
 
-🏨 **Professional Service Demo Landing Pages** for InnovaTech Sales Funnel
+Premium, fully-responsive demo applications showcasing hotel booking, healthcare management, and restaurant ordering systems. Built with modern React stack, featuring complete admin panels and customer portals.
 
-Premium, fully-responsive demo applications showcasing hotel booking, healthcare appointments, and restaurant ordering. Built with modern tech stack, optimized for Vercel deployment.
+---
 
-## 📦 Applications
+## Live Demos
 
-### 🏨 **Hotelería** (Hotel Booking)
-Full-featured hotel reservation system with:
-- **Hero Carousel** - Stunning image carousel with auto-play
-- **15+ Room Categories** - Economy to Presidential suites
-- **Smart Filtering** - Filter by type, price range
-- **Amenities Showcase** - 10 premium facilities
-- **Tours & Experiences** - 8 curated experiences with ratings
-- **Guest Reviews** - Social proof with 6+ testimonials (4.8★ avg)
-- **Professional Booking Form** - Multi-step reservation flow
+| App | Description | Port |
+|-----|-------------|------|
+| **Hotelería** | Hotel Booking System | `localhost:3001` |
+| **Salud** | Healthcare Platform | `localhost:3002` |
+| **Gastronomía** | Restaurant Ordering | `localhost:3003` |
 
-**Live on**: `http://localhost:3004` (dev)
+---
 
-### 🏥 **Salud** (Healthcare Appointments)
-Complete telemedicine appointment system featuring:
-- **8 Specialist Doctors** - Cardiología, Dermatología, Pediatría, Psicología, etc.
-- **Specialty Filtering** - Browse by medical field
-- **Doctor Profiles** - Ratings, reviews, languages, insurance accepted
-- **Appointment Scheduling** - Real-time slot selection
-- **Patient Reviews** - Verified testimonials with ratings
-- **Professional Landing** - Modern healthcare UI
+## Applications
 
-**Live on**: `http://localhost:3002` (dev) or `http://localhost:3005` (available)
+### Hotelería (Hotel Booking)
 
-### 🍽️ **Gastronomía** (Restaurant Ordering)
-Full restaurant management & ordering demo:
-- **12 Menu Items** - Appetizers, mains, pastas, pizzas, desserts
-- **Category Filtering** - Browse by dish type
-- **Smart Cart System** - localStorage persistence
-- **Ratings & Reviews** - Each dish rated by customers
-- **Guest Testimonials** - 6 customer reviews (4.8★ avg)
-- **Responsive Menu** - Beautiful card-based grid
+Complete hotel management system with guest and admin experiences.
 
-**Live on**: `http://localhost:3003` (dev)
+**Customer Features:**
+- Hero carousel with stunning imagery
+- 15+ room categories (Economy to Presidential)
+- Smart filtering by type and price
+- Multi-step booking flow
+- Guest reviews and testimonials
 
-## 🚀 Quick Start
+**Guest Portal:**
+- Real-time stay information
+- Room service ordering
+- Housekeeping requests
+- Spa & amenity reservations
+- Request tracking
+- Help center with FAQ
+
+**Admin Panel:**
+- Dashboard with occupancy metrics
+- Reservation management
+- Room inventory control
+- Guest check-in/out
+- Revenue analytics
+
+---
+
+### Salud (Healthcare Platform)
+
+Full telemedicine and patient management system.
+
+**Customer Features:**
+- 8 specialist doctors across specialties
+- Doctor profiles with ratings and reviews
+- Appointment scheduling with time slots
+- Pre-check-in forms
+- Insurance information
+
+**Patient Portal:**
+- Health dashboard with vitals
+- Appointment management
+- Medical records access
+- Lab results viewer
+- Prescription management with refill requests
+- Billing and payments
+- Secure messaging with care team
+
+**Admin Panel:**
+- Appointment calendar
+- Patient records management
+- Doctor scheduling
+- Medical inventory
+- Analytics dashboard
+
+---
+
+### Gastronomía (Restaurant Ordering)
+
+Complete restaurant ordering and management system.
+
+**Customer Features:**
+- 12+ menu items across categories
+- Dish customization modal (additions, removals, special instructions)
+- Floating cart with item consolidation
+- Real-time order updates
+- Customer reviews
+
+**Online Ordering System:**
+- Add to cart from menu grid
+- Customize dishes with extras
+- Special dietary instructions
+- Order summary with totals
+- Toast notifications
+
+**Admin Panel:**
+- Order management queue
+- Menu item CRUD
+- Table management
+- Sales analytics
+- Inventory tracking
+
+---
+
+## Quick Start
 
 ```bash
-# Install all dependencies
+# Install dependencies
 npm install
 
 # Run individual apps
-npm run dev:hoteleria    # Port 3001 (or next available)
-npm run dev:salud        # Port 3002 (or next available)
-npm run dev:gastronomia  # Port 3003 (or next available)
+npm run dev:hoteleria    # Port 3001
+npm run dev:salud        # Port 3002
+npm run dev:gastronomia  # Port 3003
 
 # Build for production
 npm run build:hoteleria
@@ -57,160 +117,208 @@ npm run build:salud
 npm run build:gastronomia
 ```
 
-## 📁 Monorepo Structure
+---
+
+## Project Structure
 
 ```
 ProyectosDemo/
 ├── apps/
-│   ├── hoteleria/          # Hotel booking Vite app
-│   │   ├── src/
-│   │   │   ├── components/ # HeroCarousel, AmenitiesSection, ToursSection, ReviewsSection
-│   │   │   ├── pages/      # RoomsList, BookingForm
-│   │   │   └── App.jsx
-│   │   ├── package.json
-│   │   └── vite.config.js
-│   ├── salud/              # Healthcare appointments Vite app
-│   │   ├── src/
-│   │   │   ├── components/ # DoctorsGrid, TestimonialsHealthSection
-│   │   │   ├── pages/      # AppointmentForm
-│   │   │   └── App.jsx
-│   │   ├── package.json
-│   │   └── vite.config.js
-│   └── gastronomia/        # Restaurant ordering Vite app
-│       ├── src/
-│       │   ├── components/ # MenuGrid, ReviewsGastroSection
-│       │   ├── pages/      # CartDrawer
-│       │   └── App.jsx
-│       ├── package.json
-│       └── vite.config.js
+│   ├── hoteleria/
+│   │   └── src/
+│   │       ├── components/
+│   │       │   ├── admin/           # Admin panel components
+│   │       │   ├── GuestPortal.jsx  # Guest portal
+│   │       │   └── ...
+│   │       └── App.jsx
+│   ├── salud/
+│   │   └── src/
+│   │       ├── components/
+│   │       │   ├── admin/           # Admin panel components
+│   │       │   ├── PatientPortal.jsx # Patient portal
+│   │       │   └── ...
+│   │       └── App.jsx
+│   └── gastronomia/
+│       └── src/
+│           ├── components/
+│           │   ├── admin/           # Admin panel components
+│           │   ├── DishCustomizeModal.jsx
+│           │   ├── FloatingCartButton.jsx
+│           │   └── ...
+│           ├── context/
+│           │   └── ToastContext.jsx
+│           └── App.jsx
 ├── packages/
-│   ├── shared-ui/          # Reusable components (Navbar, Footer, Hero, ContactSection)
-│   │   └── components/
-│   ├── shared-data/        # Hardcoded mock data
-│   │   ├── rooms.json         (15 hotel rooms)
-│   │   ├── doctors.json       (8 medical doctors)
-│   │   ├── dishes.json        (12 restaurant items)
-│   │   ├── amenities.json     (10 hotel amenities)
-│   │   ├── tours.json         (8 experiences/tours)
-│   │   └── reviews.json       (customer testimonials)
-│   ├── shared-hooks/       # Reusable hooks (useCart, useDarkMode)
-│   └── shared-styles/      # Global CSS, Tailwind config, theme.json
-└── package.json            # Workspace config
+│   ├── shared-ui/         # Navbar, Footer, Hero, ContactSection
+│   ├── shared-data/       # Mock JSON data
+│   ├── shared-hooks/      # useCart, useDarkMode
+│   └── shared-styles/     # Tailwind config, CSS variables
+└── package.json
 ```
 
-## 🎯 Key Features Across All Apps
+---
 
-✅ **Dark Mode** - Persisted theme toggle via localStorage  
-✅ **Responsive Design** - Mobile-first (375px → 1280px)  
-✅ **Framer Motion** - Smooth animations on scroll/hover  
-✅ **Tailwind CSS** - Utility-first with CSS variables  
-✅ **Zero API Calls** - All data hardcoded JSON (no backend needed)  
-✅ **Client-side Filtering** - Smart search & category filtering  
-✅ **localStorage Persistence** - Cart, theme preferences saved  
-✅ **Verified Reviews** - Social proof with star ratings  
-✅ **Professional UI** - 5-star hotel aesthetic throughout
+## Key Features
 
-## 🛠️ Tech Stack
+| Feature | Hotelería | Salud | Gastronomía |
+|---------|-----------|-------|-------------|
+| Landing Page | ✅ | ✅ | ✅ |
+| Dark Mode | ✅ | ✅ | ✅ |
+| Customer Portal | ✅ Guest Portal | ✅ Patient Portal | ✅ Online Ordering |
+| Admin Panel | ✅ | ✅ | ✅ |
+| Cart System | — | — | ✅ |
+| Booking/Appointments | ✅ | ✅ | — |
+| Service Requests | ✅ | ✅ | — |
+| Messaging | ✅ | ✅ | — |
+| Billing | ✅ | ✅ | ✅ |
 
-| Technology | Purpose |
-|---|---|
-| **React 18.3** | UI Framework |
-| **Vite 5.4** | Fast build tool & dev server |
-| **Tailwind CSS 3.4** | Utility-first styling |
-| **Framer Motion 11** | Animations |
-| **Lucide React 0.363** | Icon system |
-| **npm Workspaces** | Monorepo management |
+---
 
-## 📊 Data Statistics
+## Tech Stack
 
-| App | Items | Categories | Testimonials | Avg Rating |
-|---|---|---|---|---|
-| **Hotelería** | 15 rooms | 6 types | 6 reviews | 4.8★ |
-| **Salud** | 8 doctors | 8 specialties | 6 reviews | 4.8★ |
-| **Gastronomía** | 12 dishes | 6 categories | 6 reviews | 4.8★ |
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| React | 18.3 | UI Framework |
+| Vite | 5.4 | Build Tool |
+| Tailwind CSS | 3.4 | Styling |
+| Framer Motion | 11 | Animations |
+| Lucide React | 0.363 | Icons |
+| npm Workspaces | — | Monorepo |
 
-## 🎨 Design System
+---
 
-### Theme Configuration
-All colors and spacing controlled via `packages/shared-styles/theme.json`:
+## Design System
 
-```json
-{
-  "palette": {
-    "primary": "#0B74FF",
-    "accent": "#00D4FF",
-    "background": "#FFFFFF",
-    "surface": "#F5F5F7"
-  }
+### Theme Variables
+
+```css
+:root {
+  --color-primary: #1a1a2e;
+  --color-accent: #d4af37;
+  --color-bg: #ffffff;
+  --color-surface: #f8f9fa;
+  --color-text: #1a1a2e;
+  --color-muted: #6c757d;
+}
+
+[data-theme="dark"] {
+  --color-bg: #0f0f1a;
+  --color-surface: #1a1a2e;
+  --color-text: #ffffff;
 }
 ```
 
-### Dark Mode
-- Automatically applies CSS variables for dark palette
-- Toggle persists to localStorage
-- Respects system preference on first load
-
 ### Responsive Breakpoints
-- Mobile: 375px
-- Tablet: 768px (md:)
-- Desktop: 1280px (lg:)
 
-## 🚀 Deployment (Vercel)
+- Mobile: 375px (default)
+- Tablet: 768px (`md:`)
+- Desktop: 1024px (`lg:`)
+- Wide: 1280px (`xl:`)
 
-Each app deploys independently:
+---
 
-```bash
-# Connect repo to Vercel, then:
-vercel deploy apps/hoteleria    # → hoteleria-demo.vercel.app
-vercel deploy apps/salud        # → salud-demo.vercel.app
-vercel deploy apps/gastronomia  # → gastronomia-demo.vercel.app
+## Deployment (Vercel)
+
+### Option 1: Separate Projects
+
+Create 3 Vercel projects, each pointing to the same repo:
+
+**Project: hoteleria-demo**
+```
+Root Directory: apps/hoteleria
+Build Command: npm run build
+Output Directory: dist
 ```
 
-**No ENV variables needed** (frontend-only, hardcoded data).
+**Project: salud-demo**
+```
+Root Directory: apps/salud
+Build Command: npm run build
+Output Directory: dist
+```
 
-## 📝 Development Workflow
+**Project: gastronomia-demo**
+```
+Root Directory: apps/gastronomia
+Build Command: npm run build
+Output Directory: dist
+```
 
-### Adding a New Feature
-1. Create component in `apps/{app}/src/components/`
-2. Use `@shared-*` aliases for imports
-3. Run `npm run dev:{app}` to test locally
-4. Commit: `feat: description`
-5. Push to master (automatic Vercel deploy)
+### Option 2: Vercel CLI
 
-### Customizing Global Theme
-Edit `packages/shared-styles/theme.json` → all apps auto-update
+```bash
+# Install Vercel CLI
+npm i -g vercel
 
-### Adding More Mock Data
-Update `packages/shared-data/{app}.json` → immediate reflection in UI
+# Deploy each app
+cd apps/hoteleria && vercel --prod
+cd apps/salud && vercel --prod
+cd apps/gastronomia && vercel --prod
+```
 
-## 📄 Git Workflow
+### Important Notes
 
-- **Branches**: Direct commits to `master` only
-- **Commit Format**: `feat: ...` or `fix: ...` only
-- **Releases**: Manual semantic versioning (v0.01, v0.02, etc)
+- No environment variables needed (frontend-only)
+- Each app deploys independently
+- Shared packages are bundled at build time
 
-Current version: **v0.02** (Professional demos launched)
+---
+
+## Screenshots
+
+### Hotelería
+- Landing page with room showcase
+- Guest Portal with stay management
+- Admin dashboard
 
 ### Salud
-- Doctor/service listing
-- Appointment scheduling
-- Date/time picker
-- Confirmation flow
+- Doctor listing and appointments
+- Patient Portal with health records
+- Admin patient management
 
-### Gastronomía  
-- Menu browsing with categories
-- Shopping cart (localStorage)
-- Order confirmation
-- Table reservation
+### Gastronomía
+- Menu with dish customization
+- Floating cart system
+- Admin order management
 
-## 🔗 Deploy
+---
 
-Each app deploys independently to Vercel:
-- `vercel deploy apps/hoteleria`
-- `vercel deploy apps/salud`
-- `vercel deploy apps/gastronomia`
+## Development
 
-Or setup monorepo in Vercel dashboard with:
-- Root: `.`
-- Build command: `npm run build:SERVICE_NAME`
-- Output: `apps/SERVICE_NAME/dist`
+### Adding Components
+
+```bash
+# Shared component (all apps)
+packages/shared-ui/components/NewComponent.jsx
+
+# App-specific component
+apps/{app}/src/components/NewComponent.jsx
+```
+
+### Import Aliases
+
+```javascript
+// Shared packages
+import Navbar from '@shared-ui/components/Navbar'
+import { useCart } from '@shared-hooks/useCart'
+import dishes from '@shared-data/dishes.json'
+
+// App components
+import GuestPortal from './components/GuestPortal'
+```
+
+---
+
+## Version History
+
+| Version | Date | Changes |
+|---------|------|---------|
+| v0.03 | 2024-01 | Guest Portal, Patient Portal, Online Ordering System |
+| v0.02 | 2024-01 | Admin panels for all apps |
+| v0.01 | 2024-01 | Initial release with landing pages |
+
+---
+
+## License
+
+Private — InnovaTech Solutions

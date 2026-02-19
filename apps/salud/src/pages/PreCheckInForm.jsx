@@ -204,13 +204,13 @@ export default function PreCheckInForm({ onClose, appointmentInfo }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-5 mb-8"
+          className="bg-surface border border-border rounded-xl p-5 mb-8"
         >
           <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
             <div className="text-left">
-              <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Important Reminder</p>
-              <p className="text-sm text-blue-600/80 dark:text-blue-400/80 mt-1">
+              <p className="text-sm font-medium text-primary">Important Reminder</p>
+              <p className="text-sm text-muted mt-1">
                 Please arrive 15 minutes before your scheduled appointment time. If you need to cancel or reschedule, please contact us at least 24 hours in advance.
               </p>
             </div>
@@ -340,13 +340,13 @@ export default function PreCheckInForm({ onClose, appointmentInfo }) {
                         onChange={(e) => setFormData({ ...formData, emergencyContactRelation: e.target.value })}
                         className="flex-1 bg-transparent focus:outline-none text-sm cursor-pointer"
                       >
-                        <option value="">Select relationship</option>
-                        <option value="Spouse">Spouse</option>
-                        <option value="Parent">Parent</option>
-                        <option value="Child">Child</option>
-                        <option value="Sibling">Sibling</option>
-                        <option value="Friend">Friend</option>
-                        <option value="Other">Other</option>
+                        <option value="" className="bg-surface text-text">Select relationship</option>
+                        <option value="Spouse" className="bg-surface text-text">Spouse</option>
+                        <option value="Parent" className="bg-surface text-text">Parent</option>
+                        <option value="Child" className="bg-surface text-text">Child</option>
+                        <option value="Sibling" className="bg-surface text-text">Sibling</option>
+                        <option value="Friend" className="bg-surface text-text">Friend</option>
+                        <option value="Other" className="bg-surface text-text">Other</option>
                       </select>
                     </div>
                     {errors.emergencyContactRelation && <p className="text-red-500 text-xs mt-1">{errors.emergencyContactRelation}</p>}
@@ -510,8 +510,8 @@ export default function PreCheckInForm({ onClose, appointmentInfo }) {
                             whileTap={{ scale: 0.98 }}
                             className={`px-3 py-2 rounded-lg border text-sm text-left transition-all ${
                               formData.allergies.includes(allergy)
-                                ? 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-medium'
-                                : 'border-border bg-surface hover:border-red-300'
+                                ? 'border-accent bg-accent/10 text-accent font-medium'
+                                : 'border-border bg-surface hover:border-accent/50'
                             }`}
                           >
                             {allergy}
@@ -587,7 +587,7 @@ export default function PreCheckInForm({ onClose, appointmentInfo }) {
                           <button
                             type="button"
                             onClick={() => removeMedication(index)}
-                            className="px-3 py-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors flex items-center justify-center"
+                            className="px-3 py-2 text-accent hover:bg-accent/10 rounded transition-colors flex items-center justify-center"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -798,14 +798,14 @@ export default function PreCheckInForm({ onClose, appointmentInfo }) {
                     {formData.hasAllergies ? (
                       <div className="flex flex-wrap gap-1">
                         {formData.allergies.map(a => (
-                          <span key={a} className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded text-xs">{a}</span>
+                          <span key={a} className="px-2 py-1 bg-accent/10 text-accent rounded text-xs">{a}</span>
                         ))}
                         {formData.otherAllergies && (
-                          <span className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded text-xs">{formData.otherAllergies}</span>
+                          <span className="px-2 py-1 bg-accent/10 text-accent rounded text-xs">{formData.otherAllergies}</span>
                         )}
                       </div>
                     ) : (
-                      <span className="font-medium text-green-600 dark:text-green-400">No known allergies</span>
+                      <span className="font-medium text-accent">No known allergies</span>
                     )}
                   </div>
                 </div>

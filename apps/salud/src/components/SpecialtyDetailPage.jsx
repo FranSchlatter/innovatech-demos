@@ -1,13 +1,18 @@
 import { motion } from 'framer-motion'
-import { ArrowLeft, Clock, DollarSign, Users, Star, MapPin, Calendar, Shield, Award, CheckCircle, ChevronLeft } from 'lucide-react'
+import { ArrowLeft, Clock, DollarSign, Users, Star, MapPin, Calendar, Shield, Award, CheckCircle, ChevronLeft, Phone } from 'lucide-react'
 import * as Icons from 'lucide-react'
 import allDoctors from '@shared-data/doctors.json'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function SpecialtyDetailPage({ specialty, onBack, onSelectDoctor }) {
   const [selectedImage, setSelectedImage] = useState(0)
   const doctors = allDoctors.filter(d => d.specialtyId === specialty.id)
   const getIcon = (iconName) => Icons[iconName] || Icons.Heart
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [])
 
   const IconComponent = getIcon(specialty.icon)
 
@@ -58,7 +63,7 @@ export default function SpecialtyDetailPage({ specialty, onBack, onSelectDoctor 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="h-screen md:h-96 relative overflow-hidden"
+        className="h-64 md:h-96 relative overflow-hidden"
       >
         <img
           src={galleryImages[selectedImage]}
@@ -328,12 +333,25 @@ export default function SpecialtyDetailPage({ specialty, onBack, onSelectDoctor 
 
               {/* CTA Buttons */}
               <div className="space-y-3">
-                <button
-                  onClick={handleBookAppointment}
-                  className="btn-primary w-full text-center"
-                >
-                  Book Appointment
-                </button>
+                {doctors.length === 0 && (
+                  <div className="bg-accent/10 border border-accent/20 rounded-lg p-4 text-center mb-3">
+                    <p className="text-sm text-muted mb-3">
+                      No specialists currently available for this service.
+                    </p>
+                    <button
+                      onClick={() => {
+                        onBack()
+                        setTimeout(() => {
+                          document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })
+                        }, 100)
+                      }}
+                      className="inline-flex items-center gap-2 text-accent hover:text-primary font-semibold text-sm transition"
+                    >
+                      <Phone className="w-4 h-4" />
+                      Contact Help Center
+                    </button>
+                  </div>
+                )}
                 <button
                   onClick={onBack}
                   className="btn-secondary w-full text-center"

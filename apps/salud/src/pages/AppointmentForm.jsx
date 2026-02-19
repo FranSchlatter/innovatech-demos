@@ -74,9 +74,9 @@ export default function AppointmentForm({ doctor, onBook }) {
               required
               className="w-full px-4 py-3 rounded-lg bg-bg border border-border focus:outline-none focus:border-primary"
             >
-              <option value="">Selecciona horario</option>
+              <option value="" className="bg-surface text-text">Selecciona horario</option>
               {doctor.availability.map((slot) => (
-                <option key={slot} value={slot}>{slot}</option>
+                <option key={slot} value={slot} className="bg-surface text-text">{slot}</option>
               ))}
             </select>
           </div>

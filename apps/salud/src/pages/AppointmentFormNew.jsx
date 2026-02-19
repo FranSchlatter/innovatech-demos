@@ -265,14 +265,14 @@ export default function AppointmentFormNew({ doctor, specialty, onBook }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.55 }}
-            className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-5 mb-8"
+            className="bg-surface border border-border rounded-xl p-5 mb-8"
           >
             <div className="flex items-start gap-3">
-              <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+              <FileText className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
               <div className="text-left">
-                <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Save time at check-in!</p>
-                <p className="text-sm text-blue-600/80 dark:text-blue-400/80 mt-1">
-                  Complete your <strong>Pre-Check-In Form</strong> online before your visit.
+                <p className="text-sm font-medium text-primary">Save time at check-in!</p>
+                <p className="text-sm text-muted mt-1">
+                  Complete your <strong className="text-accent">Pre-Check-In Form</strong> online before your visit.
                   You'll receive a link in your confirmation email.
                 </p>
               </div>
@@ -535,9 +535,9 @@ export default function AppointmentFormNew({ doctor, specialty, onBook }) {
                           onChange={(e) => setFormData({ ...formData, insuranceProvider: e.target.value })}
                           className="flex-1 bg-transparent focus:outline-none text-sm cursor-pointer"
                         >
-                          <option value="">Select your insurance</option>
+                          <option value="" className="bg-surface text-text">Select your insurance</option>
                           {INSURANCE_PROVIDERS.map(provider => (
-                            <option key={provider} value={provider}>{provider}</option>
+                            <option key={provider} value={provider} className="bg-surface text-text">{provider}</option>
                           ))}
                         </select>
                       </div>
@@ -585,10 +585,10 @@ export default function AppointmentFormNew({ doctor, specialty, onBook }) {
                           </div>
                         </div>
 
-                        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 text-sm">
+                        <div className="bg-accent/10 border border-accent/30 rounded-lg p-4 text-sm">
                           <div className="flex items-start gap-2">
-                            <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                            <p className="text-blue-700 dark:text-blue-300">
+                            <AlertCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                            <p className="text-accent">
                               Please bring your insurance card to your appointment. We'll verify your coverage and discuss any co-pays before your visit.
                             </p>
                           </div>
@@ -600,13 +600,13 @@ export default function AppointmentFormNew({ doctor, specialty, onBook }) {
                       <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
-                        className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 text-sm"
+                        className="bg-surface border border-border rounded-lg p-4 text-sm"
                       >
                         <div className="flex items-start gap-2">
-                          <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                          <AlertCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
                           <div>
-                            <p className="font-medium text-amber-700 dark:text-amber-300">Self-Pay Patient</p>
-                            <p className="text-amber-600 dark:text-amber-400 mt-1">
+                            <p className="font-medium text-primary">Self-Pay Patient</p>
+                            <p className="text-muted mt-1">
                               Payment is due at the time of service. We accept cash, credit cards, and offer payment plans. Contact our billing department for pricing information.
                             </p>
                           </div>
@@ -641,9 +641,9 @@ export default function AppointmentFormNew({ doctor, specialty, onBook }) {
                             onChange={(e) => setFormData({ ...formData, preferredDate: e.target.value })}
                             className="flex-1 bg-transparent focus:outline-none text-sm cursor-pointer"
                           >
-                            <option value="">Select a date</option>
+                            <option value="" className="bg-surface text-text">Select a date</option>
                             {availableDates.map(date => (
-                              <option key={date} value={date}>
+                              <option key={date} value={date} className="bg-surface text-text">
                                 {new Date(date).toLocaleDateString('en-US', {
                                   weekday: 'short',
                                   month: 'short',
@@ -667,9 +667,9 @@ export default function AppointmentFormNew({ doctor, specialty, onBook }) {
                             onChange={(e) => setFormData({ ...formData, preferredTime: e.target.value })}
                             className="flex-1 bg-transparent focus:outline-none text-sm cursor-pointer"
                           >
-                            <option value="">Select a time</option>
+                            <option value="" className="bg-surface text-text">Select a time</option>
                             {availableTimes.map(time => (
-                              <option key={time} value={time}>{time}</option>
+                              <option key={time} value={time} className="bg-surface text-text">{time}</option>
                             ))}
                           </select>
                         </div>
@@ -688,9 +688,9 @@ export default function AppointmentFormNew({ doctor, specialty, onBook }) {
                           onChange={(e) => setFormData({ ...formData, reasonForVisit: e.target.value })}
                           className="flex-1 bg-transparent focus:outline-none text-sm cursor-pointer"
                         >
-                          <option value="">Select reason</option>
+                          <option value="" className="bg-surface text-text">Select reason</option>
                           {VISIT_REASONS.map(reason => (
-                            <option key={reason} value={reason}>{reason}</option>
+                            <option key={reason} value={reason} className="bg-surface text-text">{reason}</option>
                           ))}
                         </select>
                       </div>

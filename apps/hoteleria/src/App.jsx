@@ -24,12 +24,24 @@ export default function App() {
   const [selectedRoom, setSelectedRoom] = useState(null)
   const [viewMode, setViewMode] = useState('main') // 'main', 'detail', 'booking', 'admin', 'guest-portal'
 
+  const handleNavClick = (sectionId) => {
+    if (viewMode !== 'main') {
+      setViewMode('main')
+      setSelectedRoom(null)
+      setTimeout(() => {
+        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' })
+      }, 100)
+    } else {
+      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
   const navLinks = [
-    { name: 'Home', href: '#home', onClick: () => { setViewMode('main'); window.scrollTo({ top: 0, behavior: 'smooth' }) } },
-    { name: 'Accommodation', href: '#accommodation' },
-    { name: 'Services', href: '#services' },
-    { name: 'Amenities', href: '#amenities' },
-    { name: 'Contact', href: '#contact' },
+    { name: 'Home', href: '#home', onClick: () => { setViewMode('main'); setSelectedRoom(null); window.scrollTo({ top: 0, behavior: 'smooth' }) } },
+    { name: 'Accommodation', href: '#accommodation', onClick: () => handleNavClick('accommodation') },
+    { name: 'Services', href: '#services', onClick: () => handleNavClick('services') },
+    { name: 'Amenities', href: '#amenities', onClick: () => handleNavClick('amenities') },
+    { name: 'Contact', href: '#contact', onClick: () => handleNavClick('contact') },
     { name: 'Guest Portal', href: '#guest', onClick: () => setViewMode('guest-portal'), icon: User },
     { name: 'Admin', href: '#admin', onClick: () => setViewMode('admin'), highlight: true }
   ]

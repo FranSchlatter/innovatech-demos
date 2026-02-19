@@ -1,153 +1,149 @@
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDown, Sparkles } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { ChevronDown, Star, MapPin, Calendar, Check } from 'lucide-react'
 
 export default function HeroCarousel() {
-  const [current, setCurrent] = useState(0)
-  const [autoPlay, setAutoPlay] = useState(true)
+  const handleBookNow = () => {
+    document.getElementById('accommodation')?.scrollIntoView({ behavior: 'smooth' })
+  }
 
-  const slides = [
-    {
-      title: "A Sanctuary of Elegance",
-      subtitle: "Where luxury meets refined simplicity",
-      image: "https://cdn.pixabay.com/photo/2016/11/17/09/28/hotel-1831072_1280.jpg?w=1600&q=90&auto=format&fit=crop",
-      cta: "Explore Accommodations",
-      action: () => document.getElementById('accommodation')?.scrollIntoView({ behavior: 'smooth' })
-    },
-    {
-      title: "Unforgettable Moments",
-      subtitle: "Curated experiences for discerning guests",
-      image: "https://cdn.pixabay.com/photo/2018/02/22/08/05/palma-3172367_1280.jpg?w=1600&q=90&auto=format&fit=crop",
-      cta: "View Amenities",
-      action: () => document.getElementById('amenities')?.scrollIntoView({ behavior: 'smooth' })
-    },
-    {
-      title: "Your Perfect Escape",
-      subtitle: "Discover the art of luxurious hospitality",
-      image: "https://cdn.pixabay.com/photo/2014/09/17/22/12/pool-450170_1280.jpg?w=1600&q=90&auto=format&fit=crop",
-      cta: "Book Your Stay",
-      action: () => document.getElementById('accommodation')?.scrollIntoView({ behavior: 'smooth' })
-    }
+  const handleExplore = () => {
+    document.getElementById('amenities')?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  const features = [
+    '5-Star Luxury Resort',
+    'Oceanfront Property',
+    '24/7 Concierge Service',
+    'Award-Winning Spa'
   ]
 
-  useEffect(() => {
-    if (!autoPlay) return
-    const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % slides.length)
-    }, 6000)
-    return () => clearInterval(timer)
-  }, [autoPlay, slides.length])
-
-  const next = () => {
-    setCurrent((prev) => (prev + 1) % slides.length)
-    setAutoPlay(false)
-  }
-
-  const prev = () => {
-    setCurrent((prev) => (prev - 1 + slides.length) % slides.length)
-    setAutoPlay(false)
-  }
-
-  const goToSlide = (idx) => {
-    setCurrent(idx)
-    setAutoPlay(false)
-  }
-
   return (
-    <div 
-      className="relative w-full h-screen overflow-hidden bg-primary"
-      onMouseEnter={() => setAutoPlay(false)}
-      onMouseLeave={() => setAutoPlay(true)}
-      id="hero"
-    >
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={current}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1.2, ease: "easeInOut" }}
-          className="absolute inset-0"
-        >
-          <img
-            src={slides[current].image}
-            alt={slides[current].title}
-            className="w-full h-full object-cover"
-          />
-          {/* Subtle Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/30" />
-        </motion.div>
-      </AnimatePresence>
+    <div className="relative w-full h-screen overflow-hidden bg-black" id="hero">
+      {/* Background Image with Parallax Effect */}
+      <motion.div
+        initial={{ scale: 1.1 }}
+        animate={{ scale: 1 }}
+        transition={{ duration: 1.5, ease: "easeOut" }}
+        className="absolute inset-0"
+      >
+        <img
+          src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1920&h=1080&fit=crop&q=90"
+          alt="Luxury Resort"
+          className="w-full h-full object-cover"
+        />
+        {/* Modern Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+      </motion.div>
 
-      {/* Content */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-8">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -40 }}
-          transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-          className="text-center text-white px-4 max-w-3xl z-10 bg-black/30 backdrop-blur-md rounded-2xl py-8 px-8"
-        >
-          {/* Icon */}
+      {/* Content Container */}
+      <div className="relative h-full container mx-auto px-4 flex items-center">
+        <div className="max-w-3xl">
+          {/* Badge */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="flex justify-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-full mb-6"
           >
-            {/* <Sparkles className="w-6 h-6 text-gold" /> */}
+            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+            <span className="text-sm font-medium">Luxury Hospitality</span>
           </motion.div>
 
-          {/* Heading */}
-          <h1 className="font-serif text-3xl md:text-5xl font-light mb-3 tracking-tight leading-tight">
-            {slides[current].title}
-          </h1>
+          {/* Main Heading */}
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight"
+          >
+            Experience
+            <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-200 to-yellow-400">
+              Timeless Elegance
+            </span>
+          </motion.h1>
 
           {/* Subtitle */}
-          <p className="text-base md:text-lg font-light text-white tracking-wide">
-            {slides[current].subtitle}
-          </p>
-        </motion.div>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-lg md:text-xl text-gray-200 mb-8 max-w-2xl leading-relaxed"
+          >
+            Immerse yourself in unparalleled luxury where every detail is crafted
+            to create unforgettable memories. Your sanctuary awaits.
+          </motion.p>
 
-        {/* CTA - Outside the background panel */}
-        <motion.button
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" }}
-          onClick={slides[current].action}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.98 }}
-          className="btn-primary uppercase tracking-widest text-sm font-semibold px-10 py-4 z-10"
-        >
-          {slides[current].cta}
-        </motion.button>
+          {/* Features Grid */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="grid grid-cols-2 gap-3 mb-10 max-w-xl"
+          >
+            {features.map((feature, idx) => (
+              <div key={idx} className="flex items-center gap-2 text-white/90">
+                <Check className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+                <span className="text-sm">{feature}</span>
+              </div>
+            ))}
+          </motion.div>
 
-        {/* Scroll Indicator */}
-        <motion.div
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/60"
-        >
-          <ChevronDown className="w-6 h-6" />
-        </motion.div>
+          {/* CTAs */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+            className="flex flex-col sm:flex-row gap-4"
+          >
+            <button
+              onClick={handleBookNow}
+              className="bg-white hover:bg-gray-100 text-black px-8 py-4 rounded-lg text-base font-semibold transition-all duration-300 hover:scale-105 shadow-2xl inline-flex items-center justify-center gap-2"
+            >
+              <Calendar className="w-5 h-5" />
+              Book Your Stay
+            </button>
+            <button
+              onClick={handleExplore}
+              className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-lg text-base font-semibold transition-all duration-300 hover:scale-105 inline-flex items-center justify-center gap-2"
+            >
+              Explore Amenities
+            </button>
+          </motion.div>
+        </div>
       </div>
 
-      {/* Dots Indicator - Sin botones de navegación left/right */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-3">
-        {slides.map((_, idx) => (
-          <motion.button
-            key={idx}
-            onClick={() => goToSlide(idx)}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              idx === current
-                ? 'bg-white w-8'
-                : 'bg-white/40 hover:bg-white/60'
-            }`}
-            whileHover={{ scale: 1.2 }}
-            aria-label={`Go to slide ${idx + 1}`}
-          />
-        ))}
-      </div>
+      {/* Floating Stats */}
+      <motion.div
+        initial={{ opacity: 0, x: 50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.8, delay: 0.7 }}
+        className="absolute right-8 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-6"
+      >
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 text-center min-w-[140px]">
+          <div className="text-3xl font-bold text-white mb-1">250+</div>
+          <div className="text-sm text-gray-300">Luxury Rooms</div>
+        </div>
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 text-center min-w-[140px]">
+          <div className="text-3xl font-bold text-white mb-1">4.9★</div>
+          <div className="text-sm text-gray-300">Guest Rating</div>
+        </div>
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 text-center min-w-[140px]">
+          <div className="text-3xl font-bold text-white mb-1">50+</div>
+          <div className="text-sm text-gray-300">Years Legacy</div>
+        </div>
+      </motion.div>
+
+      {/* Scroll Indicator */}
+      <motion.div
+        animate={{ y: [0, 12, 0] }}
+        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/70 flex flex-col items-center gap-2"
+      >
+        <span className="text-sm tracking-wider uppercase">Scroll</span>
+        <ChevronDown className="w-5 h-5" />
+      </motion.div>
     </div>
   )
 }

@@ -1,9 +1,14 @@
 import { motion } from 'framer-motion'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ChevronLeft, MapPin, Users, Maximize2, Wifi, Coffee, Bath, Tv, AirVent } from 'lucide-react'
 
 export default function RoomDetailPage({ room, onBack, onReserve }) {
   const [selectedImage, setSelectedImage] = useState(0)
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [])
 
   if (!room) {
     return (
@@ -55,7 +60,7 @@ export default function RoomDetailPage({ room, onBack, onReserve }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="h-screen md:h-96 relative overflow-hidden"
+        className="h-64 md:h-96 relative overflow-hidden"
       >
         <img
           src={images[selectedImage]}

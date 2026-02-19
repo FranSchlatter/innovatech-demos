@@ -64,7 +64,7 @@ export default function HeroCarousel({ onViewMenu, onBookTable, onOrderOnline })
             {onOrderOnline && (
               <button
                 onClick={onOrderOnline}
-                className="bg-accent hover:bg-accent/90 text-white px-8 py-4 rounded-xl text-lg font-bold transition-all inline-flex items-center gap-2 shadow-lg hover:shadow-xl w-full sm:w-auto justify-center animate-pulse hover:animate-none"
+                className="bg-accent hover:bg-accent/90 text-white px-8 py-4 rounded-xl text-lg font-bold transition-all duration-300 inline-flex items-center gap-2 shadow-lg hover:shadow-2xl hover:scale-105 w-full sm:w-auto justify-center animate-pulse hover:animate-none"
               >
                 <ShoppingBag size={24} />
                 Order Online
@@ -72,14 +72,14 @@ export default function HeroCarousel({ onViewMenu, onBookTable, onOrderOnline })
             )}
             <button
               onClick={onViewMenu}
-              className="bg-surface hover:bg-primary/10 text-primary border-2 border-primary px-8 py-4 rounded-xl text-lg font-semibold transition-all inline-flex items-center gap-2 w-full sm:w-auto justify-center"
+              className="bg-surface hover:bg-primary/10 text-primary border-2 border-primary px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 inline-flex items-center gap-2 hover:scale-105 hover:border-primary/80 w-full sm:w-auto justify-center"
             >
               <Utensils size={24} />
               View Menu
             </button>
             <button
               onClick={onBookTable}
-              className="bg-primary hover:bg-primary/90 text-primary-contrast px-8 py-4 rounded-xl text-lg font-semibold transition-all inline-flex items-center gap-2 shadow-lg hover:shadow-xl w-full sm:w-auto justify-center"
+              className="bg-primary hover:bg-primary/90 text-primary-contrast px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 inline-flex items-center gap-2 shadow-lg hover:shadow-2xl hover:scale-105 w-full sm:w-auto justify-center"
             >
               <ChefHat size={24} />
               Book a Table
@@ -91,19 +91,19 @@ export default function HeroCarousel({ onViewMenu, onBookTable, onOrderOnline })
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.2, duration: 0.8 }}
-            className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-3xl mx-auto"
+            className="mt-12 md:mt-16 mb-16 md:mb-0 grid grid-cols-3 gap-4 md:gap-8 max-w-3xl mx-auto"
           >
-            <div className="flex flex-col items-center gap-2">
-              <div className="text-3xl font-bold text-primary">20+</div>
-              <div className="text-sm text-muted">Signature Dishes</div>
+            <div className="flex flex-col items-center gap-1 md:gap-2">
+              <div className="text-2xl md:text-3xl font-bold text-primary">20+</div>
+              <div className="text-xs md:text-sm text-muted">Signature Dishes</div>
             </div>
-            <div className="flex flex-col items-center gap-2">
-              <div className="text-3xl font-bold text-primary">4.8★</div>
-              <div className="text-sm text-muted">Average Rating</div>
+            <div className="flex flex-col items-center gap-1 md:gap-2">
+              <div className="text-2xl md:text-3xl font-bold text-primary">4.8★</div>
+              <div className="text-xs md:text-sm text-muted">Average Rating</div>
             </div>
-            <div className="flex flex-col items-center gap-2">
-              <div className="text-3xl font-bold text-primary">30min</div>
-              <div className="text-sm text-muted">Fast Delivery</div>
+            <div className="flex flex-col items-center gap-1 md:gap-2">
+              <div className="text-2xl md:text-3xl font-bold text-primary">30min</div>
+              <div className="text-xs md:text-sm text-muted">Fast Delivery</div>
             </div>
           </motion.div>
         </motion.div>

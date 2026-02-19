@@ -13,7 +13,7 @@ export default function FloatingCartButton({ itemCount, total, onClick }) {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={onClick}
-        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-accent hover:bg-accent/90 text-white px-6 py-4 rounded-2xl shadow-xl flex items-center gap-4 transition-colors"
+        className="fixed bottom-6 right-6 z-40 bg-accent hover:bg-accent/90 text-white px-6 py-4 rounded-2xl shadow-xl flex items-center gap-4 transition-colors"
       >
         {/* Cart Icon with Badge */}
         <div className="relative">

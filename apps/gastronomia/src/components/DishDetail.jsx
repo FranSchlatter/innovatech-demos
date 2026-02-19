@@ -52,7 +52,7 @@ export default function DishDetail({ dish, onBack, onAddToCart, onCustomize }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="h-screen md:h-96 relative overflow-hidden"
+        className="h-64 md:h-96 relative overflow-hidden"
       >
         <img
           src={galleryImages[selectedImage]}

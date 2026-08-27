@@ -1,0 +1,62 @@
+[
+  {
+    "id": "AG-001",
+    "name": "Valentina Ríos",
+    "role": "Broker Senior",
+    "specialty": "Departamentos premium · CABA",
+    "phone": "+54 11 5123-4501",
+    "email": "valentina.rios@terranova.com",
+    "photo": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80",
+    "rating": 4.9,
+    "reviews": 128,
+    "salesClosed": 214,
+    "yearsExperience": 12,
+    "languages": ["Español", "Inglés"],
+    "bio": "Especialista en propiedades premium de Capital Federal. Acompaña a sus clientes en cada etapa con un enfoque personalizado y datos de mercado en tiempo real."
+  },
+  {
+    "id": "AG-002",
+    "name": "Martín Aguirre",
+    "role": "Broker · Zona Norte",
+    "specialty": "Casas y countries · GBA Norte",
+    "phone": "+54 11 5123-4502",
+    "email": "martin.aguirre@terranova.com",
+    "photo": "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80",
+    "rating": 4.8,
+    "reviews": 96,
+    "salesClosed": 178,
+    "yearsExperience": 15,
+    "languages": ["Español", "Inglés", "Portugués"],
+    "bio": "Referente en barrios cerrados y casas de Zona Norte. Conoce cada emprendimiento de Nordelta, Pilar y Tigre como la palma de su mano."
+  },
+  {
+    "id": "AG-003",
+    "name": "Camila Ferrer",
+    "role": "Asesora Comercial",
+    "specialty": "Inversiones y oficinas",
+    "phone": "+54 11 5123-4503",
+    "email": "camila.ferrer@terranova.com",
+    "photo": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80",
+    "rating": 4.9,
+    "reviews": 74,
+    "salesClosed": 132,
+    "yearsExperience": 8,
+    "languages": ["Español", "Inglés"],
+    "bio": "Orientada a inversores. Analiza rentabilidad, flujo de fondos y potencial de revalorización para que cada compra sea una decisión inteligente."
+  },
+  {
+    "id": "AG-004",
+    "name": "Diego Santángelo",
+    "role": "Asesor de Alquileres",
+    "specialty": "Alquileres y temporarios",
+    "phone": "+54 11 5123-4504",
+    "email": "diego.santangelo@terranova.com",
+    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+    "rating": 4.7,
+    "reviews": 152,
+    "salesClosed": 340,
+    "yearsExperience": 10,
+    "languages": ["Español"],
+    "bio": "Gestiona alquileres tradicionales y temporarios de punta a punta: desde la búsqueda hasta la firma, con garantías y contratos resueltos."
+  }
+]

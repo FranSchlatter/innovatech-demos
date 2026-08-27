@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "author": "Lucía Méndez",
+    "location": "Compró en Palermo",
+    "rating": 5,
+    "title": "Acompañamiento de principio a fin",
+    "comment": "Compramos nuestro primer departamento con Terranova y fue una experiencia impecable. Nos guiaron con la hipoteca, la escritura y hasta la mudanza. Súper recomendables.",
+    "date": "2026-07-18",
+    "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&q=80"
+  },
+  {
+    "id": 2,
+    "author": "Federico Blanco",
+    "location": "Vendió en Nordelta",
+    "rating": 5,
+    "title": "Vendí más rápido de lo que esperaba",
+    "comment": "El tour virtual 360° hizo que la propiedad se destacara. Recibí ofertas en la primera semana y cerré por encima del valor de tasación. Un equipo muy profesional.",
+    "date": "2026-06-29",
+    "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80"
+  },
+  {
+    "id": 3,
+    "author": "Sofía Herrera",
+    "location": "Alquiló en Barrio Norte",
+    "rating": 4,
+    "title": "Todo online y sin vueltas",
+    "comment": "Pude agendar las visitas desde el portal, comparar opciones y firmar el contrato con garantía en tiempo récord. La atención de Diego fue excelente.",
+    "date": "2026-08-02",
+    "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80"
+  },
+  {
+    "id": 4,
+    "author": "Grupo Inversor Andes",
+    "location": "Inversión en Puerto Madero",
+    "rating": 5,
+    "title": "Datos claros para decidir",
+    "comment": "La calculadora de rentabilidad y el análisis de Camila nos dieron la seguridad para invertir. Transparencia total en números y proyecciones.",
+    "date": "2026-07-05",
+    "avatar": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&q=80"
+  }
+]

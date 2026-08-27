@@ -1,0 +1,119 @@
+/* ==========================================================================
+   REAL ESTATE THEME - Navy & Gold Premium Design System
+   Overwrites shared global.css variables (higher specificity + !important)
+   ========================================================================== */
+
+:root {
+  /* Primary - Deep Navy */
+  --color-primary: #16233d !important;
+  --color-primary-dark: #0f1729 !important;
+  --color-primary-light: #24375c !important;
+  --color-primary-contrast: #ffffff !important;
+
+  /* Accent + Gold - Warm refined gold */
+  --color-secondary: #b7912f !important;
+  --color-accent: #b7912f !important;
+  --color-accent-dark: #8f7017 !important;
+  --color-accent-light: #d8b45c !important;
+  --color-gold: #c9a227 !important;
+  --color-bronze: #b7912f !important;
+
+  /* Backgrounds - Clean, light, airy */
+  --color-bg: #f6f7f9 !important;
+  --color-surface: #ffffff !important;
+  --color-surface-alt: #eef1f5 !important;
+
+  /* Text */
+  --color-text: #1a2438 !important;
+  --color-text-secondary: #47536b !important;
+  --color-muted: #6b7891 !important;
+
+  /* Border */
+  --color-border: #e2e6ec !important;
+
+  /* Status */
+  --color-success: #1a9e6c !important;
+  --color-warning: #d99a1f !important;
+  --color-error: #dc4a4a !important;
+  --color-info: #2f6fd4 !important;
+
+  /* Shadows tuned for navy */
+  --shadow-soft: 0 4px 14px rgba(22, 35, 61, 0.08) !important;
+  --shadow-medium: 0 12px 34px rgba(22, 35, 61, 0.14) !important;
+}
+
+html,
+body {
+  --color-primary: #16233d !important;
+  --color-accent: #b7912f !important;
+  --color-gold: #c9a227 !important;
+  --color-bronze: #b7912f !important;
+}
+
+/* ==========================================================================
+   DARK MODE - Midnight Navy & Bright Gold
+   ========================================================================== */
+html[data-theme="dark"],
+html[data-theme="dark"] body,
+[data-theme="dark"] {
+  --color-primary: #eef2f8 !important;
+  --color-primary-dark: #d6deec !important;
+  --color-primary-light: #ffffff !important;
+  --color-primary-contrast: #0f1729 !important;
+
+  --color-secondary: #e0be4e !important;
+  --color-accent: #e0be4e !important;
+  --color-accent-dark: #c9a227 !important;
+  --color-accent-light: #f0d67a !important;
+  --color-gold: #e0be4e !important;
+  --color-bronze: #e0be4e !important;
+
+  /* Dark navy backgrounds */
+  --color-bg: #0d1526 !important;
+  --color-surface: #16223a !important;
+  --color-surface-alt: #1e2d4a !important;
+
+  /* Text */
+  --color-text: #e8edf5 !important;
+  --color-text-secondary: #a9b6cc !important;
+  --color-muted: #8493ac !important;
+
+  /* Border */
+  --color-border: #2a3a5c !important;
+
+  /* Status */
+  --color-success: #2fbe86 !important;
+  --color-warning: #e6b23e !important;
+  --color-error: #ef6a6a !important;
+  --color-info: #5a92e6 !important;
+
+  --shadow-soft: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
+  --shadow-medium: 0 12px 34px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* ==========================================================================
+   REAL-ESTATE UTILITY HELPERS
+   ========================================================================== */
+
+/* Gold gradient text used in hero headings */
+.text-gold-gradient {
+  background: linear-gradient(90deg, var(--color-gold), #f0d67a, var(--color-gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Subtle premium card treatment */
+.card-premium {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-soft);
+  transition: all var(--transition-medium);
+}
+
+.card-premium:hover {
+  box-shadow: var(--shadow-medium);
+  transform: translateY(-2px);
+}

@@ -1,0 +1,18 @@
+{
+  "name": "@innovatech/demo-kit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./tokens/kit.css": "./tokens/kit.css",
+    "./tokens/tailwind-preset.js": "./tokens/tailwind-preset.js"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "framer-motion": "^11.0.0",
+    "lucide-react": "^0.363.0"
+  }
+}

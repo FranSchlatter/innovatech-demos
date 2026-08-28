@@ -1,0 +1,180 @@
+/* ==========================================================================
+   InnovaTech Demo Kit — Design Tokens
+   Dual theming: theme-innovatech (management/panel/tour) + client public themes.
+   Dark/light via data-mode on the same scope. All vars prefixed --dk-*.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --dk-font: 'Montserrat', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --dk-radius: 14px;
+  --dk-radius-sm: 8px;
+  --dk-radius-lg: 22px;
+  --dk-t-fast: 160ms;
+  --dk-t-med: 300ms;
+}
+
+/* --------------------------------------------------------------------------
+   InnovaTech — panel signature (dark navy + cyan). Default = dark.
+   -------------------------------------------------------------------------- */
+.theme-innovatech {
+  --dk-bg: #0A1628;
+  --dk-surface: #0F2035;
+  --dk-surface-2: #13294180;
+  --dk-elevated: #16304D;
+  --dk-primary: #66E0FF;
+  --dk-primary-weak: #66e0ff26;
+  --dk-primary-contrast: #04121F;
+  --dk-text: #E6F0F7;
+  --dk-heading: #FFFFFF;
+  --dk-muted: #8DA2B5;
+  --dk-border: #1E3A55;
+  --dk-ring: #66E0FF66;
+  --dk-success: #34D399;
+  --dk-warning: #FBBF24;
+  --dk-danger: #F87171;
+  --dk-info: #66E0FF;
+  --dk-shadow: 0 18px 40px rgba(2, 10, 20, 0.45);
+  --dk-hex: #66E0FF;
+  color-scheme: dark;
+}
+.theme-innovatech[data-mode='light'] {
+  --dk-bg: #EEF4FA;
+  --dk-surface: #FFFFFF;
+  --dk-surface-2: #F3F8FD;
+  --dk-elevated: #FFFFFF;
+  --dk-primary: #0C7BB8;
+  --dk-primary-weak: #0c7bb814;
+  --dk-primary-contrast: #FFFFFF;
+  --dk-text: #16324A;
+  --dk-heading: #0A1F33;
+  --dk-muted: #5E7488;
+  --dk-border: #D4E2EF;
+  --dk-ring: #0c7bb855;
+  --dk-shadow: 0 12px 32px rgba(12, 40, 66, 0.12);
+  --dk-hex: #0C7BB8;
+  color-scheme: light;
+}
+
+/* --------------------------------------------------------------------------
+   Client public — Hotel (warm). Default = light.
+   -------------------------------------------------------------------------- */
+.theme-hotel {
+  --dk-bg: #FBF8F4;
+  --dk-surface: #FFFFFF;
+  --dk-surface-2: #F6F0E9;
+  --dk-elevated: #FFFFFF;
+  --dk-primary: #A07A4B;
+  --dk-primary-weak: #a07a4b1f;
+  --dk-primary-contrast: #FFFFFF;
+  --dk-text: #3A342C;
+  --dk-heading: #241F19;
+  --dk-muted: #8A7F72;
+  --dk-border: #E9E0D4;
+  --dk-ring: #a07a4b55;
+  --dk-success: #2FA36B;
+  --dk-warning: #D99425;
+  --dk-danger: #D2583F;
+  --dk-info: #4A90A4;
+  --dk-shadow: 0 14px 34px rgba(58, 42, 24, 0.12);
+  --dk-hex: #A07A4B;
+  color-scheme: light;
+}
+.theme-hotel[data-mode='dark'] {
+  --dk-bg: #191512;
+  --dk-surface: #221D18;
+  --dk-surface-2: #2A231C;
+  --dk-elevated: #2A231C;
+  --dk-primary: #C9A26D;
+  --dk-primary-weak: #c9a26d24;
+  --dk-primary-contrast: #1A140D;
+  --dk-text: #EAE2D6;
+  --dk-heading: #FBF6EC;
+  --dk-muted: #A99C88;
+  --dk-border: #3A3128;
+  --dk-ring: #c9a26d55;
+  --dk-shadow: 0 16px 38px rgba(0, 0, 0, 0.5);
+  --dk-hex: #C9A26D;
+  color-scheme: dark;
+}
+
+/* --------------------------------------------------------------------------
+   Client public — Real estate (sober blue-green). Default = light.
+   -------------------------------------------------------------------------- */
+.theme-realestate {
+  --dk-bg: #F7F9FA;
+  --dk-surface: #FFFFFF;
+  --dk-surface-2: #EFF4F4;
+  --dk-elevated: #FFFFFF;
+  --dk-primary: #0F6E5C;
+  --dk-primary-weak: #0f6e5c1a;
+  --dk-primary-contrast: #FFFFFF;
+  --dk-text: #24322F;
+  --dk-heading: #10221D;
+  --dk-muted: #647570;
+  --dk-border: #DCE6E4;
+  --dk-ring: #0f6e5c55;
+  --dk-success: #17A67A;
+  --dk-warning: #E0A020;
+  --dk-danger: #D65745;
+  --dk-info: #2C7DA0;
+  --dk-shadow: 0 14px 34px rgba(16, 34, 29, 0.10);
+  --dk-hex: #0F6E5C;
+  color-scheme: light;
+}
+.theme-realestate[data-mode='dark'] {
+  --dk-bg: #0E1614;
+  --dk-surface: #14201D;
+  --dk-surface-2: #1A2723;
+  --dk-elevated: #1A2723;
+  --dk-primary: #3FD0A8;
+  --dk-primary-weak: #3fd0a824;
+  --dk-primary-contrast: #06130F;
+  --dk-text: #DEE9E5;
+  --dk-heading: #F0F7F4;
+  --dk-muted: #8FA39D;
+  --dk-border: #263733;
+  --dk-ring: #3fd0a855;
+  --dk-shadow: 0 16px 38px rgba(0, 0, 0, 0.5);
+  --dk-hex: #3FD0A8;
+  color-scheme: dark;
+}
+
+/* --------------------------------------------------------------------------
+   Base element styling
+   -------------------------------------------------------------------------- */
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  font-family: var(--dk-font);
+  background-color: var(--dk-bg, #0A1628);
+  color: var(--dk-text, #E6F0F7);
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; display: block; }
+h1, h2, h3, h4 { color: var(--dk-heading); margin: 0; }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; }
+
+/* Hexagon decorative pattern (subtle, panel backgrounds) */
+.dk-hex-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='56' height='100' viewBox='0 0 56 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M28 0l28 16v33L28 65 0 49V16z' fill='none' stroke='%2366E0FF' stroke-opacity='0.06' stroke-width='1'/%3E%3C/svg%3E");
+  background-size: 56px 66px;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--dk-border); border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: var(--dk-muted); }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

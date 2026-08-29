@@ -15,14 +15,31 @@ import BookingForm from './pages/BookingForm'
 import RoomDetailPage from './pages/RoomDetailPage'
 import AdminLayout from './components/admin/layout/AdminLayout'
 import GuestPortal from './components/GuestPortal'
-import { User } from 'lucide-react'
+import GuidedTour from '@shared-ui/components/GuidedTour'
+import { User, Compass } from 'lucide-react'
 import './styles.css'
+
+const TOUR_STEPS = [
+  { target: '#hero', title: 'Bienvenido a la demo', body: 'Te muestro en 30 segundos qué gana tu hotel con esto. Tocá Siguiente.' },
+  { target: '#services', title: 'Reserva y servicios directos', body: 'Los huéspedes reservan y piden servicios directo, sin pagar comisión a las OTAs.' },
+  { target: '#amenities', title: 'Tu propuesta completa', body: 'Habitaciones, comodidades y experiencias, siempre a la vista.' },
+  { target: '#contact', title: 'Consultas sin fricción', body: 'Las consultas por WhatsApp o formulario las responde la IA al instante.' },
+  { target: null, title: 'El panel es lo que vende', body: 'Entrá a "Admin" (arriba a la derecha): vas a ver la bandeja con IA, la comisión OTA vs. directo y el precio dinámico.' }
+]
 
 export default function App() {
   const { isDark, toggleTheme } = useDarkMode()
   const { cart, addItem, removeItem } = useCart()
   const [selectedRoom, setSelectedRoom] = useState(null)
   const [viewMode, setViewMode] = useState('main') // 'main', 'detail', 'booking', 'admin', 'guest-portal'
+  const [tourRun, setTourRun] = useState(false)
+
+  const startTour = () => {
+    setViewMode('main')
+    setSelectedRoom(null)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    setTimeout(() => setTourRun(true), 250)
+  }
 
   const handleNavClick = (sectionId) => {
     if (viewMode !== 'main') {
@@ -42,6 +59,7 @@ export default function App() {
     { name: 'Services', href: '#services', onClick: () => handleNavClick('services') },
     { name: 'Amenities', href: '#amenities', onClick: () => handleNavClick('amenities') },
     { name: 'Contact', href: '#contact', onClick: () => handleNavClick('contact') },
+    { name: 'Recorrido', href: '#tour', onClick: startTour, icon: Compass },
     { name: 'Guest Portal', href: '#guest', onClick: () => setViewMode('guest-portal'), icon: User },
     { name: 'Admin', href: '#admin', onClick: () => setViewMode('admin'), highlight: true }
   ]
@@ -175,6 +193,8 @@ export default function App() {
       </main>
 
       <Footer brand="Hotel Luxury" />
+
+      <GuidedTour steps={TOUR_STEPS} run={tourRun} onClose={() => setTourRun(false)} />
     </div>
   )
 }

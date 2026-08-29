@@ -18,9 +18,18 @@ import PropertyDetailPage from './pages/PropertyDetailPage'
 import ScheduleVisitForm from './pages/ScheduleVisitForm'
 import AdminLayout from './components/admin/layout/AdminLayout'
 import ClientPortal from './components/ClientPortal'
+import GuidedTour from '@shared-ui/components/GuidedTour'
+import { Compass } from 'lucide-react'
 import './styles.css'
 
 const BRAND = 'Terranova'
+
+const TOUR_STEPS = [
+  { target: '#properties-preview', title: 'Bienvenido a la demo', body: 'En 30 segundos te muestro qué gana tu inmobiliaria. Tu catálogo, siempre actualizado y filtrable.' },
+  { target: '#calculator', title: 'Calculadora de crédito', body: 'El interesado simula su crédito hipotecario sin salir del sitio.' },
+  { target: '#contact', title: 'Captación sin fricción', body: 'Las consultas entran y la IA responde y califica el lead al instante.' },
+  { target: null, title: 'El panel es donde se gana', body: 'Entrá a "Admin": bandeja con IA y scoring, tiempo de respuesta por agente, simulador de ajuste UVA/ICL y liquidación al propietario.' }
+]
 
 export default function App() {
   const { isDark, toggleTheme } = useDarkMode()
@@ -28,6 +37,14 @@ export default function App() {
   const [selectedProperty, setSelectedProperty] = useState(null)
   const [listingsFilter, setListingsFilter] = useState(null)
   const [viewMode, setViewMode] = useState('main') // main | listings | detail | schedule | admin | client-portal
+  const [tourRun, setTourRun] = useState(false)
+
+  const startTour = () => {
+    setViewMode('main')
+    setSelectedProperty(null)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    setTimeout(() => setTourRun(true), 250)
+  }
 
   const handleNavClick = (sectionId) => {
     if (viewMode !== 'main') {
@@ -54,6 +71,7 @@ export default function App() {
     { name: 'Servicios', href: '#services', onClick: () => handleNavClick('services') },
     { name: 'Calculadora', href: '#calculator', onClick: () => handleNavClick('calculator') },
     { name: 'Contacto', href: '#contact', onClick: () => handleNavClick('contact') },
+    { name: 'Recorrido', href: '#tour', onClick: startTour, icon: Compass },
     { name: 'Mi Portal', href: '#portal', onClick: () => setViewMode('client-portal'), icon: User },
     { name: 'Admin', href: '#admin', onClick: () => setViewMode('admin'), highlight: true }
   ]
@@ -177,6 +195,8 @@ export default function App() {
       <section id="contact">
         <ContactSection />
       </section>
+
+      <GuidedTour steps={TOUR_STEPS} run={tourRun} onClose={() => setTourRun(false)} />
     </main>
   )
 }

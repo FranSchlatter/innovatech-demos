@@ -2,6 +2,9 @@ import { AdminProvider, useAdmin } from '../../../context/AdminContext'
 import AdminSidebar from './AdminSidebar'
 import AdminHeader from './AdminHeader'
 import AdminDashboard from '../dashboard/AdminDashboard'
+import InboxManagement from '../inbox/InboxManagement'
+import AdjustmentSimulator from '../contracts/AdjustmentSimulator'
+import OwnerLiquidations from '../liquidations/OwnerLiquidations'
 import PropertyManagement from '../properties/PropertyManagement'
 import LeadsManagement from '../leads/LeadsManagement'
 import VisitsScheduler from '../visits/VisitsScheduler'
@@ -15,6 +18,8 @@ function AdminContent({ onExit, isDark, toggleTheme }) {
     switch (currentView) {
       case 'dashboard':
         return <AdminDashboard />
+      case 'inbox':
+        return <InboxManagement />
       case 'properties':
         return <PropertyManagement />
       case 'leads':
@@ -23,6 +28,10 @@ function AdminContent({ onExit, isDark, toggleTheme }) {
         return <VisitsScheduler />
       case 'operations':
         return <OperationsManagement />
+      case 'contracts':
+        return <AdjustmentSimulator />
+      case 'liquidations':
+        return <OwnerLiquidations />
       case 'agents':
         return <AgentsManagement />
       default:

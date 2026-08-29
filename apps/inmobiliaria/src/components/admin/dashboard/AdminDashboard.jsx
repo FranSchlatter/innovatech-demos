@@ -15,6 +15,7 @@ import { useAdminData } from '../../../hooks/useAdminData'
 import { LEAD_STAGES } from '../../../data/admin/mockLeads'
 import { OPERATION_STAGES } from '../../../data/admin/mockOperations'
 import StatusBadge from '../shared/StatusBadge'
+import ResponseTimeWidget from './ResponseTimeWidget'
 import { formatPrice } from '../../../utils/format'
 
 // Tone map used by the leads pipeline bars
@@ -111,6 +112,9 @@ export default function AdminDashboard() {
           <KpiCard key={i} {...kpi} />
         ))}
       </motion.div>
+
+      {/* Response time per agent — the metric that sells (ported from v2) */}
+      <ResponseTimeWidget />
 
       {/* Panels */}
       <div className="grid gap-6 lg:grid-cols-3">

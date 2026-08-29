@@ -13,6 +13,7 @@ import {
   Users
 } from 'lucide-react'
 import { useAdminData } from '../../../hooks/useAdminData'
+import CommissionWidget from './CommissionWidget'
 
 function KPICard({ label, value, icon: Icon, color, change, trend, index }) {
   const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : null
@@ -264,6 +265,9 @@ export default function AdminDashboard() {
           <KPICard key={kpi.id} {...kpi} index={index} />
         ))}
       </div>
+
+      {/* Commission widget — OTA vs direct (ported from v2) */}
+      <CommissionWidget />
 
       {/* Bottom Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">

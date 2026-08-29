@@ -7,16 +7,22 @@ import {
   Handshake,
   UserCog,
   LogOut,
-  X
+  X,
+  Bot,
+  Calculator,
+  Wallet
 } from 'lucide-react'
 import { useAdmin } from '../../../context/AdminContext'
 
 const navItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'inbox', label: 'Bandeja IA', icon: Bot },
   { id: 'properties', label: 'Propiedades', icon: Building2 },
   { id: 'leads', label: 'Leads / CRM', icon: Users },
   { id: 'visits', label: 'Visitas', icon: CalendarDays },
   { id: 'operations', label: 'Operaciones', icon: Handshake },
+  { id: 'contracts', label: 'Ajustes', icon: Calculator },
+  { id: 'liquidations', label: 'Liquidaciones', icon: Wallet },
   { id: 'agents', label: 'Equipo', icon: UserCog }
 ]
 

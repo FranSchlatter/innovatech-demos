@@ -2,6 +2,8 @@ import { AdminProvider } from '../../../context/AdminContext'
 import AdminSidebar from './AdminSidebar'
 import AdminHeader from './AdminHeader'
 import AdminDashboard from '../dashboard/AdminDashboard'
+import InboxManagement from '../inbox/InboxManagement'
+import DynamicPricing from '../pricing/DynamicPricing'
 import RoomManagement from '../rooms/RoomManagement'
 import HousekeepingManagement from '../housekeeping/HousekeepingManagement'
 import InventoryManagement from '../inventory/InventoryManagement'
@@ -15,6 +17,10 @@ function AdminContent({ isDark, toggleTheme, onExit }) {
     switch (currentView) {
       case 'dashboard':
         return <AdminDashboard />
+      case 'inbox':
+        return <InboxManagement />
+      case 'pricing':
+        return <DynamicPricing />
       case 'rooms':
         return <RoomManagement />
       case 'housekeeping':

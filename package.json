@@ -12,14 +12,10 @@
     "dev:salud": "cd apps/salud && npm run dev",
     "dev:gastronomia": "cd apps/gastronomia && npm run dev",
     "dev:inmobiliaria": "cd apps/inmobiliaria && npm run dev",
-    "dev:hoteleria-v2": "cd apps/hoteleria-v2 && npm run dev",
-    "dev:inmobiliaria-v2": "cd apps/inmobiliaria-v2 && npm run dev",
     "build:hoteleria": "cd apps/hoteleria && npm run build",
     "build:salud": "cd apps/salud && npm run build",
     "build:gastronomia": "cd apps/gastronomia && npm run build",
-    "build:inmobiliaria": "cd apps/inmobiliaria && npm run build",
-    "build:hoteleria-v2": "cd apps/hoteleria-v2 && npm run build",
-    "build:inmobiliaria-v2": "cd apps/inmobiliaria-v2 && npm run build"
+    "build:inmobiliaria": "cd apps/inmobiliaria && npm run build"
   },
   "devDependencies": {},
   "engines": {

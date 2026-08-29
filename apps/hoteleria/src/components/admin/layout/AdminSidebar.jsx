@@ -7,12 +7,16 @@ import {
   Bell,
   X,
   LogOut,
-  Hotel
+  Hotel,
+  Bot,
+  TrendingUp
 } from 'lucide-react'
 import { useAdmin } from '../../../context/AdminContext'
 
 const navItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'inbox', label: 'Bandeja IA', icon: Bot },
+  { id: 'pricing', label: 'Precio dinámico', icon: TrendingUp },
   { id: 'rooms', label: 'Room Management', icon: BedDouble },
   { id: 'housekeeping', label: 'Housekeeping', icon: Sparkles },
   { id: 'inventory', label: 'Inventory', icon: Package },

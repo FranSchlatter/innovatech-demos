@@ -1,4 +1,0 @@
-/* App-level helpers on top of the kit tokens */
-.dk-container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 1.25rem; }
-.dk-section { padding: 3.5rem 0; }
-@media (min-width: 768px) { .dk-section { padding: 5rem 0; } }

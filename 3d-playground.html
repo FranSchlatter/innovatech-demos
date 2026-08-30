@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Playground 3D · InnovaTech Demos</title>
+
+<!-- Pannellum (Tour 360° real) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css" />
+<script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+
+<!-- Google model-viewer (Modelo 3D orbitable + AR) -->
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+
+<style>
+  :root {
+    --bg: #0f1116;
+    --surface: #171a21;
+    --border: #262b36;
+    --text: #e7e3d8;
+    --muted: #8b93a3;
+    --gold: #c9a55f;
+    --navy: #16233d;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6; padding: 0 0 80px;
+  }
+  header {
+    padding: 48px 24px 32px; max-width: 1000px; margin: 0 auto;
+    border-bottom: 1px solid var(--border);
+  }
+  h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); letter-spacing: -0.02em; font-weight: 700; }
+  .sub { color: var(--muted); margin-top: 12px; max-width: 640px; }
+  .note {
+    margin-top: 18px; padding: 12px 16px; border-left: 2px solid var(--gold);
+    background: rgba(201,165,95,0.08); color: var(--text); font-size: 0.9rem; border-radius: 0 6px 6px 0;
+  }
+  nav { max-width: 1000px; margin: 24px auto 0; padding: 0 24px; display: flex; gap: 10px; flex-wrap: wrap; }
+  nav a {
+    color: var(--muted); text-decoration: none; font-size: 0.8rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em; padding: 8px 14px;
+    border: 1px solid var(--border); border-radius: 999px; transition: all .2s;
+  }
+  nav a:hover { color: var(--text); border-color: var(--gold); }
+  section { max-width: 1000px; margin: 56px auto 0; padding: 0 24px; scroll-margin-top: 24px; }
+  .tag { display:inline-block; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color: var(--navy); background: var(--gold); padding: 4px 10px; border-radius: 4px; }
+  h2 { font-size: clamp(1.4rem, 3vw, 2rem); margin: 14px 0 6px; letter-spacing: -0.015em; }
+  .meta { color: var(--muted); font-size: 0.92rem; margin-bottom: 20px; }
+  .frame {
+    border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+    background: #000; box-shadow: 0 24px 60px -30px rgba(0,0,0,0.8);
+  }
+  .verdict { margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .verdict div { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; font-size: 0.88rem; }
+  .verdict b { color: var(--gold); display:block; margin-bottom: 4px; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; }
+  @media (max-width: 640px) { .verdict { grid-template-columns: 1fr; } }
+
+  /* model-viewer */
+  model-viewer { width: 100%; height: 62vh; background: linear-gradient(180deg,#1b2233,#0d1017); }
+
+  /* 360 */
+  #pano { width: 100%; height: 62vh; }
+
+  /* Spline embed */
+  .spline-wrap { position: relative; height: 62vh; background: #0d1017; display:flex; align-items:center; justify-content:center; }
+  .spline-wrap iframe { width: 100%; height: 100%; border: 0; }
+
+  /* 2.5D plan */
+  .plan-wrap { display: grid; grid-template-columns: 1.6fr 1fr; gap: 0; background: var(--surface); }
+  @media (max-width: 760px) { .plan-wrap { grid-template-columns: 1fr; } }
+  .plan-svg { background: #0d1017; padding: 24px; }
+  .room { fill: #1c2230; stroke: var(--border); stroke-width: 2; cursor: pointer; transition: fill .2s; }
+  .room:hover { fill: #26304a; }
+  .room.active { fill: var(--gold); }
+  .room-label { fill: var(--muted); font-size: 13px; font-weight: 600; pointer-events: none; font-family: inherit; }
+  .room.active + .room-label { fill: var(--navy); }
+  .plan-info { padding: 28px; display:flex; flex-direction: column; justify-content:center; }
+  .plan-info h3 { font-size: 1.4rem; margin-bottom: 8px; }
+  .plan-info p { color: var(--muted); font-size: 0.92rem; }
+  .plan-info .stat { margin-top: 16px; display:flex; gap: 24px; }
+  .plan-info .stat span { font-size: 0.8rem; color: var(--muted); }
+  .plan-info .stat b { display:block; color: var(--gold); font-size: 1.6rem; font-weight:700; }
+  .btn {
+    display:inline-block; margin-top: 20px; align-self:flex-start;
+    background: var(--gold); color: var(--navy); text-decoration:none;
+    padding: 12px 22px; border-radius: 6px; font-weight: 700; font-size: 0.8rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  footer { max-width: 1000px; margin: 72px auto 0; padding: 32px 24px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.88rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Playground 3D — ¿qué "3D" para las demos?</h1>
+  <p class="sub">Cuatro maneras de mostrar un complejo o una habitación en la web. Todas funcionando en vivo acá abajo, con <strong>assets de muestra</strong>. La versión real usaría las fotos 360°/modelos del inmueble o el hotel.</p>
+  <div class="note">💡 Tocá, arrastrá y girá cada una. Lo que compara es la <em>sensación</em> y el esfuerzo, no el contenido (los assets son genéricos).</div>
+  <nav>
+    <a href="#t360">1 · Tour 360°</a>
+    <a href="#model">2 · Modelo 3D</a>
+    <a href="#spline">3 · Spline</a>
+    <a href="#plan">4 · Plano 2.5D</a>
+  </nav>
+</header>
+
+<!-- 1. TOUR 360 -->
+<section id="t360">
+  <span class="tag">Opción 1</span>
+  <h2>Tour 360° real</h2>
+  <p class="meta">Arrastrá dentro de la imagen para mirar alrededor. El punto es un <em>hotspot</em> para saltar de ambiente. Librería: Pannellum.</p>
+  <div class="frame"><div id="pano"></div></div>
+  <div class="verdict">
+    <div><b>A favor</b>Estándar hotelero/inmobiliario. Bajo esfuerzo. Ya tenés los ganchos ("Tour 360°"). El cliente lo entiende al toque.</div>
+    <div><b>Necesita</b>Fotos 360° del inmueble (cámara 360 o render equirectangular). Para el demo van imágenes stock.</div>
+  </div>
+</section>
+
+<!-- 2. MODELO 3D -->
+<section id="model">
+  <span class="tag">Opción 2</span>
+  <h2>Modelo 3D orbitable (+ AR en el celu)</h2>
+  <p class="meta">Girá con el mouse / dedo, zoom con scroll. En mobile aparece el botón "AR" para verlo en tu espacio real. Web component: &lt;model-viewer&gt; de Google.</p>
+  <div class="frame">
+    <model-viewer
+      src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
+      alt="Modelo de muestra"
+      camera-controls auto-rotate ar shadow-intensity="1"
+      exposure="1.1" camera-orbit="45deg 65deg 3.5m">
+    </model-viewer>
+  </div>
+  <div class="verdict">
+    <div><b>A favor</b>Objeto real que se orbita + AR. &lt;model-viewer&gt; = tirás un .glb y listo. Con React Three Fiber sumás cámara animada y hotspots.</div>
+    <div><b>Necesita</b>Un modelo .glb (acá va un astronauta de muestra 😄). Modelar el edificio/habitación real tiene costo; para demo se usa uno stock.</div>
+  </div>
+</section>
+
+<!-- 3. SPLINE -->
+<section id="spline">
+  <span class="tag">Opción 3</span>
+  <h2>Escena Spline (momento "wow")</h2>
+  <p class="meta">Escena 3D diseñada en Spline (como Figma pero 3D) y embebida. Ideal para un edificio estilizado interactivo en el hero. Abajo va un ejemplo público embebido; también podés recorrer la galería en vivo.</p>
+  <div class="frame">
+    <div class="spline-wrap" style="flex-direction:column; gap:20px; text-align:center; padding:24px;">
+      <div style="font-size:3rem;">✦</div>
+      <p style="color:var(--muted); max-width:440px;">Spline se ve mejor en vivo. Abrí la galería oficial y girá cualquier escena 3D — así es exactamente como quedaría embebida en el hero de la demo.</p>
+      <a class="btn" href="https://spline.design/examples" target="_blank" rel="noopener">Ver escenas Spline en vivo ↗</a>
+    </div>
+  </div>
+  <div class="verdict">
+    <div><b>A favor</b>Máximo impacto visual, interactivo, sin escribir modelado. Se diseña arrastrando en Spline. Perfecto para el hero.</div>
+    <div><b>En contra</b>Bundle más pesado. Es estilizado/artístico, no una réplica fiel del inmueble. Galería en vivo: <a href="https://spline.design/examples" style="color:var(--gold)">spline.design/examples</a></div>
+  </div>
+</section>
+
+<!-- 4. PLANO 2.5D -->
+<section id="plan">
+  <span class="tag">Opción 4</span>
+  <h2>Plano interactivo 2.5D</h2>
+  <p class="meta">Clickeá un ambiente del plano: se resalta y muestra su info. En la versión real, cada click abriría fotos o el tour 360° de ese ambiente.</p>
+  <div class="frame">
+    <div class="plan-wrap">
+      <div class="plan-svg">
+        <svg viewBox="0 0 400 300" width="100%" height="100%" role="img" aria-label="Plano interactivo">
+          <!-- rooms: data-name / area / desc -->
+          <g id="rooms">
+            <rect class="room" x="20"  y="20"  width="170" height="130" data-name="Living comedor" data-area="32 m²" data-desc="Ambiente principal con ventanal al balcón."/>
+            <text class="room-label" x="105" y="90" text-anchor="middle">Living</text>
+
+            <rect class="room" x="200" y="20"  width="180" height="80"  data-name="Cocina" data-area="14 m²" data-desc="Cocina integrada con isla y desayunador."/>
+            <text class="room-label" x="290" y="65" text-anchor="middle">Cocina</text>
+
+            <rect class="room" x="200" y="110" width="85"  height="140" data-name="Dormitorio ppal" data-area="18 m²" data-desc="Suite con vestidor y baño en suite."/>
+            <text class="room-label" x="242" y="185" text-anchor="middle">Dorm. 1</text>
+
+            <rect class="room" x="295" y="110" width="85"  height="70"  data-name="Dormitorio 2" data-area="11 m²" data-desc="Con placard empotrado."/>
+            <text class="room-label" x="337" y="150" text-anchor="middle">Dorm. 2</text>
+
+            <rect class="room" x="295" y="190" width="85"  height="60"  data-name="Baño" data-area="6 m²" data-desc="Baño completo con bañera."/>
+            <text class="room-label" x="337" y="225" text-anchor="middle">Baño</text>
+
+            <rect class="room" x="20"  y="160" width="170" height="90"  data-name="Balcón terraza" data-area="12 m²" data-desc="Balcón aterrazado con parrilla."/>
+            <text class="room-label" x="105" y="210" text-anchor="middle">Balcón</text>
+          </g>
+        </svg>
+      </div>
+      <div class="plan-info">
+        <h3 id="pi-name">Elegí un ambiente →</h3>
+        <p id="pi-desc">Tocá cualquier sector del plano para ver su detalle.</p>
+        <div class="stat">
+          <span><b id="pi-area">—</b>superficie</span>
+          <span><b id="pi-idx">6</b>ambientes</span>
+        </div>
+        <a class="btn" href="#" onclick="return false;">Ver fotos / 360° del ambiente</a>
+      </div>
+    </div>
+  </div>
+  <div class="verdict">
+    <div><b>A favor</b>Muy "producto", barato (SVG + un poco de JS), lee como "visualización del complejo". Ideal para navegar y saltar a fotos/360.</div>
+    <div><b>Necesita</b>Solo el plano (lo dibujamos en SVG). No es 3D puro, pero combina genial con la Opción 1.</div>
+  </div>
+</section>
+
+<footer>
+  Playground de evaluación · InnovaTech Demos. Assets de muestra vía CDN (Pannellum, Google model-viewer, Spline). Requiere internet para cargar los ejemplos. Ninguna de estas librerías está instalada aún en las apps — esto es solo para que elijas.
+</footer>
+
+<script>
+  // 1. Pannellum 360
+  window.addEventListener('load', function () {
+    if (window.pannellum) {
+      pannellum.viewer('pano', {
+        type: 'equirectangular',
+        panorama: 'https://pannellum.org/images/alma.jpg',
+        autoLoad: true,
+        autoRotate: -2,
+        compass: true,
+        hotSpots: [
+          { pitch: -3, yaw: 117, type: 'info', text: 'Ambiente contiguo →' }
+        ]
+      });
+    }
+  });
+
+  // 4. Plano interactivo
+  (function () {
+    var rooms = document.querySelectorAll('#plan .room');
+    var name = document.getElementById('pi-name');
+    var desc = document.getElementById('pi-desc');
+    var area = document.getElementById('pi-area');
+    rooms.forEach(function (r) {
+      r.addEventListener('click', function () {
+        rooms.forEach(function (x) { x.classList.remove('active'); });
+        r.classList.add('active');
+        name.textContent = r.getAttribute('data-name');
+        desc.textContent = r.getAttribute('data-desc');
+        area.textContent = r.getAttribute('data-area');
+      });
+    });
+  })();
+</script>
+</body>
+</html>

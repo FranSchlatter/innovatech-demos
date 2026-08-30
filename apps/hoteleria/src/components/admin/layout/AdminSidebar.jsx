@@ -9,7 +9,8 @@ import {
   LogOut,
   Hotel,
   Bot,
-  TrendingUp
+  TrendingUp,
+  Compass
 } from 'lucide-react'
 import { useAdmin } from '../../../context/AdminContext'
 
@@ -20,7 +21,8 @@ const navItems = [
   { id: 'rooms', label: 'Room Management', icon: BedDouble },
   { id: 'housekeeping', label: 'Housekeeping', icon: Sparkles },
   { id: 'inventory', label: 'Inventory', icon: Package },
-  { id: 'services', label: 'Service Requests', icon: Bell }
+  { id: 'services', label: 'Service Requests', icon: Bell },
+  { id: 'excursions', label: 'Excursiones', icon: Compass }
 ]
 
 export default function AdminSidebar({ onExit, isDark }) {

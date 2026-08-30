@@ -8,6 +8,7 @@ import RoomManagement from '../rooms/RoomManagement'
 import HousekeepingManagement from '../housekeeping/HousekeepingManagement'
 import InventoryManagement from '../inventory/InventoryManagement'
 import ServiceRequestsMonitor from '../services/ServiceRequestsMonitor'
+import ExcursionsManagement from '../excursions/ExcursionsManagement'
 import { useAdmin } from '../../../context/AdminContext'
 
 function AdminContent({ isDark, toggleTheme, onExit }) {
@@ -29,6 +30,8 @@ function AdminContent({ isDark, toggleTheme, onExit }) {
         return <InventoryManagement />
       case 'services':
         return <ServiceRequestsMonitor />
+      case 'excursions':
+        return <ExcursionsManagement />
       default:
         return <AdminDashboard />
     }

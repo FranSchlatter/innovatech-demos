@@ -1,9 +1,11 @@
 import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
-import { ChevronLeft, MapPin, Users, Maximize2, Wifi, Coffee, Bath, Tv, AirVent } from 'lucide-react'
+import { ChevronLeft, MapPin, Users, Maximize2, Wifi, Coffee, Bath, Tv, AirVent, Compass } from 'lucide-react'
+import VirtualTour360 from '@shared-ui/components/VirtualTour360'
 
 export default function RoomDetailPage({ room, onBack, onReserve }) {
   const [selectedImage, setSelectedImage] = useState(0)
+  const [showTour, setShowTour] = useState(false)
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -67,6 +69,13 @@ export default function RoomDetailPage({ room, onBack, onReserve }) {
           alt={room.name}
           className="w-full h-full object-cover"
         />
+        <button
+          onClick={() => setShowTour(true)}
+          className="absolute bottom-6 right-6 z-10 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-black/55 backdrop-blur-sm text-white text-sm font-medium hover:bg-black/70 transition-colors shadow-lg"
+        >
+          <Compass className="w-4 h-4" />
+          Recorrido 360°
+        </button>
         <div className="absolute bottom-6 left-6 right-6 flex gap-2 justify-center">
           {images.map((img, idx) => (
             <button
@@ -81,6 +90,8 @@ export default function RoomDetailPage({ room, onBack, onReserve }) {
           ))}
         </div>
       </motion.div>
+
+      <VirtualTour360 open={showTour} title={room.name} onClose={() => setShowTour(false)} />
 
       {/* Content */}
       <div className="container mx-auto px-4 md:px-6 py-12 md:py-20">

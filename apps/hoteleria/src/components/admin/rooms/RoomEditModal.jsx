@@ -45,23 +45,21 @@ export default function RoomEditModal({ room, isOpen, onClose, onSave }) {
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black/50 z-50"
-          />
-
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+          className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+        >
           {/* Modal */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            initial={{ opacity: 0, scale: 0.96, y: 16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed inset-4 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2
-              sm:w-full sm:max-w-lg bg-surface rounded-xl shadow-xl z-50 overflow-hidden
+            exit={{ opacity: 0, scale: 0.96, y: 12 }}
+            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-lg bg-surface rounded-xl shadow-xl overflow-hidden
               flex flex-col max-h-[90vh]"
           >
             {/* Header */}
@@ -187,7 +185,7 @@ export default function RoomEditModal({ room, isOpen, onClose, onSave }) {
               </button>
             </div>
           </motion.div>
-        </>
+        </motion.div>
       )}
     </AnimatePresence>
   )

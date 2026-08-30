@@ -6,6 +6,7 @@ import {
   Filter,
   Grid3X3,
   List,
+  Building2,
   Edit2,
   User,
   Users
@@ -13,6 +14,74 @@ import {
 import { useAdminData } from '../../../hooks/useAdminData'
 import StatusBadge from '../shared/StatusBadge'
 import RoomEditModal from './RoomEditModal'
+
+// Status → tile styles for the building map (static classes for Tailwind)
+const MAP_STATUS = {
+  available: { label: 'Available', dot: 'bg-green-500', tile: 'bg-green-500/10 border-green-500/30 hover:bg-green-500/20', icon: 'text-green-600 dark:text-green-400' },
+  occupied: { label: 'Occupied', dot: 'bg-blue-500', tile: 'bg-blue-500/10 border-blue-500/30 hover:bg-blue-500/20', icon: 'text-blue-600 dark:text-blue-400' },
+  cleaning: { label: 'Cleaning', dot: 'bg-purple-500', tile: 'bg-purple-500/10 border-purple-500/30 hover:bg-purple-500/20', icon: 'text-purple-600 dark:text-purple-400' },
+  maintenance: { label: 'Maintenance', dot: 'bg-amber-500', tile: 'bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/20', icon: 'text-amber-600 dark:text-amber-400' }
+}
+
+function RoomMap({ rooms, onEdit }) {
+  const floors = [...new Set(rooms.map(r => r.floor))].sort((a, b) => b - a)
+
+  return (
+    <div className="bg-surface rounded-xl border border-border p-4 sm:p-6">
+      {/* Legend */}
+      <div className="flex flex-wrap gap-x-5 gap-y-2 mb-6">
+        {Object.entries(MAP_STATUS).map(([key, s]) => (
+          <div key={key} className="flex items-center gap-2">
+            <span className={`w-3 h-3 rounded-full ${s.dot}`} />
+            <span className="text-xs text-muted">{s.label}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Building — top floor first */}
+      <div className="space-y-3">
+        {floors.map((floor) => {
+          const floorRooms = rooms
+            .filter((r) => r.floor === floor)
+            .sort((a, b) => (a.roomNumber || '').localeCompare(b.roomNumber || ''))
+          const occupied = floorRooms.filter((r) => r.status === 'occupied').length
+
+          return (
+            <div key={floor} className="flex gap-3 sm:gap-4 items-stretch">
+              {/* Floor spine */}
+              <div className="w-14 sm:w-20 shrink-0 flex flex-col justify-center text-right pr-3 border-r border-border">
+                <p className="text-sm font-bold text-text leading-tight">Floor {floor}</p>
+                <p className="text-[11px] text-muted">{occupied}/{floorRooms.length} occ.</p>
+              </div>
+
+              {/* Rooms on this floor */}
+              <div className="flex flex-wrap gap-2 py-1">
+                {floorRooms.map((room) => {
+                  const s = MAP_STATUS[room.status] || MAP_STATUS.available
+                  return (
+                    <button
+                      key={room.id}
+                      onClick={() => onEdit(room)}
+                      title={`Room ${room.roomNumber} · ${s.label}${room.currentGuest ? ` · ${room.currentGuest}` : ''}`}
+                      className={`relative w-[4.25rem] h-[4.25rem] rounded-lg border flex flex-col items-center justify-center transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${s.tile}`}
+                    >
+                      <span className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ${s.dot}`} />
+                      <BedDouble className={`w-4 h-4 ${s.icon}`} />
+                      <span className="text-xs font-semibold text-text mt-1">{room.roomNumber}</span>
+                      {room.currentGuest && (
+                        <User className="absolute bottom-1 left-1.5 w-3 h-3 text-muted" />
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
 
 const statusFilters = [
   { value: 'all', label: 'All Rooms' },
@@ -230,6 +299,17 @@ export default function RoomManagement() {
           >
             <List className="w-4 h-4" />
           </button>
+          <button
+            onClick={() => setViewMode('map')}
+            title="Building map"
+            className={`p-2 rounded-md transition-colors ${
+              viewMode === 'map'
+                ? 'bg-primary text-primary-contrast'
+                : 'text-muted hover:text-text'
+            }`}
+          >
+            <Building2 className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
@@ -295,7 +375,9 @@ export default function RoomManagement() {
       </div>
 
       {/* Room List */}
-      {viewMode === 'grid' ? (
+      {viewMode === 'map' ? (
+        filteredRooms.length > 0 && <RoomMap rooms={filteredRooms} onEdit={setEditingRoom} />
+      ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredRooms.map((room) => (
             <RoomCard

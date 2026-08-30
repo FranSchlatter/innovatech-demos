@@ -33,6 +33,9 @@ Motivo: la v2 reconstruía —más chico y peor— lo que la v1 ya tenía comple
 4. **Fotos**: inmobiliaria ya tiene fotos propias de inmuebles (apropiadas). Definir con Fran qué fotos de hotelería reutilizar y **dónde** (no reemplazar las de propiedades sin más).
 5. Extraer piezas realmente reutilizables (Inbox, widgets) a `packages/shared-*` si se van a compartir con salud/gastro.
 
+## Backlog por app
+- **Hotelería**: ver [`apps/hoteleria/BACKLOG.md`](apps/hoteleria/BACKLOG.md) — pendientes de guest portal + admin (pricing/yield, bandeja IA escribible, roles manager/empleado, automatizaciones, CRM, etc.).
+
 ## Notas
 - `PLAN.md` y los `AUDIT.md` por app quedaron como registro histórico del enfoque v2 (ya no vigente).
 - Salud y gastronomía siguen fuera de alcance.

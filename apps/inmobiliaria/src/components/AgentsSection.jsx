@@ -11,9 +11,10 @@ export default function AgentsSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="max-w-2xl mx-auto text-center mb-14"
+          className="max-w-2xl mb-14"
         >
-          <h2 className="heading-md">Nuestro equipo</h2>
+          <hr className="rl-rule rl-rule--gold w-14" />
+          <h2 className="rl-display text-primary mt-6" style={{ fontSize: 'clamp(2.2rem, 4.5vw, 3.5rem)' }}>Nuestro equipo</h2>
           <p className="mt-4 text-muted">
             Asesores expertos que conocen cada barrio y te acompañan con dedicación en la búsqueda de tu próxima propiedad.
           </p>
@@ -27,16 +28,18 @@ export default function AgentsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: idx * 0.05 }}
-              className="bg-surface border border-border rounded-xl overflow-hidden shadow-soft hover:shadow-medium transition-all duration-300"
+              className="rl-card group overflow-hidden"
             >
-              <img
-                src={agent.photo}
-                alt={agent.name}
-                loading="lazy"
-                className="h-56 w-full object-cover"
-              />
+              <div className="h-56 w-full overflow-hidden">
+                <img
+                  src={agent.photo}
+                  alt={agent.name}
+                  loading="lazy"
+                  className="h-full w-full object-cover transition-transform duration-[900ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
+                />
+              </div>
               <div className="p-5">
-                <h3 className="font-semibold text-primary">{agent.name}</h3>
+                <h3 className="rl-serif text-lg text-primary">{agent.name}</h3>
                 <p className="text-accent text-sm">{agent.role}</p>
                 <p className="text-muted text-xs">{agent.specialty}</p>
 

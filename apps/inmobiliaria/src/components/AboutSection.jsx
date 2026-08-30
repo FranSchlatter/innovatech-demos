@@ -35,17 +35,17 @@ export default function AboutSection() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
-            className="relative"
+            className="relative rl-frame"
           >
             <img
               src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=900&q=80"
               alt="Equipo de Terranova Propiedades"
-              className="w-full h-[420px] md:h-[520px] object-cover rounded-2xl shadow-medium"
+              className="w-full h-[420px] md:h-[520px] object-cover shadow-medium"
             />
-            {/* Floating gold stat badge */}
-            <div className="absolute -bottom-6 -right-4 md:right-6 bg-gold text-primary rounded-2xl px-6 py-4 shadow-medium">
-              <div className="text-3xl font-bold leading-none">20</div>
-              <div className="text-sm font-medium mt-1">años en el mercado</div>
+            {/* Floating stat badge */}
+            <div className="absolute -bottom-6 -right-4 md:right-6 bg-primary text-primary-contrast px-6 py-5 shadow-lg">
+              <div className="rl-display leading-none" style={{ fontSize: '2.4rem', color: 'var(--color-accent)' }}>20</div>
+              <div className="rl-label !text-primary-contrast mt-2">años en el mercado</div>
             </div>
           </motion.div>
 
@@ -56,10 +56,8 @@ export default function AboutSection() {
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
           >
-            <span className="text-accent uppercase text-sm font-semibold tracking-widest">
-              Sobre Terranova
-            </span>
-            <h2 className="heading-md mt-3">
+            <hr className="rl-rule rl-rule--gold w-14" />
+            <h2 className="rl-display text-primary mt-6" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
               Una inmobiliaria boutique con estándares de excelencia
             </h2>
 
@@ -87,11 +85,11 @@ export default function AboutSection() {
                   transition={{ duration: 0.5, delay: i * 0.1 }}
                   className="flex gap-4"
                 >
-                  <span className="shrink-0 p-3 rounded-xl bg-accent/15 text-accent h-fit">
+                  <span className="shrink-0 text-accent h-fit pt-1">
                     <item.icon className="w-6 h-6" />
                   </span>
                   <div>
-                    <h3 className="font-semibold text-primary">{item.title}</h3>
+                    <h3 className="rl-serif text-lg text-primary">{item.title}</h3>
                     <p className="text-sm text-muted mt-1">{item.text}</p>
                   </div>
                 </motion.div>

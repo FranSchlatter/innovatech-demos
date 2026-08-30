@@ -201,7 +201,7 @@ export default function PropertyDetailPage({ property, favorites, onBack, onSche
 
           {/* Price */}
           <div>
-            <p className="text-3xl md:text-4xl font-bold text-gold-gradient">
+            <p className="text-3xl md:text-4xl font-bold text-accent">
               {formatPrice(property.price, property.currency, property.operation)}
             </p>
             {property.expenses > 0 && (
@@ -318,7 +318,7 @@ export default function PropertyDetailPage({ property, favorites, onBack, onSche
               <div className="bg-surface border border-border rounded-2xl p-6">
                 <h3 className="font-semibold text-text mb-2">Estimación de crédito</h3>
                 <p className="text-sm text-muted mb-1">Cuota estimada desde</p>
-                <p className="text-2xl font-bold text-gold-gradient">
+                <p className="text-2xl font-bold text-accent">
                   {formatPrice(Math.round(monthly), 'USD', 'sale')}
                   <span className="text-sm text-muted font-normal">/mes</span>
                 </p>

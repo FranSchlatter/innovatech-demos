@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Search, MapPin, ChevronDown, Home, TrendingUp, Award, Star } from 'lucide-react'
+import { Search, MapPin, ArrowDown, Home, Star, Award } from 'lucide-react'
 
 const OPERATIONS = [
   { value: 'sale', label: 'Venta' },
@@ -20,7 +20,7 @@ const TYPE_OPTIONS = [
 
 const STATS = [
   { icon: Home, value: '500+', label: 'Propiedades' },
-  { icon: Star, value: '4.9★', label: 'Satisfacción' },
+  { icon: Star, value: '4.9', label: 'Satisfacción' },
   { icon: Award, value: '+20', label: 'Años' }
 ]
 
@@ -35,77 +35,57 @@ export default function PropertyHero({ onSearch, onExplore }) {
   }
 
   return (
-    <section className="relative min-h-[92vh] overflow-hidden flex items-center">
-      {/* Background image */}
-      <motion.img
-        src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1920&q=90"
-        alt="Residencia de lujo"
-        initial={{ scale: 1.1 }}
-        animate={{ scale: 1 }}
-        transition={{ duration: 1.6, ease: 'easeOut' }}
-        className="absolute inset-0 w-full h-full object-cover"
-      />
-
-      {/* Overlays */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />
-
-      <div className="container mx-auto px-4 relative z-10 py-24">
-        <div className="flex items-center justify-between gap-10">
-          {/* Left content */}
-          <div className="max-w-3xl w-full">
-            {/* Badge */}
-            <motion.span
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-white bg-white/10 backdrop-blur-md border border-white/20"
-            >
-              <Award className="w-4 h-4 text-gold" />
-              Inmobiliaria boutique · +20 años
-            </motion.span>
-
-            {/* Heading */}
+    <section className="relative min-h-[92vh] bg-bg text-text flex flex-col justify-center pt-28 pb-12 overflow-hidden">
+      <div className="container mx-auto px-4 relative z-10 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-10 items-center">
+          {/* Content + search */}
+          <div className="lg:col-span-7 order-2 lg:order-1">
+            <motion.hr
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="rl-rule rl-rule--gold w-14 origin-left"
+            />
             <motion.h1
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.1 }}
-              className="mt-6 font-serif text-4xl md:text-6xl font-bold text-white leading-tight"
+              transition={{ duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+              className="rl-display mt-6"
+              style={{ fontSize: 'clamp(2.6rem, 6.5vw, 5rem)' }}
             >
-              Encontrá el lugar donde{' '}
-              <span className="text-gold-gradient">empieza tu próxima historia</span>
+              Encontrá el lugar donde empieza{' '}
+              <span className="text-accent">tu próxima historia.</span>
             </motion.h1>
 
-            {/* Subtitle */}
             <motion.p
-              initial={{ opacity: 0, y: 24 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
-              className="mt-5 text-lg text-white/80 max-w-2xl"
+              transition={{ duration: 0.9, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="rl-lead text-muted max-w-xl mt-6"
             >
               Asesoramiento personalizado, propiedades seleccionadas y tecnología de
-              vanguardia para acompañarte en cada paso de tu decisión más importante.
+              vanguardia para acompañarte en la decisión más importante.
             </motion.p>
 
-            {/* Search card */}
+            {/* Search — solid surface, architectural */}
             <motion.form
               onSubmit={handleSearch}
-              initial={{ opacity: 0, y: 28 }}
+              initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.3 }}
-              className="mt-8 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 md:p-6"
+              transition={{ duration: 0.9, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="mt-9 bg-surface border border-border shadow-medium p-4 md:p-5"
             >
-              {/* Operation toggle */}
-              <div className="flex flex-wrap gap-2 mb-4">
+              {/* Operation segmented control */}
+              <div className="flex border border-border mb-4">
                 {OPERATIONS.map((op) => (
                   <button
                     key={op.value}
                     type="button"
                     onClick={() => setOperation(op.value)}
-                    className={`px-5 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                    className={`flex-1 py-2.5 text-xs font-semibold uppercase tracking-widest transition-colors ${
                       operation === op.value
-                        ? 'bg-gold text-primary'
-                        : 'text-white border border-white/30 hover:bg-white/10'
+                        ? 'bg-primary text-primary-contrast'
+                        : 'text-muted hover:text-text hover:bg-surface-alt'
                     }`}
                   >
                     {op.label}
@@ -113,64 +93,75 @@ export default function PropertyHero({ onSearch, onExplore }) {
                 ))}
               </div>
 
-              {/* Inputs */}
               <div className="flex flex-col md:flex-row gap-3">
                 <select
                   value={type}
                   onChange={(e) => setType(e.target.value)}
-                  className="md:w-52 bg-white/90 text-primary rounded-lg px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-gold"
+                  className="md:w-52 bg-bg text-text border border-border px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent"
                 >
                   {TYPE_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
                   ))}
                 </select>
 
                 <div className="relative flex-1">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary/60" />
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
                   <input
                     type="text"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Barrio, ciudad o dirección..."
-                    className="w-full bg-white/90 text-primary placeholder:text-primary/50 rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
+                    placeholder="Barrio, ciudad o dirección…"
+                    className="w-full bg-bg text-text placeholder:text-muted border border-border pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
                   />
                 </div>
 
-                <button
-                  type="submit"
-                  className="inline-flex items-center justify-center gap-2 bg-gold text-primary font-semibold rounded-lg px-6 py-3 text-sm hover:opacity-90 transition-opacity"
-                >
-                  <Search className="w-5 h-5" />
+                <button type="submit" className="btn-gold shrink-0">
+                  <Search className="w-4 h-4" />
                   Buscar
                 </button>
               </div>
             </motion.form>
+
+            {/* Stat row */}
+            <motion.dl
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1, delay: 0.6 }}
+              className="mt-10 grid grid-cols-3 max-w-lg border-t border-hairline"
+            >
+              {STATS.map((s, i) => (
+                <div key={s.label} className={`pt-4 ${i > 0 ? 'pl-5 border-l border-hairline' : ''}`}>
+                  <dt className="flex items-baseline gap-1.5">
+                    <span className="rl-display text-primary" style={{ fontSize: 'clamp(1.5rem, 3vw, 2.1rem)' }}>{s.value}</span>
+                    <s.icon className="w-4 h-4 text-accent" />
+                  </dt>
+                  <dd className="rl-label mt-1.5">{s.label}</dd>
+                </div>
+              ))}
+            </motion.dl>
           </div>
 
-          {/* Floating stats */}
-          <div className="hidden lg:flex flex-col gap-4">
-            {STATS.map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 + i * 0.12 }}
-                className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-6 py-5 text-white min-w-[180px]"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="p-2.5 rounded-xl bg-gold/20 text-gold">
-                    <stat.icon className="w-5 h-5" />
-                  </span>
-                  <div>
-                    <div className="text-2xl font-bold text-gold">{stat.value}</div>
-                    <div className="text-sm text-white/70">{stat.label}</div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          {/* Framed architectural photo */}
+          <motion.div
+            initial={{ opacity: 0, clipPath: 'inset(0 0 100% 0)' }}
+            animate={{ opacity: 1, clipPath: 'inset(0 0 0% 0)' }}
+            transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="lg:col-span-5 order-1 lg:order-2"
+          >
+            <div className="rl-frame relative aspect-[4/5] lg:aspect-[3/4]">
+              <motion.img
+                src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&h=1600&fit=crop&q=90"
+                alt="Residencia de lujo"
+                initial={{ scale: 1.12 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
+                className="w-full h-full object-cover"
+              />
+              <span className="absolute left-5 bottom-5 rl-label !text-[#f4efe4] px-3 py-1.5 bg-[rgba(9,15,30,0.6)] backdrop-blur-sm">
+                Buenos Aires · Argentina
+              </span>
+            </div>
+          </motion.div>
         </div>
       </div>
 
@@ -179,16 +170,15 @@ export default function PropertyHero({ onSearch, onExplore }) {
         onClick={() => onExplore?.()}
         aria-label="Explorar propiedades"
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1, y: [0, 10, 0] }}
-        transition={{ opacity: { delay: 1, duration: 0.6 }, y: { repeat: Infinity, duration: 1.8 } }}
-        className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1 text-white/80 hover:text-white transition-colors"
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1, duration: 0.6 }}
+        className="hidden md:flex absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex-col items-center gap-1 text-muted hover:text-accent transition-colors"
       >
-        <span className="text-xs uppercase tracking-widest">Explorar</span>
-        <ChevronDown className="w-6 h-6" />
+        <span className="rl-label">Explorar</span>
+        <motion.span animate={{ y: [0, 8, 0] }} transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}>
+          <ArrowDown className="w-4 h-4" />
+        </motion.span>
       </motion.button>
-
-      {/* Decorative trending icon marker (subtle) */}
-      <TrendingUp className="hidden" />
     </section>
   )
 }

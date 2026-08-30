@@ -45,13 +45,11 @@ export default function MortgageCalculator() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center max-w-2xl mx-auto mb-12"
+          className="max-w-2xl mb-12"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gold/15 text-gold text-sm font-semibold mb-4">
-            <Calculator className="w-4 h-4" /> Herramienta financiera
-          </span>
-          <h2 className="heading-md mb-4">Simulá tu crédito hipotecario</h2>
-          <p className="text-muted">
+          <hr className="rl-rule rl-rule--gold w-14" />
+          <h2 className="rl-display text-primary mt-6" style={{ fontSize: 'clamp(2.2rem, 4.5vw, 3.5rem)' }}>Simulá tu crédito hipotecario</h2>
+          <p className="text-muted mt-4">
             Estimá tu cuota mensual, el monto del crédito y los intereses totales según el
             anticipo, el plazo y la tasa. Ajustá los valores y mirá el resultado en tiempo real.
           </p>

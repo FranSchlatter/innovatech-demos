@@ -44,9 +44,10 @@ export default function ContactSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="max-w-2xl mx-auto text-center mb-14"
+          className="max-w-2xl mb-14"
         >
-          <h2 className="heading-md">Hablemos de tu próxima propiedad</h2>
+          <hr className="rl-rule rl-rule--gold w-14" />
+          <h2 className="rl-display text-primary mt-6" style={{ fontSize: 'clamp(2.2rem, 4.5vw, 3.5rem)' }}>Hablemos de tu próxima propiedad</h2>
           <p className="mt-4 text-muted">
             Dejanos tu consulta y un asesor se pondrá en contacto para acompañarte.
           </p>
@@ -178,7 +179,7 @@ export default function ContactSection() {
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <h3 className="heading-sm">Terranova Propiedades</h3>
+            <h3 className="rl-serif text-primary" style={{ fontSize: 'clamp(1.5rem, 2.4vw, 2rem)' }}>Terranova Propiedades</h3>
             <p className="text-muted mt-3">
               Somos una inmobiliaria boutique con más de 15 años de trayectoria. Te
               asesoramos con datos, transparencia y un trato cercano en cada operación.

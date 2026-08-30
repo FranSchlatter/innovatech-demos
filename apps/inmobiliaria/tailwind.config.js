@@ -11,6 +11,8 @@ export default {
         'primary-contrast': 'var(--color-primary-contrast)',
         accent: 'var(--color-accent)',
         gold: 'var(--color-gold)',
+        ink: 'var(--color-ink)',
+        hairline: 'var(--color-hairline)',
         bg: 'var(--color-bg)',
         surface: 'var(--color-surface)',
         'surface-alt': 'var(--color-surface-alt)',

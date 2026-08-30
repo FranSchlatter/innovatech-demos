@@ -73,7 +73,7 @@ export default function ScheduleVisitForm({ property, onBack, onDone }) {
                 {property.address}, {property.neighborhood}, {property.city}
               </span>
             </div>
-            <p className="text-2xl font-bold text-gold-gradient mb-5">
+            <p className="text-2xl font-bold text-accent mb-5">
               {formatPrice(property.price, property.currency, property.operation)}
             </p>
 

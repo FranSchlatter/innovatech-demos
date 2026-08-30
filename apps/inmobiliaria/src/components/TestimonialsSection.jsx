@@ -12,9 +12,10 @@ export default function TestimonialsSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="max-w-2xl mx-auto text-center mb-14"
+          className="max-w-2xl mb-14"
         >
-          <h2 className="heading-md">Lo que dicen nuestros clientes</h2>
+          <hr className="rl-rule rl-rule--gold w-14" />
+          <h2 className="rl-display text-primary mt-6" style={{ fontSize: 'clamp(2.2rem, 4.5vw, 3.5rem)' }}>Lo que dicen nuestros clientes</h2>
           <p className="mt-4 text-muted">
             Miles de familias e inversores ya confiaron en Terranova para dar su próximo paso.
           </p>
@@ -27,10 +28,10 @@ export default function TestimonialsSection() {
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: idx * 0.05 }}
-              className="relative bg-surface border border-border rounded-xl p-6 shadow-soft hover:shadow-medium transition-all duration-300"
+              transition={{ duration: 0.6, delay: idx * 0.05, ease: [0.16, 1, 0.3, 1] }}
+              className="rl-card relative p-7"
             >
-              <Quote className="absolute top-6 right-6 w-8 h-8 text-accent/40" />
+              <Quote className="absolute top-6 right-6 w-8 h-8 text-hairline" />
 
               <div className="flex items-center gap-3">
                 <img
@@ -56,9 +57,9 @@ export default function TestimonialsSection() {
                 ))}
               </div>
 
-              <h3 className="font-semibold text-text mt-4">{t.title}</h3>
-              <p className="text-muted mt-2">{t.comment}</p>
-              <p className="text-xs text-muted mt-4">{formatDate(t.date)}</p>
+              <h3 className="rl-serif text-lg text-primary mt-5">{t.title}</h3>
+              <p className="text-text mt-2 leading-relaxed" style={{ fontFamily: 'var(--font-family-serif)', fontStyle: 'italic' }}>{t.comment}</p>
+              <p className="rl-label mt-4">{formatDate(t.date)}</p>
             </motion.div>
           ))}
         </div>

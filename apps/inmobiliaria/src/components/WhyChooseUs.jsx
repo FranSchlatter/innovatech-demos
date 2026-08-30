@@ -51,12 +51,13 @@ export default function WhyChooseUs() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center max-w-2xl mx-auto"
+          className="max-w-2xl"
         >
-          <span className="text-gold uppercase text-sm font-semibold tracking-widest">
-            Por qué elegirnos
-          </span>
-          <h2 className="mt-3 font-serif text-3xl md:text-4xl font-bold text-primary-contrast">
+          <hr className="rl-rule w-14" style={{ background: 'var(--color-gold)' }} />
+          <h2
+            className="mt-6 font-sans font-bold text-primary-contrast"
+            style={{ fontSize: 'clamp(2.2rem, 4.5vw, 3.5rem)', letterSpacing: '-0.035em', lineHeight: 1.02 }}
+          >
             Todo lo que necesitás, en un solo lugar
           </h2>
           <p className="mt-4 text-primary-contrast/70">

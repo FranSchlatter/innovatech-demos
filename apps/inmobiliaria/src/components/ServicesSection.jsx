@@ -62,31 +62,30 @@ export default function ServicesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="max-w-2xl mx-auto text-center mb-14"
+          className="max-w-2xl mb-14"
         >
-          <h2 className="heading-md">Servicios integrales</h2>
+          <hr className="rl-rule rl-rule--gold w-14" />
+          <h2 className="rl-display text-primary mt-6" style={{ fontSize: 'clamp(2.2rem, 4.5vw, 3.5rem)' }}>Servicios integrales</h2>
           <p className="mt-4 text-muted">
             Todo lo que necesitás para comprar, vender o alquilar, en un solo lugar.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 border-t border-l border-hairline">
           {services.map((service, idx) => {
             const Icon = service.icon
             return (
               <motion.div
                 key={service.title}
-                initial={{ opacity: 0, y: 24 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: idx * 0.05 }}
-                className="bg-surface border border-border rounded-xl p-6 shadow-soft hover:-translate-y-1 hover:shadow-medium transition-all duration-300"
+                transition={{ duration: 0.5, delay: idx * 0.05, ease: [0.16, 1, 0.3, 1] }}
+                className="group relative p-7 border-r border-b border-hairline bg-surface hover:bg-surface-alt transition-colors"
               >
-                <div className="w-12 h-12 rounded-xl bg-accent/15 text-accent flex items-center justify-center mb-4">
-                  <Icon className="w-6 h-6" />
-                </div>
-                <h3 className="font-semibold text-text mb-2">{service.title}</h3>
-                <p className="text-sm text-muted">{service.description}</p>
+                <Icon className="w-7 h-7 text-accent mb-5 transition-transform duration-500 group-hover:-translate-y-1" />
+                <h3 className="rl-serif text-lg text-primary mb-2">{service.title}</h3>
+                <p className="text-sm text-muted leading-relaxed">{service.description}</p>
               </motion.div>
             )
           })}

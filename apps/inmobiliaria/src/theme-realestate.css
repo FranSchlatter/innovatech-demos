@@ -95,15 +95,6 @@ html[data-theme="dark"] body,
    REAL-ESTATE UTILITY HELPERS
    ========================================================================== */
 
-/* Gold gradient text used in hero headings */
-.text-gold-gradient {
-  background: linear-gradient(90deg, var(--color-gold), #f0d67a, var(--color-gold));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-}
-
 /* Subtle premium card treatment */
 .card-premium {
   background-color: var(--color-surface);
@@ -117,3 +108,142 @@ html[data-theme="dark"] body,
   box-shadow: var(--shadow-medium);
   transform: translateY(-2px);
 }
+
+/* ==========================================================================
+   TERRANOVA · ARCHITECTURAL NAVY — bold redesign layer
+   Confident sans display, gold hairline structure, blueprint grid.
+   Deliberately distinct from the hoteleria serif-editorial world.
+   ========================================================================== */
+:root {
+  --color-ink: #12203a !important;
+  --color-hairline: #cbbd93 !important;    /* muted structural gold */
+  --rl-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --shadow-lg: 0 34px 70px -28px rgba(18, 32, 58, 0.4) !important;
+}
+[data-theme="dark"] {
+  --color-ink: #eef2f8 !important;
+  --color-hairline: #3a4b70 !important;
+  --shadow-lg: 0 36px 80px -30px rgba(0, 0, 0, 0.75) !important;
+}
+
+/* Browser surfaces carry the design too */
+::selection { background: var(--color-accent); color: var(--color-primary-contrast); }
+html { accent-color: var(--color-accent); }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb {
+  background: var(--color-hairline);
+  border: 2px solid var(--color-bg);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--color-accent); }
+:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Confident architectural display */
+.rl-display {
+  font-family: var(--font-family-base);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 0.98;
+  color: var(--color-primary);
+  text-wrap: balance;
+}
+.rl-serif {
+  font-family: var(--font-family-serif);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--color-primary);
+}
+
+/* Tracked meta label — inline tag, never stacked as an eyebrow */
+.rl-label {
+  font-family: var(--font-family-base);
+  font-weight: 600;
+  font-size: 0.7rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.rl-label--gold { color: var(--color-accent); }
+
+.rl-lead {
+  font-size: clamp(1.05rem, 1.6vw, 1.28rem);
+  line-height: 1.7;
+  color: var(--color-text-secondary, var(--color-text));
+}
+
+/* Gold hairline + tabular index numerals */
+.rl-rule { height: 1px; border: 0; background: var(--color-hairline); }
+.rl-rule--gold { background: var(--color-accent); }
+.rl-index {
+  font-family: var(--font-family-base);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -0.03em;
+  color: var(--color-accent);
+  line-height: 1;
+}
+
+/* Corner ticks for framed photos (architectural registration marks) */
+.rl-frame { position: relative; }
+.rl-frame::before,
+.rl-frame::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-color: var(--color-accent);
+  z-index: 2;
+}
+.rl-frame::before { top: 10px; left: 10px; border-top: 1.5px solid; border-left: 1.5px solid; }
+.rl-frame::after { bottom: 10px; right: 10px; border-bottom: 1.5px solid; border-right: 1.5px solid; }
+
+/* Animated underline link */
+.rl-link { position: relative; color: var(--color-primary); font-weight: 600; text-decoration: none; }
+.rl-link::after {
+  content: ''; position: absolute; left: 0; bottom: -3px; width: 100%; height: 1px;
+  background: var(--color-accent); transform: scaleX(0); transform-origin: left;
+  transition: transform var(--transition-medium) var(--rl-ease);
+}
+.rl-link:hover::after { transform: scaleX(1); }
+
+/* Refined buttons (inmobiliaria-only override of the shared register) */
+.btn-primary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  padding: 0.85rem 1.8rem; border-radius: 3px;
+  background-color: var(--color-ink); color: var(--color-primary-contrast);
+  border: 1px solid var(--color-ink);
+  font-weight: 600; font-size: 0.74rem; letter-spacing: 0.14em; text-transform: uppercase;
+  transition: background var(--transition-medium) var(--rl-ease),
+              color var(--transition-medium) var(--rl-ease),
+              border-color var(--transition-medium) var(--rl-ease);
+}
+.btn-primary:hover { background-color: var(--color-accent); border-color: var(--color-accent); color: var(--color-primary-contrast); }
+
+.btn-gold {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  padding: 0.85rem 1.8rem; border-radius: 3px;
+  background-color: var(--color-accent); color: var(--color-primary-contrast);
+  border: 1px solid var(--color-accent);
+  font-weight: 600; font-size: 0.74rem; letter-spacing: 0.12em; text-transform: uppercase;
+  transition: all var(--transition-medium) var(--rl-ease);
+}
+.btn-gold:hover { background-color: transparent; color: var(--color-accent); }
+
+/* Editorial card */
+.rl-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  transition: box-shadow var(--transition-slow) var(--rl-ease),
+              transform var(--transition-slow) var(--rl-ease),
+              border-color var(--transition-slow) var(--rl-ease);
+}
+.rl-card:hover { box-shadow: var(--shadow-medium); transform: translateY(-4px); border-color: var(--color-hairline); }
+
+/* Re-tune shared heading helpers to the architectural scale (inmo-only) */
+.heading-lg { letter-spacing: -0.035em; line-height: 1.02; }
+.heading-md { letter-spacing: -0.03em; line-height: 1.08; }

@@ -1,0 +1,1619 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InnovaTech Demos — Análisis Hotelería + Inmobiliaria</title>
+<style>
+  :root {
+    --hotel-primary: #8B7355;
+    --hotel-accent: #A0826D;
+    --inmob-primary: #16233d;
+    --inmob-accent: #b7912f;
+    --green: #22c55e;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --purple: #8b5cf6;
+    --gray: #6b7280;
+    --pink: #ec4899;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.6; }
+  .header { background: linear-gradient(135deg, #1e293b, #334155); color: white; padding: 3rem 2rem; text-align: center; }
+  .header h1 { font-size: 2.2rem; margin-bottom: 0.5rem; }
+  .header p { opacity: 0.8; font-size: 1.1rem; }
+  .header .date { margin-top: 1rem; font-size: 0.9rem; opacity: 0.6; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
+  .summary-card { background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-top: 4px solid; }
+  .summary-card.hotel { border-top-color: var(--hotel-primary); }
+  .summary-card.inmob { border-top-color: var(--inmob-accent); }
+  .summary-card h3 { font-size: 1.1rem; margin-bottom: 0.75rem; }
+  .summary-card .big-num { font-size: 2.5rem; font-weight: 700; }
+  .summary-card .label { font-size: 0.85rem; color: var(--gray); }
+  .progress-bar { width: 100%; height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin-top: 0.25rem; }
+  .progress-fill { height: 100%; border-radius: 999px; }
+  .progress-fill.green { background: var(--green); }
+
+  .app-section { margin-bottom: 4rem; }
+  .app-title { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 3px solid; flex-wrap: wrap; }
+  .app-title.hotel { border-bottom-color: var(--hotel-primary); }
+  .app-title.inmob { border-bottom-color: var(--inmob-accent); }
+  .app-title h2 { font-size: 1.8rem; }
+  .app-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; color: white; }
+  .app-badge.hotel { background: var(--hotel-primary); }
+  .app-badge.inmob { background: var(--inmob-accent); }
+
+  .category { margin-bottom: 2.5rem; }
+  .category-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+  .category-header h3 { font-size: 1.3rem; color: #334155; }
+  .category-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: white; }
+
+  .feature-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 1.5rem; }
+  .feature-table th { background: #f1f5f9; padding: 0.75rem 1rem; text-align: left; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 600; }
+  .feature-table td { padding: 0.75rem 1rem; border-top: 1px solid #f1f5f9; font-size: 0.9rem; vertical-align: top; }
+  .feature-table tr:hover { background: #fafbfc; }
+
+  .status { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
+  .status.done { background: #dcfce7; color: #166534; }
+  .status.partial { background: #fef3c7; color: #92400e; }
+  .status.missing { background: #fee2e2; color: #991b1b; }
+  .status.idea { background: #ede9fe; color: #5b21b6; }
+  .status.bug { background: #fce7f3; color: #9d174d; }
+  .status.decision { background: #dbeafe; color: #1e40af; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  .status.done .status-dot { background: var(--green); }
+  .status.partial .status-dot { background: var(--amber); }
+  .status.missing .status-dot { background: var(--red); }
+  .status.idea .status-dot { background: var(--purple); }
+  .status.bug .status-dot { background: var(--pink); }
+  .status.decision .status-dot { background: var(--blue); }
+
+  .note { background: #fffbeb; border-left: 4px solid var(--amber); padding: 0.75rem 1rem; border-radius: 0 8px 8px 0; font-size: 0.85rem; margin-top: 0.5rem; color: #78350f; }
+  .note.info { background: #eff6ff; border-left-color: var(--blue); color: #1e40af; }
+  .note.success { background: #f0fdf4; border-left-color: var(--green); color: #166534; }
+  .note.idea { background: #faf5ff; border-left-color: var(--purple); color: #6b21a8; }
+  .note.owner { background: #fff7ed; border-left-color: #f97316; color: #9a3412; }
+
+  .owner-note { background: #fff7ed; border: 2px solid #fed7aa; border-radius: 10px; padding: 1rem 1.25rem; margin: 0.75rem 0; font-size: 0.88rem; color: #9a3412; }
+  .owner-note::before { content: "Panchi dice:"; display: block; font-weight: 700; margin-bottom: 0.35rem; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #c2410c; }
+
+  .improvements { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-top: 1rem; }
+  .improvement-card { background: white; border-radius: 10px; padding: 1rem 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-left: 4px solid; }
+  .improvement-card.high { border-left-color: var(--red); }
+  .improvement-card.medium { border-left-color: var(--amber); }
+  .improvement-card.low { border-left-color: var(--blue); }
+  .improvement-card.idea { border-left-color: var(--purple); }
+  .improvement-card.new { border-left-color: #f97316; }
+  .improvement-card h4 { font-size: 0.95rem; margin-bottom: 0.35rem; }
+  .improvement-card p { font-size: 0.82rem; color: #64748b; }
+  .improvement-card .priority-tag { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; margin-bottom: 0.5rem; }
+  .improvement-card.high .priority-tag { background: #fee2e2; color: #991b1b; }
+  .improvement-card.medium .priority-tag { background: #fef3c7; color: #92400e; }
+  .improvement-card.low .priority-tag { background: #dbeafe; color: #1e40af; }
+  .improvement-card.idea .priority-tag { background: #ede9fe; color: #5b21b6; }
+  .improvement-card.new .priority-tag { background: #ffedd5; color: #9a3412; }
+
+  .legend { display: flex; gap: 1.5rem; flex-wrap: wrap; padding: 1rem 1.5rem; background: white; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 2rem; font-size: 0.85rem; }
+  .legend-item { display: flex; align-items: center; gap: 0.4rem; }
+
+  .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+  @media (max-width: 768px) { .comparison-grid { grid-template-columns: 1fr; } .summary-grid { grid-template-columns: 1fr; } }
+  .comp-card { background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .comp-card h4 { margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+  .score-ring { display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 50%; border: 4px solid; font-size: 1.4rem; font-weight: 700; flex-shrink: 0; }
+  hr.section-divider { border: none; height: 2px; background: linear-gradient(to right, transparent, #cbd5e1, transparent); margin: 3rem 0; }
+  .detail-text { font-size: 0.82rem; color: #64748b; margin-top: 0.25rem; }
+  .shared-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; background: #dbeafe; color: #1e40af; margin-left: 0.5rem; }
+  .new-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; background: #ffedd5; color: #9a3412; margin-left: 0.5rem; }
+  .toc { background: white; border-radius: 12px; padding: 1.5rem 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2.5rem; }
+  .toc h3 { margin-bottom: 1rem; }
+  .toc ul { list-style: none; }
+  .toc li { padding: 0.3rem 0; }
+  .toc a { color: #3b82f6; text-decoration: none; font-size: 0.9rem; }
+  .toc a:hover { text-decoration: underline; }
+  .toc .indent { padding-left: 1.5rem; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>InnovaTech Demos — Análisis de Estado + Roadmap</h1>
+  <p>Hotelería & Inmobiliaria — Audit completo + decisiones de producto</p>
+  <div class="date">Generado: 6 de septiembre de 2026 &bull; Actualizado con notas del owner</div>
+</div>
+
+<div class="container">
+
+<!-- LEYENDA -->
+<div class="legend">
+  <div class="legend-item"><span class="status done"><span class="status-dot"></span> Finalizado</span></div>
+  <div class="legend-item"><span class="status partial"><span class="status-dot"></span> Parcial</span></div>
+  <div class="legend-item"><span class="status missing"><span class="status-dot"></span> Faltante</span></div>
+  <div class="legend-item"><span class="status idea"><span class="status-dot"></span> Idea</span></div>
+  <div class="legend-item"><span class="status bug"><span class="status-dot"></span> Bug</span></div>
+  <div class="legend-item"><span class="status decision"><span class="status-dot"></span> Decisión owner</span></div>
+</div>
+
+<!-- ======= NOTA GLOBAL ======= -->
+<div class="owner-note" style="margin-bottom:2rem;">
+  Orientar toda la demo hotelería a ser justamente eso: una DEMO para mostrar capacidades, widgets, funcionalidades en vivo. Similar a lo que hace Pixel/pxsol. Revisar Pixel para sacar ideas de presentación. Ponerle nombre de hotel real. Cambio de idioma y moneda en toda la app. Re-organizar la web para que sirva como showcase de servicios vendibles.
+</div>
+
+<!-- RESUMEN EJECUTIVO -->
+<h2 style="margin-bottom:1.5rem;">Resumen Ejecutivo</h2>
+<div class="summary-grid">
+  <div class="summary-card hotel">
+    <h3>Hotelería — Estado actual</h3>
+    <div class="big-num" style="color:var(--hotel-primary);">88%</div>
+    <div class="label">Completitud actual (antes de nuevas features)</div>
+    <div class="progress-bar" style="margin-top:0.5rem;"><div class="progress-fill green" style="width:88%"></div></div>
+    <div style="margin-top:0.75rem; font-size:0.85rem;">
+      <strong>9</strong> secciones landing &bull; <strong>8</strong> módulos admin &bull; <strong>5</strong> tabs portal
+    </div>
+  </div>
+  <div class="summary-card inmob">
+    <h3>Inmobiliaria — Estado actual</h3>
+    <div class="big-num" style="color:var(--inmob-accent);">92%</div>
+    <div class="label">Completitud actual</div>
+    <div class="progress-bar" style="margin-top:0.5rem;"><div class="progress-fill green" style="width:92%"></div></div>
+    <div style="margin-top:0.75rem; font-size:0.85rem;">
+      <strong>8</strong> secciones landing &bull; <strong>9</strong> módulos admin &bull; <strong>5</strong> tabs portal
+    </div>
+  </div>
+</div>
+
+<!-- TOC -->
+<div class="toc">
+  <h3>Índice</h3>
+  <ul>
+    <li><a href="#hotel">1. Hotelería</a></li>
+    <li class="indent"><a href="#hotel-landing">1.1 Landing Page</a></li>
+    <li class="indent"><a href="#hotel-pages">1.2 Sub-páginas</a></li>
+    <li class="indent"><a href="#hotel-portal">1.3 Guest Portal</a></li>
+    <li class="indent"><a href="#hotel-admin">1.4 Admin Panel</a></li>
+    <li class="indent"><a href="#hotel-new-modules">1.5 Módulos NUEVOS (por construir)</a></li>
+    <li class="indent"><a href="#hotel-global">1.6 Cambios globales</a></li>
+    <li class="indent"><a href="#hotel-quality">1.7 Calidad técnica</a></li>
+    <li><a href="#inmob">2. Inmobiliaria</a></li>
+    <li class="indent"><a href="#inmob-landing">2.1 Landing Page</a></li>
+    <li class="indent"><a href="#inmob-pages">2.2 Sub-páginas</a></li>
+    <li class="indent"><a href="#inmob-portal">2.3 Client Portal</a></li>
+    <li class="indent"><a href="#inmob-admin">2.4 Admin Panel / CRM</a></li>
+    <li class="indent"><a href="#inmob-improvements">2.5 Features faltantes + Ideas</a></li>
+    <li><a href="#shared">3. Componentes compartidos</a></li>
+    <li><a href="#roadmap">4. Roadmap priorizado</a></li>
+  </ul>
+</div>
+
+<!-- ================================================================ -->
+<!-- ======================== HOTELERÍA ============================= -->
+<!-- ================================================================ -->
+
+<div class="app-section" id="hotel">
+<div class="app-title hotel">
+  <h2>1. Hotelería</h2>
+  <span class="app-badge hotel">Puerto 3001</span>
+</div>
+
+<!-- ===== LANDING ===== -->
+<div class="category" id="hotel-landing">
+  <div class="category-header">
+    <div class="category-icon" style="background:var(--hotel-primary);">🏠</div>
+    <h3>1.1 Landing Page</h3>
+  </div>
+
+  <table class="feature-table">
+    <thead>
+      <tr>
+        <th style="width:4%">#</th>
+        <th style="width:17%">Sección</th>
+        <th style="width:8%">Estado</th>
+        <th style="width:32%">Qué tiene hoy</th>
+        <th style="width:39%">Qué hacer / Decisiones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td><strong>HeroCarousel</strong></td>
+        <td><span class="status done"><span class="status-dot"></span> 100%</span></td>
+        <td>Carrusel 3 slides, auto-rotación 6s, gradiente, 2 CTAs, dots, Framer Motion</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Probar con video de fondo</strong> en vez de carrusel de imágenes. Más impactante para demo.<br>
+          <span class="status idea"><span class="status-dot"></span></span> Agregar swipe/touch mobile.
+        </td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><strong>HotelAbout</strong></td>
+        <td><span class="status done"><span class="status-dot"></span> 100%</span></td>
+        <td>Layout alternado 3 bloques imagen-texto, valores (Excellence, Elegance, Authenticity)</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><strong>AccommodationTiers</strong></td>
+        <td><span class="status done"><span class="status-dot"></span> 100%</span></td>
+        <td>Rooms agrupadas por tipo, cards con imagen/precio/capacidad/amenities, botones Detail/Reserve</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td><strong>GuestServicesSection</strong></td>
+        <td><span class="status done"><span class="status-dot"></span> 100%</span></td>
+        <td>ServiceRequestForm inline, ExcursionBookingForm inline, ToursSection</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Revisar si va en la landing</strong> o moverlo exclusivamente al Guest Portal. Funciona bien pero puede no ser el lugar indicado.
+        </td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td><strong>HotelAmenities</strong></td>
+        <td><span class="status done"><span class="status-dot"></span> 100%</span></td>
+        <td>6 amenities principales con images + 16 adicionales expandibles</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td><strong>OffersSection</strong><br>("Curated Experiences")</td>
+        <td><span class="status partial"><span class="status-dot"></span> 70%</span></td>
+        <td>3 paquetes (Romantic $599, Culinary $199, City Explorer $149) con imagen/precio/features</td>
+        <td>
+          <span class="status bug"><span class="status-dot"></span> Bug</span> "Learn More" no hace nada.<br>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>No hace nada ahora.</strong> Necesita que los paquetes lleven a un detalle o abran modal, y/o permitan reservar directamente.
+        </td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td><strong>ReviewsSection</strong></td>
+        <td><span class="status done"><span class="status-dot"></span> 100%</span></td>
+        <td>Carrusel horizontal, rating promedio, estrellas, verified badge</td>
+        <td><span class="status idea"><span class="status-dot"></span></span> Agregar flechas prev/next.</td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td><strong>ContactSection</strong></td>
+        <td><span class="status done"><span class="status-dot"></span> 100%</span></td>
+        <td>Info, redes, mapa Google Maps, formulario con validación/loading/success</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td>9</td>
+        <td><strong>Recorrido 360 en Landing</strong></td>
+        <td><span class="status missing"><span class="status-dot"></span> Nuevo</span></td>
+        <td>Hoy el 360 solo está en detalle de habitación</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Poner recorrido del COMPLEJO en la landing</strong> (áreas comunes, pileta, lobby, restaurante) junto a un mapa real interactivo. El 360 de habitación queda solo en la página de detalle de habitación. Conseguir visuales reales de hotel/complejo si es posible.
+        </td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td><strong>GuidedTour (Recorrido)</strong></td>
+        <td><span class="status missing"><span class="status-dot"></span> Faltante</span></td>
+        <td>El componente GuidedTour existe en shared-ui pero no está configurado/funcional en hotelería</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Falta implementar.</strong> Recorrido guiado tipo spotlight que muestre cada sección/feature al prospecto.
+        </td>
+      </tr>
+      <tr style="background:#f8f8f8;">
+        <td>—</td>
+        <td><em>AmenitiesSection</em></td>
+        <td><span class="status partial"><span class="status-dot"></span> Inactivo</span></td>
+        <td>Versión alternativa data-driven. Existe pero no se renderiza</td>
+        <td>Código muerto. Evaluar si eliminar o reemplazar a HotelAmenities.</td>
+      </tr>
+      <tr style="background:#f8f8f8;">
+        <td>—</td>
+        <td><em>RoomsList</em></td>
+        <td><span class="status partial"><span class="status-dot"></span> Inactivo</span></td>
+        <td>Grid filtrable de habitaciones. Existe pero no accesible</td>
+        <td>Código muerto. Podría convertirse en página de búsqueda dedicada.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ===== SUB-PÁGINAS ===== -->
+<div class="category" id="hotel-pages">
+  <div class="category-header">
+    <div class="category-icon" style="background:var(--hotel-primary);">📄</div>
+    <h3>1.2 Sub-páginas</h3>
+  </div>
+
+  <table class="feature-table">
+    <thead>
+      <tr>
+        <th style="width:4%">#</th>
+        <th style="width:17%">Página</th>
+        <th style="width:8%">Estado</th>
+        <th style="width:32%">Qué tiene hoy</th>
+        <th style="width:39%">Qué hacer</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td><strong>RoomDetailPage</strong></td>
+        <td><span class="status partial"><span class="status-dot"></span> 85%</span></td>
+        <td>Galería 4 imgs, botón 360, info completa, amenities, specs, sidebar sticky con precio/CTA/trust badges</td>
+        <td>
+          <span class="status bug"><span class="status-dot"></span> Bug</span> Galería usa MISMA imagen 4 veces. Necesita images[] distintas.<br>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span> El 360 de habitación queda ACÁ, no en landing.
+        </td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><strong>BookingForm</strong></td>
+        <td><span class="status done"><span class="status-dot"></span> 100%</span></td>
+        <td>Check-in/out, huéspedes, datos, precio dinámico, validación, integrado con useCart</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><strong>ServiceRequestForm</strong></td>
+        <td><span class="status done"><span class="status-dot"></span> 100%</span></td>
+        <td>Wizard 3 pasos, 6 categorías, toggle urgencia, confirmación con número</td>
+        <td>Persistir en localStorage.</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td><strong>ExcursionBookingForm</strong></td>
+        <td><span class="status done"><span class="status-dot"></span> 100%</span></td>
+        <td>Wizard 4 pasos (839 líneas), 6 excursiones, calendario, cálculo total, validación email</td>
+        <td>—</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ===== GUEST PORTAL ===== -->
+<div class="category" id="hotel-portal">
+  <div class="category-header">
+    <div class="category-icon" style="background:var(--hotel-primary);">👤</div>
+    <h3>1.3 Guest Portal (955 líneas)</h3>
+  </div>
+
+  <div class="owner-note">
+    Agregar Login. Sacar "My Requests" como tab separado y meterlo dentro de "My Stay". Services necesita más: reservaciones restaurante con carta visible, reservaciones excursiones (puede ser link a page de reservations), amenities similar. Falta info en general. Help: Live Chat debe ser el mismo chat del admin (Bandeja IA), conectado.
+  </div>
+
+  <table class="feature-table">
+    <thead>
+      <tr>
+        <th style="width:4%">#</th>
+        <th style="width:15%">Tab</th>
+        <th style="width:8%">Estado</th>
+        <th style="width:30%">Qué tiene hoy</th>
+        <th style="width:43%">Qué hacer</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>0</td>
+        <td><strong>Login</strong></td>
+        <td><span class="status missing"><span class="status-dot"></span> Falta</span></td>
+        <td>No existe. El portal carga directo con datos mock</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Agregar login simulado</strong> (cualquier credencial funciona). Es un must para que el portal parezca real en demo.
+        </td>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td><strong>My Stay</strong></td>
+        <td><span class="status partial"><span class="status-dot"></span> Cambios</span></td>
+        <td>Timeline de estadía, stats, quick actions, billing</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Absorber "My Requests" acá.</strong> Que las solicitudes activas aparezcan en este overview, no en tab separado.<br>
+          <span class="status bug"><span class="status-dot"></span> Bug</span> Fechas hardcodeadas enero 2024. Hacerlas dinámicas.
+        </td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><strong>Services</strong></td>
+        <td><span class="status partial"><span class="status-dot"></span> Expandir</span></td>
+        <td>Room Service (4 items), Housekeeping (4 items), Report Issue</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Agregar:</strong>
+          <ul style="margin:0.3rem 0 0 1rem; font-size:0.85rem;">
+            <li>Reservaciones de <strong>restaurante con carta visible</strong> (menú del hotel)</li>
+            <li>Reservaciones de <strong>excursiones</strong> (puede ser link a page de reservations)</li>
+            <li><strong>Amenities</strong> (pool, spa, gym, etc.) similar</li>
+          </ul>
+          Decidir si todo junto en una page o separado por categoría. <strong>Falta info.</strong>
+        </td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><strong>Reservations</strong></td>
+        <td><span class="status done"><span class="status-dot"></span> 100%</span></td>
+        <td>5 amenities reservables (Spa, Training, Cabana, Restaurant, Transfer) con date+time picker</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td><strong>My Requests</strong></td>
+        <td><span class="status decision"><span class="status-dot"></span> Eliminar</span></td>
+        <td>Lista de solicitudes con estado, cancelar, empty state</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Eliminar como tab.</strong> Su contenido se mueve a "My Stay" como sección dentro del overview.<br>
+          <span class="status bug"><span class="status-dot"></span> Bug</span> Sin localStorage, se pierde al refrescar.
+        </td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td><strong>Help</strong></td>
+        <td><span class="status partial"><span class="status-dot"></span> Expandir</span></td>
+        <td>Call/Chat(placeholder)/Email, FAQ accordion, info hotel</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Live Chat = el chat del admin (Bandeja IA).</strong> Cuando el huésped escribe acá, el mensaje aparece en la Bandeja IA del admin. Mismo sistema, dos vistas.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <strong>Faltantes adicionales:</strong> Factura detallada/descargable, Modificar/cancelar reserva principal, Persistencia localStorage para requests.
+  </div>
+</div>
+
+<!-- ===== ADMIN ===== -->
+<div class="category" id="hotel-admin">
+  <div class="category-header">
+    <div class="category-icon" style="background:var(--hotel-primary);">⚙️</div>
+    <h3>1.4 Admin Panel — 8 Módulos existentes</h3>
+  </div>
+
+  <table class="feature-table">
+    <thead>
+      <tr>
+        <th style="width:4%">#</th>
+        <th style="width:17%">Módulo</th>
+        <th style="width:8%">Estado</th>
+        <th style="width:28%">Qué tiene hoy</th>
+        <th style="width:43%">Qué hacer</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td><strong>Dashboard</strong></td>
+        <td><span class="status done"><span class="status-dot"></span> 100%</span></td>
+        <td>6 KPIs, CommissionWidget (revenue por canal), timeline check-in/out con modal, room status bar, quick actions</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><strong>Bandeja IA</strong></td>
+        <td><span class="status partial"><span class="status-dot"></span> Expandir</span></td>
+        <td>3 columnas (lista, thread, contexto), 4 conversaciones (WhatsApp/Booking/IG/Web), AI status, escalate</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Que un agente humano pueda ESCRIBIR.</strong> Input de texto + mensajes pre-cargados (templates) seleccionables. Hoy es solo lectura.
+          <br>Conectar con Live Chat del Guest Portal (misma conversación, dos vistas).
+        </td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><strong>Precio Dinámico</strong></td>
+        <td><span class="status partial"><span class="status-dot"></span> Expandir</span></td>
+        <td>IPC 3.2%, tabla nominal vs real, recomendaciones, gráfico dual barras</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Agregar:</strong>
+          <ul style="margin:0.3rem 0 0 1rem; font-size:0.85rem;">
+            <li>Poder crear <strong>ofertas y rebajas</strong> manuales</li>
+            <li><strong>Sugerencias automáticas:</strong> habitación vacía = pérdida. Si falta X tiempo (configurable) y no se reservó, sugerir descuento</li>
+            <li>Temporada <strong>alta/baja</strong> con pricing diferenciado</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td><strong>Room Management</strong></td>
+        <td><span class="status partial"><span class="status-dot"></span> Expandir</span></td>
+        <td>3 vistas (Grid, Tabla, Mapa edificio), filtros completos, modal edición (solo estado + notas)</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <ul style="margin:0.3rem 0 0 1rem; font-size:0.85rem;">
+            <li><strong>Mapa interactivo tipo 360</strong> para ver habitaciones (explorar la idea)</li>
+            <li>Editar MUCHO más: <strong>asignar encargados</strong>, precio, fotos, amenities, descripción. El edit actual es muy simple</li>
+            <li>Gestión completa de cada habitación desde acá</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td><strong>Housekeeping</strong></td>
+        <td><span class="status partial"><span class="status-dot"></span> Expandir</span></td>
+        <td>Task cards con tipo/prioridad/checklist/staff, Staff Overview, Floor Overview</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Falta info.</strong> Necesita:
+          <ul style="margin:0.3rem 0 0 1rem; font-size:0.85rem;">
+            <li><strong>Métricas por trabajador</strong> (tareas completadas, tiempo promedio, rating)</li>
+            <li>Historial de lo que hizo cada uno</li>
+            <li>Convertir en un <strong>panel de gestión de personal completo</strong></li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td><strong>Inventory</strong></td>
+        <td><span class="status done"><span class="status-dot"></span> 100%</span></td>
+        <td>Stock bars, low stock alerts, 4 stats, cards con SKU, restock modal, history. 20 items</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Más métricas.</strong> Tendencias de consumo, costos por período, alertas de reposición automáticas.
+        </td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td><strong>Service Requests</strong></td>
+        <td><span class="status done"><span class="status-dot"></span> 100%</span></td>
+        <td>5 stats, cards con tipo/prioridad/tiempo/staff, workflow completo, 11 requests</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Enviar mensaje al cliente</strong> desde acá. Que te autolleve al panel de Bandeja IA con este user asignado para escribirle directamente.
+        </td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td><strong>Excursions</strong></td>
+        <td><span class="status done"><span class="status-dot"></span> 100%</span></td>
+        <td>4 KPIs, cards con toggle, departures con capacidad, manage modal completo, 6 excursiones</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Métricas</strong> (revenue trends, popular tours, conversion rate). <strong>Agregar excursión nueva</strong> desde el admin (no solo editar existentes).
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <strong>Bug AdminHeader:</strong> viewTitles falta entries para "inbox", "pricing", "excursions" — muestra undefined.
+  </div>
+</div>
+
+<!-- ===== NUEVOS MÓDULOS ADMIN ===== -->
+<div class="category" id="hotel-new-modules">
+  <div class="category-header">
+    <div class="category-icon" style="background:#f97316;">🆕</div>
+    <h3>1.5 Módulos NUEVOS por construir</h3>
+  </div>
+
+  <table class="feature-table">
+    <thead>
+      <tr>
+        <th style="width:4%">#</th>
+        <th style="width:20%">Módulo</th>
+        <th style="width:8%">Estado</th>
+        <th style="width:68%">Descripción</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>N1</td>
+        <td><strong>Gestión de Usuarios</strong> <span class="new-badge">NUEVO</span></td>
+        <td><span class="status missing"><span class="status-dot"></span> Por hacer</span></td>
+        <td>
+          Administrar <strong>trabajadores</strong> (roles, permisos, turnos) y <strong>clientes/huéspedes</strong> (historial, preferencias, contacto).
+          <br>Incluye posibilidad de ver panel desde perspectiva de distintos roles: admin ve todo, personal de room service ve solo sus pedidos, personal de mantenimiento ve solo sus tareas. <strong>Paneles por rol.</strong>
+        </td>
+      </tr>
+      <tr>
+        <td>N2</td>
+        <td><strong>Noticias / Avisos</strong> <span class="new-badge">NUEVO</span></td>
+        <td><span class="status missing"><span class="status-dot"></span> Por hacer</span></td>
+        <td>
+          Apartado configurable desde admin. Se programa por fecha/hora de inicio y fin. Los avisos aparecen automáticamente en el front.
+          <br>Ejemplo: "Pileta cerrada por remodelaciones del 15 al 20 de septiembre". Se cargan desde admin y desaparecen solos cuando pasa la fecha.
+        </td>
+      </tr>
+      <tr>
+        <td>N3</td>
+        <td><strong>Panel de Actividades / Eventos</strong> <span class="new-badge">NUEVO</span></td>
+        <td><span class="status missing"><span class="status-dot"></span> Por hacer</span></td>
+        <td>
+          Crear actividades/eventos del hotel: "Fiesta del Mojito", lugar, hora, descripción, imagen. Se cargan desde admin y aparecen en la landing o portal en un apartado dedicado.
+          <br>Calendario de actividades visible para huéspedes.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ===== CAMBIOS GLOBALES ===== -->
+<div class="category" id="hotel-global">
+  <div class="category-header">
+    <div class="category-icon" style="background:#f97316;">🌐</div>
+    <h3>1.6 Cambios Globales</h3>
+  </div>
+
+  <div class="improvements">
+    <div class="improvement-card new">
+      <div class="priority-tag">GLOBAL</div>
+      <h4>Cambiar idioma (i18n)</h4>
+      <p>Toggle ES/EN en toda la app. Demuestra internacionalización como feature vendible.</p>
+    </div>
+    <div class="improvement-card new">
+      <div class="priority-tag">GLOBAL</div>
+      <h4>Cambiar moneda</h4>
+      <p>Selector USD/ARS/EUR. Precios se recalculan. Demuestra multi-moneda.</p>
+    </div>
+    <div class="improvement-card new">
+      <div class="priority-tag">GLOBAL</div>
+      <h4>Nombre de hotel real</h4>
+      <p>Poner nombre de hotel real en la demo. Más creíble y profesional para presentaciones.</p>
+    </div>
+    <div class="improvement-card new">
+      <div class="priority-tag">GLOBAL</div>
+      <h4>Repensar como demo/showcase</h4>
+      <p>Reorganizar la web para que funcione como demo interactiva de servicios (estilo Pixel/pxsol). Cada widget/feature accesible y demostrable en vivo. Revisar Pixel para ideas.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CALIDAD ===== -->
+<div class="category" id="hotel-quality">
+  <div class="category-header">
+    <div class="category-icon" style="background:var(--hotel-primary);">✅</div>
+    <h3>1.7 Calidad Técnica</h3>
+  </div>
+  <div class="comparison-grid">
+    <div class="comp-card">
+      <h4>Dark/Light Mode</h4>
+      <div style="display:flex;align-items:center;gap:1rem;">
+        <div class="score-ring" style="border-color:var(--green);color:var(--green);">9</div>
+        <div><div style="font-weight:600;">Excelente</div><div class="detail-text">CSS variables en todos los componentes. Toggle + detección sistema + localStorage.</div></div>
+      </div>
+    </div>
+    <div class="comp-card">
+      <h4>Responsive</h4>
+      <div style="display:flex;align-items:center;gap:1rem;">
+        <div class="score-ring" style="border-color:var(--green);color:var(--green);">9</div>
+        <div><div style="font-weight:600;">Excelente</div><div class="detail-text">Mobile-first. Admin sidebar drawer en mobile. Grids adaptativos.</div></div>
+      </div>
+    </div>
+    <div class="comp-card">
+      <h4>Animaciones</h4>
+      <div style="display:flex;align-items:center;gap:1rem;">
+        <div class="score-ring" style="border-color:var(--green);color:var(--green);">9</div>
+        <div><div style="font-weight:600;">Excelente</div><div class="detail-text">Framer Motion en todo. AnimatePresence, whileInView, stagger, spring sidebar.</div></div>
+      </div>
+    </div>
+    <div class="comp-card">
+      <h4>Navegación</h4>
+      <div style="display:flex;align-items:center;gap:1rem;">
+        <div class="score-ring" style="border-color:var(--amber);color:var(--amber);">7</div>
+        <div><div style="font-weight:600;">Aceptable</div><div class="detail-text">viewMode state, sin React Router. No soporta deep-linking ni back/forward.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end hotel -->
+
+<hr class="section-divider">
+
+<!-- ================================================================ -->
+<!-- ======================== INMOBILIARIA ========================== -->
+<!-- ================================================================ -->
+
+<div class="app-section" id="inmob">
+<div class="app-title inmob">
+  <h2>2. Inmobiliaria — "Terranova Propiedades"</h2>
+  <span class="app-badge inmob">Puerto 3004</span>
+</div>
+
+<div class="owner-note" style="margin-bottom:1.5rem;">
+  Impresion general del owner: visualmente la base esta, pero falta MUCHA interactividad y funcionalidad real. El admin parece una plantilla visual sin funcionalidades. Referencia: <strong>Lebane Mexico</strong> como demo a estudiar. El portal debe servir para LOCADOR y LOCATARIO. Investigar que necesita realmente una inmobiliaria.
+</div>
+
+<!-- LANDING -->
+<div class="category" id="inmob-landing">
+  <div class="category-header">
+    <div class="category-icon" style="background:var(--inmob-accent);">🏠</div>
+    <h3>2.1 Landing Page — 8 Secciones + Guided Tour</h3>
+  </div>
+  <table class="feature-table">
+    <thead><tr><th style="width:4%">#</th><th style="width:20%">Sección</th><th style="width:8%">Estado</th><th style="width:30%">Qué tiene hoy</th><th style="width:38%">Qué hacer / Decisiones</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><strong>PropertyHero</strong></td><td><span class="status done"><span class="status-dot"></span> 100%</span></td><td>Segmented Venta/Alquiler/Temporario, 7 tipos, búsqueda ubicación, stats, clip-path animation</td><td>—</td></tr>
+      <tr><td>2</td><td><strong>AboutSection</strong></td><td><span class="status done"><span class="status-dot"></span> 100%</span></td><td>Imagen + badge "20 años", 4 highlights</td><td>—</td></tr>
+      <tr><td>3</td><td><strong>FeaturedProperties</strong></td><td><span class="status done"><span class="status-dot"></span> 100%</span></td><td>Tab filter, grid PropertyCards, CTA ver todas</td><td>—</td></tr>
+      <tr>
+        <td>4</td>
+        <td><strong>ServicesSection</strong><br>("Servicios Integrales")</td>
+        <td><span class="status partial"><span class="status-dot"></span> Visual</span></td>
+        <td>8 servicios en grid con bordes y hover</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>No hace nada hoy.</strong> Los servicios deberían llevar a algo: detalle, contacto, o al menos un modal explicativo.
+        </td>
+      </tr>
+      <tr><td>5</td><td><strong>WhyChooseUs</strong></td><td><span class="status done"><span class="status-dot"></span> 100%</span></td><td>4 pilares + 4 stats en sección full-width</td><td>—</td></tr>
+      <tr>
+        <td>6</td>
+        <td><strong>MortgageCalculator</strong></td>
+        <td><span class="status done"><span class="status-dot"></span> 100%</span></td>
+        <td>Simulador USD/ARS, enganche 0-80%, plazo 5-30 años, fórmula PMT, barra capital vs interés</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Se puede mejorar?</strong> Owner no conoce bien el tema. Investigar: comparación de bancos/tasas, UVA vs tradicional, simulación de cuotas reales argentinas.
+        </td>
+      </tr>
+      <tr><td>7</td><td><strong>AgentsSection</strong></td><td><span class="status done"><span class="status-dot"></span> 100%</span></td><td>4 agentes con foto/rating/reviews/ventas/idiomas, call/email</td><td>—</td></tr>
+      <tr><td>8</td><td><strong>TestimonialsSection</strong></td><td><span class="status done"><span class="status-dot"></span> 100%</span></td><td>4 testimonios, 2-col grid, serif itálica, rating</td><td>—</td></tr>
+      <tr><td>9</td><td><strong>ContactSection</strong></td><td><span class="status done"><span class="status-dot"></span> 100%</span></td><td>Formulario completo + info agencia + placeholder map</td><td>—</td></tr>
+      <tr>
+        <td>+</td>
+        <td><strong>GuidedTour</strong></td>
+        <td><span class="status partial"><span class="status-dot"></span> Incompleto</span></td>
+        <td>Componente existe en shared-ui</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Terminar.</strong> Recorrido guiado que muestre cada sección/feature al prospecto.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- SUB-PÁGINAS -->
+<div class="category" id="inmob-pages">
+  <div class="category-header">
+    <div class="category-icon" style="background:var(--inmob-accent);">📄</div>
+    <h3>2.2 Sub-páginas — 3 Páginas</h3>
+  </div>
+  <table class="feature-table">
+    <thead><tr><th style="width:4%">#</th><th style="width:20%">Página</th><th style="width:8%">Estado</th><th style="width:30%">Qué tiene hoy</th><th style="width:38%">Qué hacer</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td><strong>PropertiesListPage</strong></td>
+        <td><span class="status partial"><span class="status-dot"></span> Expandir</span></td>
+        <td>Filtros (operación, tipo, barrio, dormitorios, precio, texto), sort, Grid + Map view con hover sync</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Mapa interactivo:</strong> poder "dibujar zonas de interés" en el mapa. Más filtros (superficie, antigüedad, cochera, amenities, etc.).
+        </td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><strong>PropertyDetailPage</strong></td>
+        <td><span class="status partial"><span class="status-dot"></span> Arreglar</span></td>
+        <td>Galería + thumbnails + plano + 360 tour, badges, precio+expensas, specs, amenities, mapa, sidebar agente, estimación hipotecaria</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>"Ver plano" no hace nada.</strong> Arreglar. <strong>"Ver tour" debe ser SOLO de la propiedad/unidad</strong>, sacar lo del complejo. Solo habitación/casa.
+        </td>
+      </tr>
+      <tr><td>3</td><td><strong>ScheduleVisitForm</strong></td><td><span class="status done"><span class="status-dot"></span> 100%</span></td><td>Resumen propiedad + form (presencial/video, date, 7 horarios, delay 700ms, success)</td><td>—</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- CLIENT PORTAL -->
+<div class="category" id="inmob-portal">
+  <div class="category-header">
+    <div class="category-icon" style="background:var(--inmob-accent);">👤</div>
+    <h3>2.3 Client Portal — Debe servir para LOCADOR y LOCATARIO</h3>
+  </div>
+
+  <div class="owner-note">
+    El portal debe servir tanto para locador (propietario) como para locatario (inquilino). Son dos roles distintos con vistas diferentes. Hoy solo existe la vista "comprador/interesado". Falta mucha info en general.
+  </div>
+
+  <table class="feature-table">
+    <thead><tr><th style="width:4%">#</th><th style="width:15%">Tab</th><th style="width:8%">Estado</th><th style="width:30%">Qué tiene hoy</th><th style="width:43%">Qué hacer</th></tr></thead>
+    <tbody>
+      <tr><td>0</td><td><strong>Login</strong></td><td><span class="status done"><span class="status-dot"></span> 100%</span></td><td>Email/password (demo), Google OAuth placeholder</td><td>Agregar selección de rol al login (Interesado / Inquilino / Propietario)</td></tr>
+      <tr><td>1</td><td><strong>Favoritos</strong></td><td><span class="status done"><span class="status-dot"></span> 100%</span></td><td>Grid PropertyCards de localStorage, toggle, nav a detalle</td><td>—</td></tr>
+      <tr>
+        <td>2</td>
+        <td><strong>Mis Visitas</strong></td>
+        <td><span class="status partial"><span class="status-dot"></span> Expandir</span></td>
+        <td>3 visitas mock, badges estado, Reprogramar/Cancelar</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Más info de la propiedad</strong> (ubicación, foto), <strong>agente asignado</strong>, posibilidad de <strong>enviar mensaje</strong> al agente.
+        </td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><strong>Mis Ofertas</strong></td>
+        <td><span class="status partial"><span class="status-dot"></span> Expandir</span></td>
+        <td>2 ofertas mock, monto, estado tracking (read-only)</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          Poder <strong>revisar más detalle de la propiedad</strong> desde acá. Hacer oferta nueva. Historial contra-ofertas.
+        </td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td><strong>Documentos</strong></td>
+        <td><span class="status partial"><span class="status-dot"></span> Expandir</span></td>
+        <td>4 docs, download buttons, drag-drop upload (UI only)</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Más info por documento.</strong> Poder <strong>subir cosas</strong> (recibos, DNI, garantías). Organizado por propiedad/alquiler: "Este depto son estos docs". Para alquileres: recibos de pago, contrato, etc.
+        </td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td><strong>Alertas</strong></td>
+        <td><span class="status partial"><span class="status-dot"></span> No funciona</span></td>
+        <td>3 alertas con toggles, pero no hacen nada real</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>No hace nada.</strong> Que al activar una alerta se muestre un toast/notificación simulada. Crear nueva alerta con criterios.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note owner" style="margin-top:1rem;">
+    <strong>Vista LOCADOR (propietario):</strong> Poder ver y administrar tus propiedades en alquiler, ver documentos, recibos, estado de cobro, liquidaciones. Similiar a lo que ya está en admin pero desde la perspectiva del propietario.
+  </div>
+  <div class="note owner" style="margin-top:0.5rem;">
+    <strong>Vista LOCATARIO (inquilino):</strong> Ver contrato, recibos de pago, próximo ajuste, documentos del alquiler, solicitar reparaciones. Complementa el AdjustmentSimulator del admin.
+  </div>
+</div>
+
+<!-- ADMIN CRM -->
+<div class="category" id="inmob-admin">
+  <div class="category-header">
+    <div class="category-icon" style="background:var(--inmob-accent);">⚙️</div>
+    <h3>2.4 Admin Panel / CRM — 9 Módulos</h3>
+  </div>
+
+  <div class="owner-note">
+    Impresión general: parece una plantilla visual, sin funcionalidades reales. Todo necesita más interactividad, más edición, más acciones. Es solo lectura en casi todo.
+  </div>
+
+  <table class="feature-table">
+    <thead><tr><th style="width:4%">#</th><th style="width:17%">Módulo</th><th style="width:8%">Estado</th><th style="width:28%">Qué tiene hoy</th><th style="width:43%">Qué hacer</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td><strong>Dashboard</strong></td>
+        <td><span class="status partial"><span class="status-dot"></span> Expandir</span></td>
+        <td>8 KPIs, ResponseTimeWidget, pipeline leads, operaciones en curso, visitas del día, team count</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Me gusta, le falta interactividad.</strong> Los KPIs deberían ser clickeables (ir al módulo correspondiente). Gráficos de tendencia, drill-down.
+        </td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><strong>Bandeja IA</strong></td>
+        <td><span class="status partial"><span class="status-dot"></span> Expandir</span></td>
+        <td>3 columnas, 4 conversaciones, lead scoring, AI attribution</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Mismo que hotelería:</strong> que el agente pueda ESCRIBIR. Input de texto + mensajes pre-definidos (templates).
+        </td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><strong>Propiedades</strong></td>
+        <td><span class="status partial"><span class="status-dot"></span> Expandir</span></td>
+        <td>Filtros, tabla desktop + cards mobile, inline status edit, localStorage</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Se deben poder AGREGAR/QUITAR/PAUSAR/EDITAR propiedades.</strong> Más info visible, más editable, más interactivo. Botones para publicar en plataformas (ZonaProp/ArgenProp/ML) y ver estado de publicación.
+          <br><em>OJO: no chocar con lo del locador en el portal. Revisar límites entre admin y portal propietario.</em>
+        </td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td><strong>Leads/CRM</strong></td>
+        <td><span class="status partial"><span class="status-dot"></span> Expandir</span></td>
+        <td>Kanban 6 etapas, filtro agente, cards con score, mover/perder</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Falta interactividad:</strong> no se puede scrollear, no queda claro para qué sirve, no se puede editar nada. Necesita: editar leads, agregar notas, ver historial de contacto, click para expandir detalle.
+        </td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td><strong>Visitas</strong></td>
+        <td><span class="status partial"><span class="status-dot"></span> Expandir</span></td>
+        <td>Filtro estado, agrupadas por fecha, confirmar/cancelar/completar</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Falta interactividad:</strong> poder editar visitas, enviar mensaje/link al cliente, reagendar, ver detalle propiedad.
+        </td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td><strong>Operaciones</strong></td>
+        <td><span class="status partial"><span class="status-dot"></span> Expandir</span></td>
+        <td>4 cards resumen, pipeline value, avanzar etapa, progress bars</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Más de lo mismo:</strong> más interactividad, más edición, más acciones, más detalle.
+        </td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td><strong>Simulador Ajuste</strong></td>
+        <td><span class="status done"><span class="status-dot"></span> Gusta</span></td>
+        <td>ICL/UVA/IPC, 4 frecuencias, proyección compuesta, recibo + mora</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Me gusta.</strong> Si se ve algo para mejorar, anotar. Diferenciador AR clave.
+        </td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td><strong>Liquidaciones</strong></td>
+        <td><span class="status partial"><span class="status-dot"></span> Expandir</span></td>
+        <td>3 propietarios, recibo PDF preview, fee, gastos, neto, download</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Se puede mejorar.</strong> Falta un montón de info e interactividad. Más detalle de propiedades, historial de liquidaciones, editar gastos, generar recibo real.
+        </td>
+      </tr>
+      <tr>
+        <td>9</td>
+        <td><strong>Equipo</strong></td>
+        <td><span class="status partial"><span class="status-dot"></span> Pobre</span></td>
+        <td>4 cards resumen, cards agente con foto/zona/meta/progress bar, call/email</td>
+        <td>
+          <span class="status decision"><span class="status-dot"></span> Decisión</span>
+          <strong>Super pobre.</strong> Necesita: editar agentes, asignar propiedades/zonas, métricas de rendimiento, historial, permisos. Panel de gestión de equipo completo.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- NUEVOS MODULOS INMOB -->
+<div class="category" id="inmob-new-modules">
+  <div class="category-header">
+    <div class="category-icon" style="background:#f97316;">🆕</div>
+    <h3>2.5 Módulos NUEVOS por construir</h3>
+  </div>
+  <table class="feature-table">
+    <thead><tr><th style="width:4%">#</th><th style="width:20%">Módulo</th><th style="width:76%">Descripción</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>N1</td>
+        <td><strong>Gestión de Usuarios / Roles</strong> <span class="new-badge">NUEVO</span></td>
+        <td>Igual que hotelería: usuarios con diferentes permisos. Admin ve todo, agente ve sus propiedades/leads, asistente ve agenda. Paneles distintos por rol.</td>
+      </tr>
+      <tr>
+        <td>N2</td>
+        <td><strong>Publicación en Plataformas</strong> <span class="new-badge">NUEVO</span></td>
+        <td>En propiedades: botones para publicar/despublicar en ZonaProp, ArgenProp, MercadoLibre, Instagram. Ver estado de cada publicación, stats por portal. Puede ser parte del módulo Propiedades o módulo aparte.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- INMOB IMPROVEMENTS -->
+<div class="category" id="inmob-improvements">
+  <div class="category-header">
+    <div class="category-icon" style="background:var(--red);">🚀</div>
+    <h3>2.6 Backlog + Ideas</h3>
+  </div>
+  <div class="improvements">
+    <div class="improvement-card medium">
+      <div class="priority-tag">BACKLOG</div>
+      <h4>Tasador público con comparables</h4>
+      <p>Herramienta pública: ingresar dirección, obtener tasación estimada + comparables cercanos. Exportar PDF. Genera leads.</p>
+    </div>
+    <div class="improvement-card idea">
+      <div class="priority-tag">IDEA</div>
+      <h4>Comparador side-by-side</h4>
+      <p>Seleccionar 2-3 propiedades y comparar precio, m², amenities, ubicación.</p>
+    </div>
+    <div class="improvement-card idea">
+      <div class="priority-tag">IDEA</div>
+      <h4>Tabla de contratos vigentes</h4>
+      <p>Vista gestión: contrato, inquilino, índice, próximo ajuste, estado cobranza.</p>
+    </div>
+    <div class="improvement-card idea">
+      <div class="priority-tag">IDEA</div>
+      <h4>POIs cercanos, Multi-mercado AR/UY/ES, MortgageCalc mejorada</h4>
+      <p>Features secundarios. Investigar qué realmente necesita una inmobiliaria argentina.</p>
+    </div>
+    <div class="improvement-card new">
+      <div class="priority-tag">REFERENCIA</div>
+      <h4>Estudiar Lebane Mexico</h4>
+      <p>Revisar como referencia de demo inmobiliaria. Extraer ideas de presentación y features.</p>
+    </div>
+  </div>
+</div>
+
+</div><!-- end inmob -->
+
+<hr class="section-divider">
+
+<!-- ================================================================ -->
+<!-- ====================== SHARED ================================= -->
+<!-- ================================================================ -->
+
+<div class="app-section" id="shared">
+<div class="app-title" style="border-bottom-color:var(--blue);">
+  <h2>3. Componentes Compartidos</h2>
+</div>
+<table class="feature-table">
+  <thead><tr><th>Package</th><th>Componente</th><th>Usado en</th><th>Estado</th></tr></thead>
+  <tbody>
+    <tr><td rowspan="4">shared-ui</td><td>Navbar</td><td>Todas las apps</td><td><span class="status done"><span class="status-dot"></span> 100%</span></td></tr>
+    <tr><td>Footer</td><td>Todas</td><td><span class="status done"><span class="status-dot"></span> 100%</span></td></tr>
+    <tr><td>GuidedTour</td><td>Hotelería, Inmobiliaria</td><td><span class="status done"><span class="status-dot"></span> 100%</span></td></tr>
+    <tr><td>VirtualTour360</td><td>Hotelería, Inmobiliaria</td><td><span class="status done"><span class="status-dot"></span> 100%</span></td></tr>
+    <tr><td rowspan="2">shared-hooks</td><td>useDarkMode</td><td>Todas</td><td><span class="status done"><span class="status-dot"></span> 100%</span></td></tr>
+    <tr><td>useCart</td><td>Hotelería, Gastronomía</td><td><span class="status done"><span class="status-dot"></span> 100%</span></td></tr>
+    <tr><td>shared-styles</td><td>global.css, theme.json, tailwind.config.js</td><td>Todas</td><td><span class="status done"><span class="status-dot"></span> 100%</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+<hr class="section-divider">
+
+<!-- ================================================================ -->
+<!-- ====================== ROADMAP ================================ -->
+<!-- ================================================================ -->
+
+<div class="app-section" id="roadmap">
+<div class="app-title" style="border-bottom-color:var(--purple);">
+  <h2>4. Roadmap Priorizado</h2>
+</div>
+
+<div class="note info" style="margin-bottom:1.5rem;">
+  Prioridad basada en: impacto en demo de venta > correcciones > nuevas features. Las decisiones del owner están marcadas en naranja.
+</div>
+
+<table class="feature-table">
+  <thead>
+    <tr>
+      <th style="width:4%">#</th>
+      <th style="width:8%">Tipo</th>
+      <th style="width:8%">Esfuerzo</th>
+      <th style="width:30%">Feature</th>
+      <th style="width:50%">Detalle</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background:#fef2f2;">
+      <td>1</td><td>Bug</td><td>Bajo</td>
+      <td>Fix galería RoomDetail (4 imgs iguales)</td>
+      <td>Agregar images[] a rooms.json con URLs distintas</td>
+    </tr>
+    <tr style="background:#fef2f2;">
+      <td>2</td><td>Bug</td><td>Bajo</td>
+      <td>Fix fechas hardcoded Guest Portal</td>
+      <td>MOCK_GUEST con fechas relativas a hoy</td>
+    </tr>
+    <tr style="background:#fef2f2;">
+      <td>3</td><td>Bug</td><td>Bajo</td>
+      <td>Fix AdminHeader viewTitles faltantes</td>
+      <td>Agregar inbox, pricing, excursions al mapa</td>
+    </tr>
+    <tr style="background:#fff7ed;">
+      <td>4</td><td>Feature</td><td>Bajo</td>
+      <td>Login simulado en Guest Portal</td>
+      <td>Pantalla login demo (cualquier credencial funciona)</td>
+    </tr>
+    <tr style="background:#fff7ed;">
+      <td>5</td><td>Feature</td><td>Bajo</td>
+      <td>Merge "My Requests" en "My Stay"</td>
+      <td>Eliminar tab separado, mover contenido al overview</td>
+    </tr>
+    <tr style="background:#fff7ed;">
+      <td>6</td><td>Feature</td><td>Medio</td>
+      <td>Bandeja IA: agente puede escribir</td>
+      <td>Input de texto + mensajes pre-cargados (templates)</td>
+    </tr>
+    <tr style="background:#fff7ed;">
+      <td>7</td><td>Feature</td><td>Medio</td>
+      <td>Live Chat portal = Bandeja IA admin</td>
+      <td>Conectar Help>Live Chat con la Bandeja IA (misma conversación, dos vistas)</td>
+    </tr>
+    <tr style="background:#fff7ed;">
+      <td>8</td><td>Feature</td><td>Medio</td>
+      <td>Curated Experiences funcional</td>
+      <td>OffersSection: "Learn More" abre detalle, botón Reserve funciona</td>
+    </tr>
+    <tr style="background:#fff7ed;">
+      <td>9</td><td>Feature</td><td>Medio</td>
+      <td>Precio Dinámico: ofertas + sugerencias automáticas</td>
+      <td>Crear rebajas manuales, sugerencias si hab vacía X días, temporada alta/baja</td>
+    </tr>
+    <tr style="background:#fff7ed;">
+      <td>10</td><td>Feature</td><td>Medio</td>
+      <td>Room Management: edit expandido + encargados</td>
+      <td>Editar precio, fotos, amenities, asignar encargados, no solo estado</td>
+    </tr>
+    <tr style="background:#fff7ed;">
+      <td>11</td><td>Feature</td><td>Medio</td>
+      <td>Services portal: restaurante + carta + excursiones + amenities</td>
+      <td>Expandir tab Services con reservaciones de restaurante (menú visible), excursiones, amenities</td>
+    </tr>
+    <tr style="background:#fff7ed;">
+      <td>12</td><td>Feature</td><td>Medio</td>
+      <td>Housekeeping: métricas por trabajador</td>
+      <td>Historial, tareas completadas, tiempo promedio, rating. Panel de personal completo</td>
+    </tr>
+    <tr style="background:#fff7ed;">
+      <td>13</td><td>Feature</td><td>Medio</td>
+      <td>Service Requests: link a Bandeja IA</td>
+      <td>Botón "Escribir al cliente" que abre Bandeja IA con ese user seleccionado</td>
+    </tr>
+    <tr style="background:#fff7ed;">
+      <td>14</td><td>Feature</td><td>Medio</td>
+      <td>Excursions: agregar nueva + métricas</td>
+      <td>Crear excursión desde admin, gráficos revenue/popular/conversion</td>
+    </tr>
+    <tr style="background:#eff6ff;">
+      <td>15</td><td>Nuevo</td><td>Alto</td>
+      <td>Recorrido 360 del complejo en landing</td>
+      <td>Tour del hotel (lobby, pool, restaurante) con mapa interactivo real. Visuales reales.</td>
+    </tr>
+    <tr style="background:#eff6ff;">
+      <td>16</td><td>Nuevo</td><td>Alto</td>
+      <td>Gestión de Usuarios (trabajadores + clientes)</td>
+      <td>CRUD users, roles, permisos, paneles por rol (admin/room service/mant ven distinto)</td>
+    </tr>
+    <tr style="background:#eff6ff;">
+      <td>17</td><td>Nuevo</td><td>Medio</td>
+      <td>Noticias / Avisos (admin → front)</td>
+      <td>Programar avisos con fecha inicio/fin, aparecen automáticamente en front</td>
+    </tr>
+    <tr style="background:#eff6ff;">
+      <td>18</td><td>Nuevo</td><td>Medio</td>
+      <td>Panel de Actividades / Eventos</td>
+      <td>Crear eventos (lugar, hora, imagen), calendario en front para huéspedes</td>
+    </tr>
+    <tr style="background:#eff6ff;">
+      <td>19</td><td>Nuevo</td><td>Medio</td>
+      <td>GuidedTour funcional</td>
+      <td>Implementar recorrido spotlight para landing</td>
+    </tr>
+    <tr style="background:#faf5ff;">
+      <td>20</td><td>Global</td><td>Alto</td>
+      <td>i18n (cambio de idioma ES/EN)</td>
+      <td>Sistema de traducciones en toda la app</td>
+    </tr>
+    <tr style="background:#faf5ff;">
+      <td>21</td><td>Global</td><td>Medio</td>
+      <td>Cambio de moneda (USD/ARS/EUR)</td>
+      <td>Selector de moneda con recálculo de precios</td>
+    </tr>
+    <tr style="background:#faf5ff;">
+      <td>22</td><td>Global</td><td>Bajo</td>
+      <td>Nombre de hotel real + branding</td>
+      <td>Reemplazar "Hotel Luxury" con nombre real</td>
+    </tr>
+    <tr style="background:#faf5ff;">
+      <td>23</td><td>Global</td><td>Alto</td>
+      <td>Reorganizar como demo/showcase (estilo Pixel)</td>
+      <td>Toda la web orientada a demostrar servicios vendibles. Revisar Pixel para ideas.</td>
+    </tr>
+    <tr style="background:#faf5ff;">
+      <td>24</td><td>Global</td><td>Bajo</td>
+      <td>Hero con video</td>
+      <td>Probar video de fondo en hero en vez de carrusel</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 style="margin-top:2.5rem; margin-bottom:1rem; color:var(--inmob-accent);">Roadmap Inmobiliaria</h3>
+
+<div class="note info" style="margin-bottom:1.5rem;">
+  Problema principal: el admin es una "plantilla visual sin funcionalidades". Prioridad = agregar interactividad real. Portal debe soportar 3 roles (interesado, inquilino, propietario). Referencia: <strong>Lebane Mexico</strong>.
+</div>
+
+<table class="feature-table">
+  <thead>
+    <tr>
+      <th style="width:4%">#</th>
+      <th style="width:8%">Tipo</th>
+      <th style="width:8%">Esfuerzo</th>
+      <th style="width:30%">Feature</th>
+      <th style="width:50%">Detalle</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background:#fef2f2;">
+      <td>1</td><td>Fix</td><td>Bajo</td>
+      <td>"Ver plano" en PropertyDetail no hace nada</td>
+      <td>Arreglar botón para que muestre el plano de la propiedad</td>
+    </tr>
+    <tr style="background:#fef2f2;">
+      <td>2</td><td>Fix</td><td>Bajo</td>
+      <td>"Ver tour" mostrar solo la unidad</td>
+      <td>Sacar lo del complejo, que sea solo la propiedad/casa/depto</td>
+    </tr>
+    <tr style="background:#fef2f2;">
+      <td>3</td><td>Fix</td><td>Bajo</td>
+      <td>Servicios Integrales no hace nada</td>
+      <td>Los 8 servicios son solo visual. Agregar acción (modal, detalle, contacto)</td>
+    </tr>
+    <tr style="background:#fef2f2;">
+      <td>4</td><td>Fix</td><td>Bajo</td>
+      <td>Alertas no hacen nada</td>
+      <td>Activar/desactivar alerta debe dar feedback. Crear nueva alerta con criterios</td>
+    </tr>
+    <tr style="background:#fff7ed;">
+      <td>5</td><td>Feature</td><td>Medio</td>
+      <td>Terminar GuidedTour</td>
+      <td>Recorrido spotlight funcional para landing</td>
+    </tr>
+    <tr style="background:#fff7ed;">
+      <td>6</td><td>Feature</td><td>Alto</td>
+      <td>Portal multi-rol: Interesado / Inquilino / Propietario</td>
+      <td>Login con selector de rol. Cada rol ve secciones distintas. Inquilino: contrato, recibos, ajustes, reparaciones. Propietario: propiedades, liquidaciones, docs, cobros</td>
+    </tr>
+    <tr style="background:#fff7ed;">
+      <td>7</td><td>Feature</td><td>Medio</td>
+      <td>Mis Visitas: más info + mensajería</td>
+      <td>Mostrar ubicación propiedad, agente asignado, botón enviar mensaje</td>
+    </tr>
+    <tr style="background:#fff7ed;">
+      <td>8</td><td>Feature</td><td>Medio</td>
+      <td>Mis Ofertas: detalle propiedad + hacer oferta</td>
+      <td>Ver detalle de propiedad, crear oferta nueva, historial contra-ofertas</td>
+    </tr>
+    <tr style="background:#fff7ed;">
+      <td>9</td><td>Feature</td><td>Medio</td>
+      <td>Documentos: subir + organizar por propiedad</td>
+      <td>Upload funcional (DNI, recibos, garantías). Organizado: "Este depto son estos docs"</td>
+    </tr>
+    <tr style="background:#fff7ed;">
+      <td>10</td><td>Feature</td><td>Medio</td>
+      <td>Mapa: dibujar zonas de interés + más filtros</td>
+      <td>Draw polygon en mapa para filtrar. Filtros: superficie, antigüedad, cochera, amenities</td>
+    </tr>
+    <tr style="background:#fff7ed;">
+      <td>11</td><td>Feature</td><td>Alto</td>
+      <td>Admin Propiedades: CRUD completo</td>
+      <td>Agregar/quitar/pausar/editar propiedades. Más info editable. Botones publicar en plataformas. OJO no chocar con portal propietario</td>
+    </tr>
+    <tr style="background:#fff7ed;">
+      <td>12</td><td>Feature</td><td>Medio</td>
+      <td>Bandeja IA: agente puede escribir</td>
+      <td>Input de texto + mensajes pre-definidos (templates). Mismo que hotelería</td>
+    </tr>
+    <tr style="background:#fff7ed;">
+      <td>13</td><td>Feature</td><td>Alto</td>
+      <td>Leads CRM: interactividad real</td>
+      <td>Scroll funcional, editar leads, agregar notas, historial contacto, expandir detalle. Que quede claro para qué sirve</td>
+    </tr>
+    <tr style="background:#fff7ed;">
+      <td>14</td><td>Feature</td><td>Medio</td>
+      <td>Visitas admin: editar + mensajería</td>
+      <td>Editar visitas, enviar mensaje/link al cliente, reagendar, ver detalle propiedad</td>
+    </tr>
+    <tr style="background:#fff7ed;">
+      <td>15</td><td>Feature</td><td>Medio</td>
+      <td>Operaciones: más interactividad</td>
+      <td>Más edición, acciones, detalle expandible</td>
+    </tr>
+    <tr style="background:#fff7ed;">
+      <td>16</td><td>Feature</td><td>Medio</td>
+      <td>Liquidaciones: expandir info e interactividad</td>
+      <td>Historial liquidaciones, editar gastos, más detalle propiedades, generar recibo real</td>
+    </tr>
+    <tr style="background:#fff7ed;">
+      <td>17</td><td>Feature</td><td>Alto</td>
+      <td>Equipo: panel de gestión completo</td>
+      <td>Editar agentes, asignar propiedades/zonas, métricas rendimiento, historial, permisos. Hoy es super pobre</td>
+    </tr>
+    <tr style="background:#fff7ed;">
+      <td>18</td><td>Feature</td><td>Medio</td>
+      <td>Dashboard: KPIs clickeables + drill-down</td>
+      <td>Click en KPI lleva al módulo. Gráficos de tendencia, más interactividad</td>
+    </tr>
+    <tr style="background:#eff6ff;">
+      <td>19</td><td>Nuevo</td><td>Alto</td>
+      <td>Gestión de Usuarios / Roles</td>
+      <td>Admin ve todo, agente sus props/leads, asistente agenda. Paneles por rol</td>
+    </tr>
+    <tr style="background:#eff6ff;">
+      <td>20</td><td>Nuevo</td><td>Medio</td>
+      <td>Publicación en Plataformas</td>
+      <td>Botones publicar/despublicar ZonaProp/ArgenProp/ML/IG con stats por portal</td>
+    </tr>
+    <tr style="background:#faf5ff;">
+      <td>21</td><td>Research</td><td>—</td>
+      <td>Estudiar Lebane Mexico</td>
+      <td>Extraer ideas de demo inmobiliaria, features, presentación</td>
+    </tr>
+    <tr style="background:#faf5ff;">
+      <td>22</td><td>Research</td><td>—</td>
+      <td>Investigar necesidades reales de inmobiliaria AR</td>
+      <td>Owner no tiene certeza de qué necesita una inmobiliaria. Investigar con inmobiliarias reales o demos del mercado</td>
+    </tr>
+    <tr style="background:#faf5ff;">
+      <td>23</td><td>Idea</td><td>Medio</td>
+      <td>MortgageCalculator: mejorar?</td>
+      <td>Investigar: comparación bancos, UVA vs tradicional, simulación cuotas reales AR</td>
+    </tr>
+  </tbody>
+</table>
+
+</div>
+
+<hr class="section-divider">
+
+<!-- ================================================================ -->
+<!-- ================ INVESTIGACIÓN DE MERCADO ===================== -->
+<!-- ================================================================ -->
+
+<div class="app-section" id="market">
+<div class="app-title" style="border-bottom-color:#f97316;">
+  <h2>5. Features del Mercado que NO Tenemos</h2>
+  <span class="app-badge" style="background:#f97316;">Investigación Sept 2026</span>
+</div>
+
+<div class="note info" style="margin-bottom:1.5rem;">
+  Basado en investigación de: Cloudbeds, Mews, Agilysys, Opera (hotelería) y Tokko, Xintel, AlquiGestión, FluIA (inmobiliaria). Fuentes: hoteltechreport.com, tokkobroker.com, xintel.com.ar, entre otros.
+</div>
+
+<!-- HOTEL MARKET -->
+<div class="category">
+  <div class="category-header">
+    <div class="category-icon" style="background:var(--hotel-primary);">🏨</div>
+    <h3>5.1 Hotelería — Lo que todo PMS tiene y nosotros no</h3>
+  </div>
+
+  <table class="feature-table">
+    <thead><tr><th style="width:4%">Imp.</th><th style="width:22%">Feature</th><th style="width:50%">Qué es</th><th style="width:24%">Por qué vende</th></tr></thead>
+    <tbody>
+      <tr style="background:#fef2f2;">
+        <td>🔴</td>
+        <td><strong>Tape Chart / Calendario visual</strong></td>
+        <td>Vista Gantt de ocupación: eje X = fechas, eje Y = habitaciones. Drag-and-drop para mover/extender reservas. Color-coded por estado. Es LO PRIMERO que muestra todo PMS.</td>
+        <td>Sin esto, no parecemos un PMS real. Gap evidente.</td>
+      </tr>
+      <tr style="background:#fef2f2;">
+        <td>🔴</td>
+        <td><strong>Check-in / Check-out digital</strong></td>
+        <td>Pre-arrival online: datos personales, ID upload, firma digital, pre-auth de tarjeta. El huésped llega y ya está todo. Express checkout con folio por email.</td>
+        <td>Tendencia #1 en hotel tech 2026. Contactless.</td>
+      </tr>
+      <tr style="background:#fef2f2;">
+        <td>🔴</td>
+        <td><strong>Upselling engine</strong></td>
+        <td>3-7 días antes del check-in, WhatsApp automático: "Upgrade a suite por $50 más, aceptar con un tap". Ofertas de early check-in, late checkout, spa, transfer.</td>
+        <td>+35-55% revenue ancillary. ROI demostrable. Hard Rock NYC: 360% aumento, 41x ROI.</td>
+      </tr>
+      <tr style="background:#fff7ed;">
+        <td>🟡</td>
+        <td><strong>F&B completo (Food & Beverage)</strong></td>
+        <td>Reserva de restaurante + menú digital QR + ordering desde mesa/pool/playa → Kitchen Display. Charge-to-room. Filtros alérgenos. Menús por horario (desayuno/almuerzo/cena).</td>
+        <td>Muy visual en demo. Huésped escanea QR en la reposera, pide mojito, llega.</td>
+      </tr>
+      <tr style="background:#fff7ed;">
+        <td>🟡</td>
+        <td><strong>Guest CRM / Perfil 360°</strong></td>
+        <td>Perfil unificado: cada estadía, preferencia, queja, gasto, dieta. Segmentación (VIP, returning, honeymoon, corporate). "Bienvenido de vuelta, su almohada de plumas está lista".</td>
+        <td>Personalización. Genera loyalty y repeat business.</td>
+      </tr>
+      <tr style="background:#fff7ed;">
+        <td>🟡</td>
+        <td><strong>Night Audit automatizado</strong></td>
+        <td>Un click: cierra el día, postea room+tax, reconcilia pagos, genera reportes, rolla fecha. Audit trail inmutable.</td>
+        <td>Ahorra 2+ horas diarias al recepcionista nocturno.</td>
+      </tr>
+      <tr style="background:#eff6ff;">
+        <td>🔵</td>
+        <td><strong>Beach/Pool map interactivo</strong></td>
+        <td>Mapa visual de pileta/playa: reposeras y cabañas reservables. Disponibilidad real-time. QR ordering desde la reposera. Towel tracking.</td>
+        <td>Showstopper para resorts. Este feature solo puede cerrar una venta.</td>
+      </tr>
+      <tr style="background:#eff6ff;">
+        <td>🔵</td>
+        <td><strong>Spa module completo</strong></td>
+        <td>Booking con terapeuta, tipo sala, formulario pre-tratamiento, venta de productos, membership/day pass, utilización dashboard.</td>
+        <td>Revenue center importante en resorts.</td>
+      </tr>
+      <tr style="background:#eff6ff;">
+        <td>🔵</td>
+        <td><strong>Kids Club / Family Services</strong></td>
+        <td>Programa por grupo etario, drop-off/pickup con firma, notas alergias, fotos compartidas a padres.</td>
+        <td>Diferenciador para resorts familiares.</td>
+      </tr>
+      <tr style="background:#eff6ff;">
+        <td>🔵</td>
+        <td><strong>All-Inclusive management</strong></td>
+        <td>Reglas de paquete (comidas, bebidas, actividades), tracking consumo, RFID wristband cashless, upgrade mid-stay.</td>
+        <td>Para resorts all-inclusive. Muy complejo y valioso.</td>
+      </tr>
+      <tr style="background:#faf5ff;">
+        <td>🟣</td>
+        <td><strong>Sustainability dashboard</strong></td>
+        <td>Huella de carbono por noche, agua, energía, ESG reporting. Guest: "Tu estadía ahorró X litros de agua".</td>
+        <td>Tendencia 2026. EU obligatorio. Marketing positivo.</td>
+      </tr>
+      <tr style="background:#faf5ff;">
+        <td>🟣</td>
+        <td><strong>AI Concierge WhatsApp</strong></td>
+        <td>Chatbot que responde 60-80% de queries sin humano. Multi-idioma. Agenda, recomienda, resuelve. Demo en vivo.</td>
+        <td>Wow factor máximo. Demostrable en 30 segundos.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- INMOB MARKET -->
+<div class="category">
+  <div class="category-header">
+    <div class="category-icon" style="background:var(--inmob-accent);">🏠</div>
+    <h3>5.2 Inmobiliaria — Lo que Tokko/Xintel ya ofrecen</h3>
+  </div>
+
+  <table class="feature-table">
+    <thead><tr><th style="width:4%">Imp.</th><th style="width:22%">Feature</th><th style="width:50%">Qué es</th><th style="width:24%">Por qué vende</th></tr></thead>
+    <tbody>
+      <tr style="background:#fef2f2;">
+        <td>🔴</td>
+        <td><strong>Difusión multi-portal</strong></td>
+        <td>Publicar en ZonaProp, ArgenProp, MercadoLibre, Properati con UN click. Sync automático de cambios. Stats por portal (vistas, consultas, conversión).</td>
+        <td>Dolor #1 de toda inmobiliaria. Hoy publican manualmente en cada portal.</td>
+      </tr>
+      <tr style="background:#fef2f2;">
+        <td>🔴</td>
+        <td><strong>Virtual Staging con IA</strong></td>
+        <td>Subís foto de propiedad vacía → IA la amuebla en 10 segundos con estilo a elegir (moderno, nórdico, clásico). Cambio visual DRAMÁTICO.</td>
+        <td>Showstopper absoluto en demo. El prospecto dice "wow" garantizado.</td>
+      </tr>
+      <tr style="background:#fef2f2;">
+        <td>🔴</td>
+        <td><strong>Portal inquilino con pago online</strong></td>
+        <td>Inquilino ve saldo, paga con Mercado Pago/QR/transferencia, descarga recibo, ve próximo ajuste ICL/IPC, solicita reparaciones, notificaciones WhatsApp.</td>
+        <td>Reduce 80% de llamados a la inmobiliaria. Self-service.</td>
+      </tr>
+      <tr style="background:#fff7ed;">
+        <td>🟡</td>
+        <td><strong>AVM / Tasación automática</strong></td>
+        <td>Herramienta pública: ingresás dirección → precio estimado basado en comparables, m², zona, tendencia. Mapa de calor de precios por barrio.</td>
+        <td>Genera leads. Herramienta viral. Valor real para inversores.</td>
+      </tr>
+      <tr style="background:#fff7ed;">
+        <td>🟡</td>
+        <td><strong>AI carga de contrato PDF</strong></td>
+        <td>Subís PDF del contrato → IA extrae automáticamente: partes, monto, índice, frecuencia, plazo, vencimiento. Elimina horas de carga manual.</td>
+        <td>Impresiona en demo. Automatiza la tarea más tediosa del día.</td>
+      </tr>
+      <tr style="background:#fff7ed;">
+        <td>🟡</td>
+        <td><strong>Follow-up automático de leads</strong></td>
+        <td>El CRM envía propiedades similares al interesado automáticamente sin intervención del agente. Basado en búsquedas previas.</td>
+        <td>Conversion rate sube significativamente.</td>
+      </tr>
+      <tr style="background:#fff7ed;">
+        <td>🟡</td>
+        <td><strong>Índices sync con BCRA</strong></td>
+        <td>ICL, IPC, UVA, CER, RIPTE, CAC actualizados diariamente desde fuente oficial. Cálculo automático del nuevo monto. Notificación a inquilino y propietario.</td>
+        <td>Nuestro simulator usa datos mock. Con datos reales sería mucho más creíble.</td>
+      </tr>
+      <tr style="background:#eff6ff;">
+        <td>🔵</td>
+        <td><strong>Facturación ARCA (AFIP)</strong></td>
+        <td>Facturas A/B/C electrónicas, CAE, integración web service fiscal. Obligatorio para inmobiliarias inscriptas en IVA.</td>
+        <td>Funcionalidad operativa real. No glamorosa pero necesaria.</td>
+      </tr>
+      <tr style="background:#eff6ff;">
+        <td>🔵</td>
+        <td><strong>WhatsApp multiagente</strong></td>
+        <td>Chat centralizado, enrutamiento a vendedores, respuestas automáticas, envío automático de recibos, estadísticas por agente.</td>
+        <td>WhatsApp es el canal #1 en AR. Open rate 80% vs 20% email.</td>
+      </tr>
+      <tr style="background:#faf5ff;">
+        <td>🟣</td>
+        <td><strong>Mapa de calor demanda/oferta</strong></td>
+        <td>Dashboard: zonas calientes de búsqueda vs stock disponible. Dónde falta oferta, dónde sobra. Precio por m² por barrio en tiempo real.</td>
+        <td>Para inversores. Datos duros y visuales.</td>
+      </tr>
+      <tr style="background:#faf5ff;">
+        <td>🟣</td>
+        <td><strong>Red de inmobiliarias</strong></td>
+        <td>Compartir cartera entre colegas para cruzar operaciones. Tipo Tokko Red.</td>
+        <td>Network effect. Difícil de replicar.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+
+<hr class="section-divider">
+
+<!-- ================================================================ -->
+<!-- ================ ESTRATEGIA DE DEMO =========================== -->
+<!-- ================================================================ -->
+
+<div class="app-section" id="strategy">
+<div class="app-title" style="border-bottom-color:#ec4899;">
+  <h2>6. Estrategia de Demo — Cómo Presentar Todo Esto</h2>
+</div>
+
+<div class="owner-note">
+  Recomendación: NO un muestrario de features ni una app real completa. Un <strong>Interactive Showcase híbrido</strong> — la app funciona de verdad, pero la experiencia está guiada para que el prospecto entienda el valor de cada feature. Empezar mostrando lo que gana el CLIENTE FINAL, después revelar el admin.
+</div>
+
+<div class="comparison-grid" style="margin-top:1.5rem;">
+  <div class="comp-card" style="border-top:4px solid var(--red);">
+    <h4>Lo que NO hacer</h4>
+    <ul style="font-size:0.85rem; padding-left:1.2rem;">
+      <li>Empezar mostrando el dashboard admin</li>
+      <li>Listar features en orden (muestrario plano)</li>
+      <li>"Bienvenidos, somos InnovaTech, fundados en..."</li>
+      <li>Mostrar TODO a todos — sin personalización</li>
+      <li>CTA único: "Contactanos"</li>
+    </ul>
+  </div>
+  <div class="comp-card" style="border-top:4px solid var(--green);">
+    <h4>Lo que SÍ hacer</h4>
+    <ul style="font-size:0.85rem; padding-left:1.2rem;">
+      <li>Empezar con el problema del prospecto resuelto</li>
+      <li>Role Switcher: "Ver como huésped / gerente / dueño"</li>
+      <li>Entry modal: "¿Qué rol tenés?" → camino personalizado</li>
+      <li>Before/After frame: Excel manual → solución</li>
+      <li>Métricas embebidas que cambian mientras navegás</li>
+      <li>Anotaciones contextuales ("esto reemplaza tu Excel de...")</li>
+      <li>CTAs escalonados: Explorá → Ver demo → Quiero esto</li>
+    </ul>
+  </div>
+</div>
+
+<h4 style="margin:1.5rem 0 0.75rem;">Estructura recomendada de cada demo</h4>
+<table class="feature-table">
+  <thead><tr><th style="width:5%">Paso</th><th style="width:20%">Sección</th><th style="width:75%">Descripción</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td><strong>El problema</strong></td><td>Mostrar el dolor del sector SIN mostrar el software todavía. "Tu equipo de recepción hoy pasa 5 minutos por check-in..."</td></tr>
+    <tr><td>2</td><td><strong>El gran reveal</strong></td><td>La solución al problema #1 del prospecto. NO el feature más técnico — el que resuelve el dolor que mencionaron. Primeros 60 segundos.</td></tr>
+    <tr><td>3</td><td><strong>Vista cliente final</strong></td><td>Lo que ve el huésped/comprador/inquilino. Esto genera conexión emocional. El admin viene DESPUÉS.</td></tr>
+    <tr><td>4</td><td><strong>Admin reveal</strong></td><td>"Y todo esto lo controlás desde acá" — ahora sí el dashboard, con contexto de por qué cada feature importa.</td></tr>
+    <tr><td>5</td><td><strong>Flujos adicionales</strong></td><td>2-3 flujos más, elegidos por el usuario (multi-path). No forzados linealmente. 48% más completion rate.</td></tr>
+    <tr><td>6</td><td><strong>Prueba social</strong></td><td>Integrada en el flujo, no separada. "Hoteles como el tuyo reducen check-in de 5 min a 30 seg".</td></tr>
+    <tr><td>7</td><td><strong>CTA escalonado</strong></td><td>Explorar más (baja fricción) → Ver demo guiado → Quiero esto para mi negocio (alta fricción).</td></tr>
+  </tbody>
+</table>
+
+<div class="note idea" style="margin-top:1rem;">
+  <strong>Dato clave:</strong> Demos ungated (sin pedir datos para entrar) tienen 58% más engagement y 49% más completion rate que demos gated. Los mejores demos tienen 5-13 pasos y 2-4 "aha moments" distribuidos. Fuente: Navattic 2026 benchmark.
+</div>
+
+<h4 style="margin:1.5rem 0 0.75rem;">Referencias a estudiar</h4>
+<table class="feature-table">
+  <thead><tr><th>Referencia</th><th>Por qué</th><th>URL</th></tr></thead>
+  <tbody>
+    <tr><td>Pixel / pxsol</td><td>Demo hotelería, showcase de servicios</td><td>Buscar "Pixel hotel software demo"</td></tr>
+    <tr><td>Lebane Mexico</td><td>Proptech AR que levantó USD 4M. Dashboard financiero, control de obra, IA</td><td>lebane.app</td></tr>
+    <tr><td>Cloudbeds</td><td>PMS líder, demo interactivo del guest journey</td><td>cloudbeds.com</td></tr>
+    <tr><td>Tokko Broker</td><td>CRM #1 inmobiliario en AR. Difusión, oportunidades, red</td><td>tokkobroker.com</td></tr>
+    <tr><td>Navattic</td><td>Best practices para demos interactivos</td><td>navattic.com/blog/interactive-demos</td></tr>
+    <tr><td>Matterport</td><td>"El producto ES el demo" — tour 3D inmediato</td><td>matterport.com</td></tr>
+  </tbody>
+</table>
+
+</div>
+
+</div><!-- container -->
+
+<div style="background:#1e293b; color:white; text-align:center; padding:2rem; margin-top:3rem;">
+  <p style="opacity:0.6; font-size:0.85rem;">InnovaTech Demos &bull; Análisis + Roadmap + Investigación de Mercado &bull; 6 de septiembre de 2026</p>
+</div>
+
+</body>
+</html>

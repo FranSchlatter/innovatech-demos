@@ -1,0 +1,678 @@
+# Inmobiliaria — Tareas Seccionadas
+
+Cada tarea es autocontenida para una sesion. Decir "hace la I3" y arrancar.
+Complejidad calibrada para hacer UNA tarea bien a fondo por sesion.
+Orden sugerido: fixes primero, despues admin (mas impacto visual), despues portal multi-rol.
+
+---
+
+## I1: Fix bugs existentes
+**Esfuerzo:** Bajo-Medio (45-60 min)
+**Archivos:** PropertyDetailPage.jsx, ServicesSection.jsx, ClientPortal.jsx
+
+Hacer todo junto porque son fixes rapidos:
+- [ ] **"Ver plano" en PropertyDetailPage**: el boton no hace nada. Crear modal FloorPlanModal con imagen placeholder de plano (o SVG generico). Abrir al click
+- [ ] **"Ver tour" en PropertyDetailPage**: actualmente abre tour del complejo. Cambiar para que sea SOLO la propiedad/casa/depto. Usar VirtualTourModal existente pero con URL de la propiedad especifica (campo `virtualTour` de properties.json)
+- [ ] **ServicesSection 8 servicios**: son solo visual, no hacen nada al click. Para cada servicio agregar: onClick que abre modal con descripcion expandida, beneficios detallados, y boton "Consultar" que scrollea a ContactSection
+- [ ] **Alertas en portal**: los toggle switches no dan feedback. Agregar toast/notificacion al cambiar toggle ("Alerta activada"/"Alerta pausada"). El boton "Crear nueva alerta" no funciona — agregar modal con: tipo operacion, zona, rango precio, tipo propiedad, boton guardar
+
+**Criterio de exito:** Los 4 problemas corregidos. "Ver plano" abre modal, "Ver tour" muestra propiedad, servicios son clickeables, alertas responden al toggle.
+
+---
+
+## I2: Dashboard interactivo — KPIs clickeables + graficos
+**Esfuerzo:** Medio-Alto (2-3 hrs)
+**Archivos:** AdminDashboard.jsx, AdminContext.jsx
+
+- [ ] Hacer cada KPI card clickeable: al click, navegar al modulo correspondiente (ej: "Propiedades disponibles" → PropertyManagement, "Leads nuevos" → LeadsManagement, etc.)
+  - Agregar cursor-pointer, hover effect, icono de flecha
+  - Usar `dispatch({ type: 'SET_VIEW', payload: 'properties' })` del AdminContext
+- [ ] Agregar seccion "Tendencias" debajo de KPIs:
+  - Mini-grafico de leads por semana (ultimas 4 semanas, barras CSS)
+  - Mini-grafico de visitas por semana
+  - Mini-grafico de operaciones cerradas por mes
+  - Datos calculados del mock (agrupar por fecha)
+- [ ] Pipeline de leads: hacer cada barra clickeable, al click lleva a LeadsManagement filtrado por ese stage
+- [ ] Response time widget: expandir con comparativa "vs mes anterior" (mock)
+- [ ] Agregar seccion "Acciones rapidas": botones directos a "Agendar visita", "Crear lead", "Agregar propiedad"
+- [ ] KPIs deben tener indicador de tendencia: flechita verde (subio) o roja (bajo) con % vs periodo anterior (mock)
+
+**Criterio de exito:** Cada KPI lleva al modulo correspondiente. Hay graficos de tendencia. Dashboard es interactivo, no solo lectura.
+
+---
+
+## I3: Bandeja IA — Agente puede escribir + templates
+**Esfuerzo:** Alto (2-3 hrs)
+**Archivos:** InboxManagement.jsx (108 lineas), mockConversations.js
+
+- [ ] Agregar input de texto en la columna central del thread (abajo, tipo WhatsApp)
+- [ ] Boton enviar que agrega el mensaje al thread como "Staff" (alineado derecha, accent bg)
+- [ ] Dropdown/boton de mensajes pre-cargados (templates inmobiliarios):
+  - "Gracias por su consulta. La propiedad se encuentra disponible para coordinar visita."
+  - "Le confirmo la visita para [fecha]. La direccion es [direccion]."
+  - "Le envio la tasacion actualizada de su propiedad."
+  - "El contrato esta listo para firma. Coordinaremos en la oficina."
+  - "Le informamos que hemos recibido una oferta por su propiedad."
+  - "Los indices de ajuste ICL actualizados indican un incremento del X%."
+  - 2-3 templates mas relevantes para inmobiliaria
+- [ ] Al seleccionar template, se llena el input (editable antes de enviar)
+- [ ] Mensaje enviado aparece con timestamp actual y label "Staff"
+- [ ] Animacion de entrada del nuevo mensaje (Framer Motion)
+- [ ] Canal badge en la lista: WhatsApp (verde), Portal (azul), Web (gris) — ya existe, verificar
+- [ ] Persistir nuevos mensajes en localStorage (key: `inmob-admin-inbox`)
+
+**Criterio de exito:** El agente puede escribir mensajes libres y usar templates. Mensajes aparecen en el thread. Persisten al refrescar.
+
+---
+
+## I4: Leads CRM — Scroll fix + edicion completa
+**Esfuerzo:** Alto (2-3 hrs)
+**Archivos:** LeadsManagement.jsx (186 lineas), mockLeads.js
+
+Problemas actuales: no se puede scrollear, no queda claro para que sirve, no se puede editar.
+
+- [ ] **Fix scroll**: verificar overflow del Kanban board. Agregar `overflow-x-auto` horizontal y `overflow-y-auto` vertical en cada columna. Maximo 3-4 cards visibles por columna, el resto con scroll
+- [ ] **Click en lead card**: abrir modal LeadDetailModal con:
+  - Datos del lead: nombre, email, telefono, propiedad de interes, presupuesto
+  - Todos los campos EDITABLES (inputs)
+  - Score selector (Hot/Warm/Cold) con color visual
+  - Agente asignado (dropdown de agentes)
+  - Fuente (dropdown: ZonaProp/ArgenProp/Web/Referido/Telefono)
+  - Seccion "Notas" con textarea + historial de notas anteriores con timestamp
+  - Seccion "Historial de contacto": timeline con fecha + accion (Llamada/Email/Visita/WhatsApp)
+  - Boton "Agregar nota" y "Registrar contacto"
+- [ ] **Boton "Nuevo Lead"** en header del Kanban:
+  - Modal con formulario: nombre, email, telefono, propiedad interes (dropdown de properties), presupuesto, fuente, agente asignado
+  - Al guardar, aparece en columna "Nuevo"
+- [ ] **Arrastrar leads entre columnas** — ya existe drag con botones flechita, verificar que funciona bien
+- [ ] **Busqueda de leads**: input de busqueda que filtra por nombre o propiedad
+- [ ] Persistir todo en localStorage
+
+**Criterio de exito:** Kanban scrolleable. Click en lead abre detalle editable completo con notas e historial. Se puede crear lead nuevo.
+
+---
+
+## I5: Propiedades — CRUD completo
+**Esfuerzo:** Alto (3-4 hrs)
+**Archivos:** PropertyManagement.jsx (239 lineas), properties.json, useAdminData.js
+
+Actualmente solo se puede cambiar status. Necesita CRUD completo:
+
+- [ ] **Boton "Agregar propiedad"** prominente en header:
+  - Modal grande con tabs: Datos basicos / Ubicacion / Caracteristicas / Multimedia
+  - Tab Datos basicos: titulo, descripcion, operacion (venta/alquiler/temporario), tipo, precio, moneda, estado
+  - Tab Ubicacion: direccion, barrio (dropdown de neighborhoods.json), ciudad, coordenadas (placeholder)
+  - Tab Caracteristicas: ambientes, dormitorios, banos, superficie total/cubierta, antiguedad, orientacion, cochera (toggle), amenities (checklist)
+  - Tab Multimedia: URLs de imagenes (inputs, maximo 6), URL tour virtual
+  - Al guardar: propiedad aparece en la lista
+- [ ] **Editar propiedad** (click en fila o boton edit):
+  - Mismo modal que agregar pero pre-llenado con datos actuales
+  - Todos los campos editables
+- [ ] **Pausar/Despublicar**: nuevo status "pausada" con badge gris. Toggle rapido desde la tabla
+- [ ] **Eliminar**: boton con confirmacion ("Seguro que desea eliminar?")
+- [ ] **Info expandida en tabla**: agregar columnas visibles: barrio, superficie, dormitorios (responsive, ocultar algunas en mobile)
+- [ ] **Vista doble**: toggle tabla/grid (grid muestra cards con imagen)
+- [ ] Persistir todo en localStorage via useAdminData
+
+**Criterio de exito:** CRUD completo de propiedades. Agregar, editar todos los campos, pausar, eliminar. Vista tabla y grid.
+
+---
+
+## I6: Visitas — Edicion completa + mensajes
+**Esfuerzo:** Medio-Alto (2 hrs)
+**Archivos:** VisitsScheduler.jsx (211 lineas), mockVisits.js
+
+- [ ] **Boton "Agendar visita"** en header:
+  - Modal: propiedad (dropdown), cliente nombre + email + telefono, fecha (date picker), hora (time select), tipo (presencial/videollamada), agente asignado
+- [ ] **Click en visita card**: expandir detalle con:
+  - Info completa de la propiedad (titulo, foto mini, direccion, precio)
+  - Datos del cliente (nombre, email, telefono)
+  - Agente asignado (editable dropdown)
+  - Notas de la visita (textarea)
+  - Resultado (si completada): Interesado / No interesado / Hara oferta
+- [ ] **Reagendar**: boton que abre mini-modal con nueva fecha + hora
+- [ ] **Enviar mensaje/link al cliente**: boton "Enviar recordatorio" que simula envio (toast "Recordatorio enviado a [email]")
+- [ ] **Enviar link de videollamada**: si tipo=videollamada, boton "Generar link" que muestra URL mock
+- [ ] Persistir cambios en localStorage
+
+**Criterio de exito:** Se puede agendar visita nueva, editar existente, reagendar, enviar recordatorio. Detalle de propiedad visible en cada visita.
+
+---
+
+## I7: Operaciones — Interactividad y edicion
+**Esfuerzo:** Medio (1.5-2 hrs)
+**Archivos:** OperationsManagement.jsx (162 lineas), mockOperations.js
+
+- [ ] **Click en operacion**: abrir modal detalle con:
+  - Propiedad: titulo, foto, direccion, precio publicado
+  - Comprador/Inquilino: nombre, email, telefono
+  - Vendedor/Propietario: nombre, email, telefono
+  - Tipo: venta/alquiler
+  - Monto acordado (editable)
+  - Comision % (editable) + monto calculado
+  - Fecha inicio, fecha estimada cierre
+  - Documentos pendientes: checklist (Boleto, Escritura, Certificado dominio, Informe inhibiciones, etc.)
+  - Timeline de la operacion: etapas con fecha de cada avance
+- [ ] **Agregar operacion nueva**: boton + modal con propiedad, cliente, tipo, monto
+- [ ] **KPIs expandidos**: agregar "Tiempo promedio de cierre" y "Comision promedio"
+- [ ] **Notas por operacion**: textarea con historial
+- [ ] Persistir en localStorage
+
+**Criterio de exito:** Operaciones son editables con detalle completo. Se puede crear nueva. Checklist de documentos. Timeline de avances.
+
+---
+
+## I8: Liquidaciones — Expansion completa
+**Esfuerzo:** Medio-Alto (2-3 hrs)
+**Archivos:** OwnerLiquidations.jsx (99 lineas), mockLiquidations.js
+
+- [ ] **Expandir detalle de liquidacion** (panel derecho):
+  - Encabezado: owner info (nombre, CUIT, direccion, datos bancarios mock)
+  - Periodo (mes/ano) con selector para ver otros periodos
+  - Por cada propiedad:
+    - Titulo, direccion, inquilino
+    - Alquiler cobrado (monto + fecha cobro)
+    - Estado de cobro (cobrado/pendiente/parcial/atrasado) con badge color
+    - Detalles gastos: desglose editable (expensas, ABL, impuesto inmobiliario, reparaciones, seguro)
+    - Cada gasto con monto editable y tipo
+  - Subtotal por propiedad
+  - Resumen general: Total cobrado - Comision (%) - Gastos = Neto a pagar
+  - Comision % editable (default del contrato)
+- [ ] **Historial de liquidaciones**: lista de ultimos 6 meses por owner, click para ver cada una
+- [ ] **"Generar recibo"**: boton que muestra preview estilo PDF con datos formateados, layout profesional, "Descargar" simulado
+- [ ] **"Agregar gasto"**: boton por propiedad para agregar gasto extra (concepto + monto)
+- [ ] **Boton "Nueva liquidacion"**: seleccionar owner + periodo, auto-calcula desde datos
+- [ ] Persistir en localStorage
+
+**Criterio de exito:** Liquidacion con desglose completo editable. Historial mensual. Preview de recibo profesional. Se puede agregar gastos.
+
+---
+
+## I9: Equipo/Agentes — Panel completo
+**Esfuerzo:** Alto (2-3 hrs)
+**Archivos:** AgentsManagement.jsx (130 lineas), mockAgents.js
+
+Owner dijo "SUPER POBRE". Necesita ser panel de gestion real:
+
+- [ ] **Click en agente**: modal detalle con TODOS los campos editables:
+  - Datos personales: nombre, email, telefono, foto (URL), rol (Agente senior/Junior/Director/Asistente)
+  - Zona asignada (dropdown de barrios, multi-select)
+  - Propiedades asignadas: lista de propiedades con checkbox para asignar/desasignar
+  - Especialidad (venta/alquiler/comercial/terrenos — multi-select)
+  - Estado: activo/inactivo/vacaciones
+  - Horario: turno (manana/tarde/completo)
+- [ ] **Metricas por agente** (seccion en el modal o panel lateral):
+  - Operaciones cerradas este mes / este trimestre / este ano
+  - Comision total generada
+  - Leads activos asignados (con link a LeadsManagement filtrado)
+  - Visitas completadas vs agendadas (% conversion)
+  - Tiempo promedio de respuesta
+  - Rating de clientes (1-5 estrellas con barra visual)
+  - Ranking vs equipo (posicion X de Y agentes)
+- [ ] **Historial**: ultimas 10 acciones (cerro operacion X, atendio visita Y, respondio lead Z) con fecha
+- [ ] **Agregar agente**: boton + modal con todos los campos
+- [ ] **KPIs del equipo en header**: operaciones totales equipo, mejor agente del mes, conversion promedio
+- [ ] Vista toggle: cards (actual) o tabla
+
+**Criterio de exito:** Panel de gestion de personal completo. Cada agente editable con metricas, historial, propiedades asignadas. Se siente profesional.
+
+---
+
+## I10: Publicacion en Plataformas
+**Esfuerzo:** Medio-Alto (2-3 hrs)
+**Archivos:** Nuevo: admin/platforms/PlatformPublishing.jsx, AdminLayout.jsx, AdminSidebar.jsx
+
+- [ ] Nuevo modulo admin: "Plataformas" (icono Share2 o Globe en sidebar)
+- [ ] Lista de propiedades con estado de publicacion por plataforma:
+  - Columnas: Propiedad | ZonaProp | ArgenProp | MercadoLibre | Instagram
+  - Cada celda: badge verde (publicada) / gris (no publicada) / amarillo (pausada)
+  - Toggle rapido para publicar/despublicar en cada plataforma
+- [ ] Al publicar: animacion de "Publicando..." con delay 1s, luego badge verde con fecha publicacion
+- [ ] **Stats por propiedad** (expandir fila o click):
+  - Visitas desde cada plataforma (mock: numeros aleatorios realistas)
+  - Consultas recibidas por plataforma
+  - Dias publicada
+  - Chart mini: visitas/dia por plataforma (barras CSS)
+- [ ] **Acciones masivas**: checkbox en cada propiedad, boton "Publicar seleccionadas en..." dropdown de plataformas
+- [ ] **Resumen general** (header):
+  - Total propiedades publicadas / total
+  - Plataforma con mas consultas
+  - Propiedad mas vista
+- [ ] Agregar "Plataformas" al viewTitles de AdminHeader
+- [ ] Persistir estados en localStorage
+
+**Criterio de exito:** Modulo nuevo funcional. Publicar/despublicar propiedades en 4 plataformas. Stats simulados por plataforma.
+
+---
+
+## I11: Usuarios y Roles
+**Esfuerzo:** Alto (3-4 hrs)
+**Archivos:** Nuevo: admin/users/UserManagement.jsx, data/mockUsers.js
+
+- [ ] mockUsers.js: 8-10 usuarios con: id, name, email, role (admin/agente-senior/agente-junior/asistente/tasador), avatar, status (active/inactive), lastLogin, permissions[]
+- [ ] UserManagement.jsx:
+  - Tabla de usuarios: avatar, nombre, email, rol (badge color), estado, ultimo login
+  - Boton "Agregar usuario": modal con nombre, email, rol (dropdown), permisos (checklist)
+  - Click en usuario: modal detalle con edicion de rol y permisos
+  - Toggle activar/desactivar usuario
+  - Filtro por rol
+- [ ] **Vista por rol** (tab o seccion informativa): "Que ve cada rol"
+  - Admin: ve todo
+  - Agente senior: Dashboard, Propiedades (sus asignadas), Leads (suyos), Visitas (suyas), Operaciones (suyas)
+  - Agente junior: Dashboard limitado, Propiedades (solo ver), Leads (suyos), Visitas (suyas)
+  - Asistente: Dashboard basico, Visitas (agenda), Leads (solo ver)
+  - Tasador: Propiedades (ver + editar valuacion), nada mas
+- [ ] Panel informativo con cards por rol mostrando los modulos accesibles
+- [ ] Agregar a sidebar con icono Users
+- [ ] Persistir en localStorage
+
+**Criterio de exito:** CRUD de usuarios funcional. Vista clara de permisos por rol. Se entiende que ve cada tipo de usuario.
+
+---
+
+## I12: Portal Login multi-rol
+**Esfuerzo:** Medio-Alto (2-3 hrs)
+**Archivos:** ClientPortal.jsx (488 lineas)
+
+Transformar el login existente para soportar 3 roles:
+
+- [ ] **Redisenar pantalla de login**:
+  - Formulario email + password (igual, cualquier credencial funciona)
+  - NUEVO: selector de rol debajo del formulario: 3 cards grandes
+    - "Interesado en comprar/alquilar" (icono Search) — redirige a portal interesado actual
+    - "Soy inquilino" (icono Home) — redirige a portal locatario (nuevo)
+    - "Soy propietario" (icono Building) — redirige a portal locador (nuevo)
+  - Al seleccionar rol + click login: delay 500ms + loading, luego portal con tabs especificos del rol
+- [ ] **Persistir rol en estado**: agregar `userRole` al state del portal
+- [ ] **Sidebar del portal cambia segun rol**:
+  - Interesado: Favoritos, Visitas, Ofertas, Documentos, Alertas (actual)
+  - Inquilino: Mi contrato, Pagos, Proximo ajuste, Documentos, Reparaciones
+  - Propietario: Mis propiedades, Liquidaciones, Documentos, Estado de cobro
+- [ ] **Header del portal**: mostrar rol actual con badge, boton "Cambiar perfil" que vuelve al login
+- [ ] **Mock data diferente por rol**: MOCK_TENANT (inquilino), MOCK_OWNER (propietario) — crear datos hardcodeados coherentes
+- [ ] Estructura placeholder para cada vista de rol (contenido basico con mensaje "Seccion X"):
+  - Los tabs de Interesado ya existen y funcionan
+  - Los tabs de Inquilino y Propietario se completan en I17 e I18
+
+**Criterio de exito:** Login con selector de 3 roles. Cada rol ve sidebar diferente. Estructura lista para llenar contenido en tareas siguientes.
+
+---
+
+## I13: Portal Interesado — Mis Visitas expandido
+**Esfuerzo:** Medio (1.5-2 hrs)
+**Archivos:** ClientPortal.jsx (seccion visitas dentro del portal)
+
+- [ ] Cada visita card expandida con:
+  - Foto mini de la propiedad (thumbnail de properties.json)
+  - Titulo y direccion de la propiedad
+  - Precio y tipo operacion
+  - Fecha, hora, tipo visita (presencial/videollamada)
+  - Status badge (Agendada/Confirmada/Realizada/Cancelada)
+  - **Agente asignado**: nombre, foto mini, telefono clickeable, email clickeable
+  - **Boton "Enviar mensaje al agente"**: abre modal mini-chat o textarea + enviar (simula envio, toast)
+- [ ] **Resultado de visita** (si realizada): seccion con feedback del interesado
+  - Rating 1-5 estrellas de la propiedad
+  - Toggle: "Me interesa" / "No me interesa"
+  - Nota opcional
+- [ ] **Botones mejorados**: "Reprogramar" abre modal con nueva fecha/hora. "Cancelar" pide confirmacion + motivo
+- [ ] Ordenar: proximas primero, pasadas despues (separador visual)
+
+**Criterio de exito:** Visitas muestran info completa de propiedad + agente. Se puede interactuar con cada visita. Feedback post-visita.
+
+---
+
+## I14: Portal Interesado — Mis Ofertas expandido
+**Esfuerzo:** Medio (1.5-2 hrs)
+**Archivos:** ClientPortal.jsx (seccion ofertas)
+
+Actualmente es tabla read-only. Necesita ser interactiva:
+
+- [ ] **Click en oferta**: expandir detalle con:
+  - Propiedad: foto, titulo, direccion, precio publicado
+  - Mi oferta: monto ofertado, fecha, condiciones (contado/financiado/permuta)
+  - Status: Enviada → En revision → Contra-oferta → Aceptada/Rechazada
+  - Si contra-oferta: mostrar monto de contra-oferta del vendedor + boton "Aceptar" / "Rechazar" / "Contra-ofertar"
+- [ ] **Historial de contra-ofertas**: timeline visual
+  - "Oferta original: USD 95,000" → "Contra-oferta vendedor: USD 100,000" → "Mi contra-oferta: USD 97,500" → etc.
+- [ ] **Boton "Nueva oferta"**: formulario con:
+  - Propiedad (dropdown de favoritos o todas)
+  - Monto ofertado (input numerico + moneda)
+  - Condicion de pago (select: contado/financiado/permuta)
+  - Mensaje al propietario (textarea)
+  - Validez de la oferta (dias)
+  - Submit con delay + confirmacion
+- [ ] **Badge count** en tab "Mis Ofertas" mostrando ofertas pendientes de respuesta
+- [ ] Persistir en localStorage
+
+**Criterio de exito:** Ofertas interactivas con detalle de propiedad. Sistema de contra-ofertas con timeline. Crear oferta nueva funcional.
+
+---
+
+## I15: Portal Interesado — Documentos con upload
+**Esfuerzo:** Medio (1.5-2 hrs)
+**Archivos:** ClientPortal.jsx (seccion documentos)
+
+- [ ] **Organizar por propiedad/operacion**:
+  - Agrupacion: "Documentos para [Propiedad X]" — collapsible sections
+  - Si no hay propiedad asignada: seccion "Documentos generales"
+- [ ] **Cada documento card expandida**:
+  - Icono de tipo (PDF/IMG/DOC)
+  - Nombre del archivo
+  - Tipo de documento: DNI, Recibo sueldo, Garantia, CUIT, Certificado dominio, etc. (badge)
+  - Estado: Pendiente / Subido / Verificado / Rechazado (badge color)
+  - Fecha de subida
+  - Boton "Descargar" (simulado)
+  - Si rechazado: motivo del rechazo
+- [ ] **Upload funcional (simulado)**:
+  - Drag-drop zone mejorada con texto "Arrastra tus documentos aqui"
+  - Boton "Seleccionar archivo" (simula seleccion con delay)
+  - Al "subir": animacion de progreso (barra 0→100% con delay), luego aparece en la lista como "Pendiente de verificacion"
+  - Selector de tipo de documento al subir
+  - Selector de propiedad asociada
+- [ ] **Checklist de requisitos**: lista de documentos requeridos con tick verde si subido, rojo si falta
+  - Para compra: DNI, CUIT, Recibos sueldo x3, Certificado BCRA
+  - Para alquiler: DNI, Recibos sueldo x3, Garantia propietaria, CUIT garante
+- [ ] Persistir en localStorage
+
+**Criterio de exito:** Documentos organizados por propiedad. Upload simulado con progreso. Checklist de requisitos segun tipo operacion.
+
+---
+
+## I16: Portal Interesado — Alertas funcionales
+**Esfuerzo:** Medio (1-1.5 hrs)
+**Archivos:** ClientPortal.jsx (seccion alertas)
+
+- [ ] **Toggle funcional** con feedback:
+  - Al activar/desactivar: toast notification "Alerta activada" / "Alerta pausada"
+  - Animacion en el switch
+  - Estado persiste en localStorage
+- [ ] **"Crear nueva alerta"** — modal completo:
+  - Tipo operacion: Compra / Alquiler / Temporario (select)
+  - Zona/Barrio: multi-select de neighborhoods.json
+  - Rango de precio: min/max con inputs numericos + moneda
+  - Tipo propiedad: multi-select (Departamento, Casa, PH, Local, Terreno)
+  - Dormitorios: minimo (select 1-5+)
+  - Superficie minima (input)
+  - Nombre de la alerta (input: "Mi busqueda zona norte")
+  - Al guardar: aparece en la lista como nueva alerta activa
+- [ ] **Cada alerta card mejorada**:
+  - Nombre, criterios resumidos como tags
+  - "X coincidencias nuevas" (numero mock)
+  - Click: ver las propiedades que matchean (filtrar properties.json con los criterios)
+  - Boton editar (reabre modal con datos)
+  - Boton eliminar con confirmacion
+- [ ] **Notificacion visual**: badge rojo en tab "Alertas" si hay coincidencias nuevas
+
+**Criterio de exito:** Alertas con toggle funcional + feedback. Crear nueva alerta con criterios completos. Ver propiedades que coinciden. Editar/eliminar.
+
+---
+
+## I17: Portal Locatario (inquilino) — Vista completa
+**Esfuerzo:** Alto (3-4 hrs)
+**Archivos:** ClientPortal.jsx, nuevo: data/mockTenantData.js
+**Requiere:** I12 (login multi-rol) hecho primero
+
+- [ ] **mockTenantData.js**: datos coherentes del inquilino mock:
+  - Contrato: propiedad, propietario, fecha inicio, duracion (36 meses ley), monto base, indice ajuste (ICL), frecuencia ajuste, deposito, fecha vencimiento
+  - Pagos: ultimos 6 meses con: mes, monto, estado (pagado/pendiente/atrasado), fecha pago, medio (transferencia/efectivo/MercadoPago)
+  - Documentos: contrato PDF, recibos, garantia, seguro caucion
+  - Reparaciones: 2-3 solicitudes mock con estado
+
+- [ ] **Tab "Mi contrato"**:
+  - Card principal con datos del contrato (propiedad con foto, propietario, inicio, vencimiento, meses restantes)
+  - Barra de progreso visual: mes actual de 36 meses
+  - Datos del propietario (nombre, inmobiliaria)
+  - Clausulas resumen (ajuste, plazo, deposito, penalidades)
+  - Boton "Descargar contrato" (simulado)
+
+- [ ] **Tab "Pagos"**:
+  - Lista de pagos (scroll, ultimos 12 meses)
+  - Cada pago: mes, monto (ARS), estado badge, fecha, medio de pago
+  - Si pendiente: boton "Pagar" (simula pago con delay + confirmacion, MercadoPago mock)
+  - Si atrasado: warning con dias de mora y monto con intereses (calculado)
+  - Resumen arriba: "Al dia" verde o "Deuda: $X" rojo
+
+- [ ] **Tab "Proximo ajuste"**:
+  - Mostrar fecha del proximo ajuste
+  - Indice actual (ICL/IPC/UVA) con valor mock
+  - Alquiler actual vs estimado post-ajuste
+  - Conectar logica con AdjustmentSimulator del admin (misma formula de calculo)
+  - Grafico simple: evolucion del alquiler desde inicio (barras por periodo)
+
+- [ ] **Tab "Documentos"**:
+  - Lista: Contrato, Recibos de pago (por mes), Garantia, Seguro, Reglamento
+  - Estado: Disponible / Pendiente
+  - Boton descargar por cada uno (simulado)
+
+- [ ] **Tab "Reparaciones"**:
+  - Lista de solicitudes: titulo, descripcion, fecha, estado (Solicitada/En revision/Aprobada/En proceso/Resuelta)
+  - Boton "Solicitar reparacion": modal con: titulo, descripcion, urgencia (Baja/Media/Alta/Urgente), foto (placeholder)
+  - Timeline por solicitud con fechas de cada cambio de estado
+  - Persistir en localStorage
+
+**Criterio de exito:** Portal de inquilino completo con 5 tabs funcionales. Datos coherentes. Pago simulado. Ajuste conectado con logica real. Reparaciones con solicitud.
+
+---
+
+## I18: Portal Locador (propietario) — Vista completa
+**Esfuerzo:** Alto (3-4 hrs)
+**Archivos:** ClientPortal.jsx, nuevo: data/mockOwnerData.js
+**Requiere:** I12 (login multi-rol) hecho primero
+
+- [ ] **mockOwnerData.js**: datos del propietario mock:
+  - 3 propiedades en alquiler: titulo, inquilino, monto, estado cobro, contrato vigente
+  - Liquidaciones: ultimas 3 mensuales por propiedad
+  - Documentos: contratos, habilitaciones, certificados
+
+- [ ] **Tab "Mis propiedades"**:
+  - Cards por propiedad con foto, titulo, direccion
+  - Inquilino actual: nombre, desde cuando, monto actual
+  - Estado: Alquilada / Disponible / En refaccion
+  - Proximo vencimiento de contrato
+  - Rentabilidad: monto mensual - gastos = neto (calculo simple)
+  - Click: expande detalle con historial de inquilinos (mock 2-3 anteriores)
+
+- [ ] **Tab "Liquidaciones"**:
+  - Vista similar al admin pero desde perspectiva del propietario
+  - Lista por mes: periodo, total cobrado, comision, gastos, neto a cobrar
+  - Click: detalle con desglose por propiedad
+  - Estado: Liquidada / Pendiente
+  - Boton "Descargar PDF" por liquidacion (simulado)
+  - Resumen anual: total cobrado, total gastos, total neto, comision total
+
+- [ ] **Tab "Documentos"**:
+  - Organizados por propiedad
+  - Tipos: Contrato con inquilino, Titulo propiedad, Habilitacion municipal, Certificado catastral, Poliza seguro
+  - Upload simulado (como I15)
+
+- [ ] **Tab "Estado de cobro"**:
+  - Dashboard de cobros de TODAS las propiedades
+  - Por propiedad: inquilino, monto, estado del mes actual (Cobrado/Pendiente/Atrasado)
+  - Total a cobrar este mes vs cobrado
+  - Morosidad: propiedades con pagos atrasados (highlight rojo)
+  - Grafico: cobros ultimos 6 meses (barras, cobrado vs esperado)
+
+**Criterio de exito:** Portal propietario con 4 tabs. Ve sus propiedades, liquidaciones, estado de cobro. Puede descargar docs. Datos coherentes con admin.
+
+---
+
+## I19: Mapa con zonas dibujables + filtros avanzados
+**Esfuerzo:** Muy Alto (3-4 hrs)
+**Archivos:** PropertiesListPage.jsx (361 lineas), PropertyMap.jsx (60 lineas)
+
+- [ ] **Filtros avanzados** (agregar a los existentes):
+  - Superficie total: rango min/max (slider dual o inputs)
+  - Antiguedad: select (Estrenar/1-5 anos/5-10/10-20/+20)
+  - Cochera: toggle Si/No/Indistinto
+  - Amenities: checklist (Pileta, Seguridad, Parrilla, Gym, SUM, Balcon, Terraza, Lavadero)
+  - Orientacion: select (Norte/Sur/Este/Oeste/Indistinto)
+  - Boton "Limpiar filtros"
+  - Boton "Guardar busqueda como alerta" (crea alerta en portal)
+- [ ] **Mapa mejorado**:
+  - Reemplazar embed actual con mapa CSS/SVG interactivo (mockup de mapa de Santa Fe)
+  - Markers por cada propiedad (color segun operacion: venta=azul, alquiler=verde, temporario=naranja)
+  - Hover en marker: tooltip con titulo, precio, foto mini
+  - Click en marker: scroll a la propiedad en la lista (highlight)
+- [ ] **Dibujar zona de interes** (simulado):
+  - Boton "Dibujar zona" activa modo dibujo
+  - Click en el mapa agrega puntos del poligono (mostrar como dots + lineas SVG)
+  - Al cerrar el poligono (4+ puntos), filtrar propiedades que caen dentro (mock: todas las del barrio mas cercano al area dibujada)
+  - Boton "Limpiar zona"
+- [ ] **Resultado**: propiedades filtradas muestran count en header "X propiedades encontradas"
+
+**Criterio de exito:** Filtros avanzados completos. Mapa con markers clickeables. Funcion de dibujar zona (aunque sea simulada). Profesional.
+
+---
+
+## I20: GuidedTour funcional
+**Esfuerzo:** Medio (1-1.5 hrs)
+**Archivos:** App.jsx (verificar TOUR_STEPS si existe)
+
+- [ ] Verificar que GuidedTour de shared-ui esta importado
+- [ ] Definir 6-8 pasos del tour con targets correctos:
+  1. Hero/Buscador: "Busca propiedades por tipo, operacion y ubicacion"
+  2. Propiedades destacadas: "Explora las propiedades mas populares con tour 360"
+  3. Calculadora: "Simula tu credito hipotecario con tasas reales"
+  4. Servicios: "Servicios integrales de la inmobiliaria"
+  5. Agentes: "Nuestro equipo de asesores especializados"
+  6. Contacto: "Consultas y tasaciones gratuitas"
+  7. Portal badge: "Portal del cliente: seguimiento de visitas, ofertas, documentos"
+  8. Admin badge: "Panel de gestion: CRM, propiedades, operaciones, liquidaciones"
+- [ ] Verificar spotlight cutout en cada seccion
+- [ ] Boton "Recorrido" en navbar funcional
+- [ ] Al terminar: CTA "Explora el admin panel" o "Proba el portal"
+
+**Criterio de exito:** Tour guiado completo de 6-8 pasos funcional con spotlight.
+
+---
+
+## I21: MortgageCalculator mejoras
+**Esfuerzo:** Medio (1.5-2 hrs)
+**Archivos:** MortgageCalculator.jsx (233 lineas)
+
+Investigar e implementar mejoras argentinas:
+
+- [ ] **Comparacion de bancos**: agregar tab/seccion con tabla comparativa
+  - 4-5 bancos mock: Nacion, Provincia, Santander, BBVA, Galicia
+  - Por banco: tasa nominal, tasa efectiva, requisitos resumidos, tipo credito (UVA/tradicional)
+  - Resultado: cuota estimada por banco para el monto ingresado
+- [ ] **Toggle UVA vs Tradicional**:
+  - UVA: cuota se calcula con valor UVA actual (mock), mostrar evolucion historica (grafico simple)
+  - Tradicional: tasa fija, cuota fija
+  - Comparativa visual: total a pagar UVA vs tradicional (con supuesto de inflacion configurable)
+- [ ] **Cuadro de amortizacion**: tabla desplegable con primeros 12 meses: mes, cuota, capital, interes, saldo
+- [ ] **Requisitos generales**: seccion informativa
+  - Ingreso minimo requerido (cuota < 25% ingreso)
+  - Input "Mi ingreso mensual" → "Podes acceder a credito de hasta $X"
+  - Documentacion requerida (listado informativo)
+- [ ] **Mejoras visuales**: grafico dona/pie capital vs interes, animacion de numeros
+
+**Criterio de exito:** Comparacion entre bancos. Toggle UVA vs tradicional. Cuadro amortizacion. Informacion de requisitos. Mas util para el usuario.
+
+---
+
+## I22: Tasador publico con comparables + PDF
+**Esfuerzo:** Alto (2-3 hrs)
+**Archivos:** Nuevo: components/PropertyValuation.jsx, o nueva pagina
+
+- [ ] **Formulario de tasacion**:
+  - Ubicacion: barrio (dropdown), direccion (input)
+  - Tipo: departamento/casa/PH/local/terreno
+  - Superficie total y cubierta (inputs m2)
+  - Antiguedad (select o input anos)
+  - Estado: excelente/bueno/regular/a refaccionar
+  - Dormitorios, banos, cochera, amenities
+  - Boton "Tasar propiedad"
+- [ ] **Resultado de tasacion**:
+  - Precio estimado: rango (min-max) con valor central destacado
+  - Precio por m2 calculado
+  - Confianza de la estimacion (Alta/Media/Baja badge)
+  - Calculo: usar promedio de propiedades similares en properties.json (filtrar por barrio + tipo + rango superficie ±20%)
+- [ ] **Comparables** (seccion abajo del resultado):
+  - 3-5 propiedades similares de properties.json
+  - Por cada una: titulo, direccion, precio, superficie, precio/m2
+  - "Basado en X propiedades similares en la zona"
+- [ ] **Generar PDF** (simulado):
+  - Preview estilo informe profesional: logo, datos propiedad, estimacion, comparables, disclaimer
+  - Boton "Descargar informe" (toast "PDF generado")
+- [ ] Accesible desde navbar o como seccion en la landing
+
+**Criterio de exito:** Formulario de tasacion → estimacion con comparables → preview PDF. Calculo basado en datos reales del mock.
+
+---
+
+## I23: Comparador side-by-side de propiedades
+**Esfuerzo:** Medio (1.5-2 hrs)
+**Archivos:** Nuevo: components/PropertyComparator.jsx, PropertiesListPage.jsx
+
+- [ ] **Seleccion de propiedades**: en PropertiesListPage, boton "Comparar" en cada PropertyCard
+  - Al seleccionar 2-4 propiedades, aparece barra flotante abajo: "Comparar X propiedades" boton
+  - Badge con count de seleccionadas
+  - Boton "Limpiar seleccion"
+- [ ] **Vista comparativa** (modal grande o nueva seccion):
+  - Columnas lado a lado (2-4 propiedades)
+  - Filas de comparacion: Foto, Precio, Precio/m2, Superficie, Dormitorios, Banos, Antiguedad, Barrio, Cochera, Amenities, Estado
+  - Highlight de mejor valor en verde (menor precio, mas superficie, etc.)
+  - Si diferencia >20%, marcar en rojo/verde
+- [ ] **Acciones por propiedad en comparador**: "Ver detalle", "Agendar visita", "Quitar de comparacion"
+- [ ] Responsive: en mobile, stack vertical con swipe entre propiedades
+
+**Criterio de exito:** Seleccionar 2-4 propiedades y compararlas en tabla visual. Highlights de diferencias. Acciones directas.
+
+---
+
+## I24: Simulador Ajuste — Mejoras
+**Esfuerzo:** Bajo-Medio (1 hr)
+**Archivos:** AdjustmentSimulator.jsx (137 lineas), mockContracts.js
+
+Owner dijo "ME GUSTA" pero si se puede mejorar:
+
+- [ ] **Grafico de evolucion**: agregar chart visual con la proyeccion de cuotas a lo largo del contrato (barras o linea, CSS)
+- [ ] **Comparacion de indices**: boton "Comparar indices" que muestra las 3 proyecciones (UVA/ICL/IPC) para el mismo contrato lado a lado
+- [ ] **Indices reales mock**: mostrar valor actual de cada indice con fecha de ultimo dato (ej: "ICL: 1,234.56 — Dato al 01/09/2026")
+- [ ] **Alerta de ajuste proximo**: si el proximo ajuste es en < 30 dias, mostrar banner warning con fecha y estimacion
+- [ ] **Boton "Notificar inquilino"**: simula envio de notificacion con el monto del ajuste (toast)
+- [ ] Mejorar layout del recibo/preview haciendolo mas similar a un recibo real
+
+**Criterio de exito:** Grafico de evolucion. Comparacion de 3 indices. Valores mock actualizados. Alerta proximo ajuste.
+
+---
+
+## I25: Contratos vigentes — Tabla de gestion
+**Esfuerzo:** Medio (1.5-2 hrs)
+**Archivos:** Nuevo: admin/contracts/ContractsManagement.jsx, mockContracts.js (expandir)
+
+- [ ] Nuevo modulo admin: "Contratos" (separado del Simulador de Ajuste, o como tab dentro)
+- [ ] **Tabla de contratos vigentes**:
+  - Columnas: Propiedad | Inquilino | Propietario | Inicio | Vencimiento | Monto actual | Indice | Proximo ajuste | Estado
+  - Estado: Vigente / Por vencer (<90 dias) / Vencido / Rescindido
+  - Ordenable por columna
+  - Filtros: estado, indice, agente
+- [ ] **Click en contrato**: modal con detalle completo
+  - Datos del contrato (todas las clausulas)
+  - Historial de ajustes (tabla: fecha, indice aplicado, monto anterior, monto nuevo)
+  - Documentos asociados
+  - Botones: "Renovar" (cambio estado), "Rescindir" (cambio estado con fecha)
+- [ ] **Alertas automaticas**: banner arriba con contratos que vencen en < 90 dias
+- [ ] **Boton "Nuevo contrato"**: modal con todos los campos
+- [ ] Agregar a sidebar (si es modulo separado) o como tab en Contratos
+
+**Criterio de exito:** Tabla de contratos con estado visual. Alertas de vencimiento. Detalle con historial de ajustes. CRUD basico.
+
+---
+
+## I26: POIs cercanos a propiedad
+**Esfuerzo:** Medio (1.5-2 hrs)
+**Archivos:** PropertyDetailPage.jsx, properties.json (agregar campo pois[])
+
+- [ ] Agregar campo `pois[]` a properties.json (o archivo separado):
+  - Por propiedad: 4-6 POIs cercanos con: name, type (school/hospital/market/park/transport/gym/restaurant), distance (ej: "200m", "3 cuadras"), walkTime (ej: "5 min")
+- [ ] **Seccion en PropertyDetailPage**: "Que hay cerca"
+  - Grid de cards por POI: icono segun tipo, nombre, distancia, tiempo caminando
+  - Agrupados por tipo: Educacion, Salud, Transporte, Comercio, Recreacion
+  - Estilo limpio con iconos de Lucide
+- [ ] **Score de ubicacion**: calcular puntaje 1-10 basado en cantidad y variedad de POIs
+  - Mostrar como badge prominente: "Ubicacion: 8.5/10" con barra visual
+- [ ] Dark mode, responsive (2 columnas md, 1 mobile)
+
+**Criterio de exito:** Seccion "Que hay cerca" en detalle de propiedad con POIs categorizado. Score de ubicacion. Info util para el comprador/inquilino.

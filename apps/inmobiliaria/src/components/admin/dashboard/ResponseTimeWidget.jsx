@@ -35,6 +35,9 @@ export default function ResponseTimeWidget() {
         <div className="rounded-lg p-3 bg-bg border border-border">
           <p className="text-xs text-muted">Promedio equipo</p>
           <p className="text-lg font-bold text-text mt-0.5">{rt.teamAvg} min</p>
+          <p className="text-[11px] text-muted mt-0.5">
+            vs. <span className="line-through">{rt.teamPrev} min</span> mes anterior
+          </p>
         </div>
         <div className="rounded-lg p-3 bg-bg border border-border">
           <p className="text-xs text-muted">Objetivo (SLA)</p>

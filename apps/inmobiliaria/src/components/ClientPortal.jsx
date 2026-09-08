@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Building2, Heart, CalendarCheck, FileText, Tag, FolderOpen, BellRing,
-  LogOut, Sun, Moon, Video, MapPin, Download, Upload, Mail, Lock, CheckCircle
+  LogOut, Sun, Moon, Video, MapPin, Download, Upload, Mail, Lock, CheckCircle,
+  Plus, X
 } from 'lucide-react'
 import properties from '../data/properties.json'
+import neighborhoods from '../data/neighborhoods.json'
 import { formatPrice, formatDate, TYPE_LABELS, OPERATION_LABELS } from '../utils/format'
 import PropertyCard from './PropertyCard'
 
@@ -59,6 +61,32 @@ const INITIAL_ALERTS = [
   { id: 'A3', label: 'Casas en Nordelta con pileta', matches: 2, active: false }
 ]
 
+const ALERTS_KEY = 'inmob-portal-alerts'
+
+// Count how many listings would match a set of alert criteria (real data).
+function countMatches({ operation, type, neighborhood, min, max }) {
+  return properties.filter((p) => {
+    if (operation && p.operation !== operation) return false
+    if (type && p.type !== type) return false
+    if (neighborhood && p.neighborhood !== neighborhood) return false
+    if (min && p.price < Number(min)) return false
+    if (max && p.price > Number(max)) return false
+    return true
+  }).length
+}
+
+// Human-readable label from the alert criteria.
+function buildAlertLabel({ operation, type, neighborhood, min, max }) {
+  const parts = []
+  parts.push(type ? TYPE_LABELS[type] + 's' : 'Propiedades')
+  if (operation) parts.push(`en ${OPERATION_LABELS[operation].toLowerCase()}`)
+  if (neighborhood) parts.push(`· ${neighborhood}`)
+  if (min && max) parts.push(`· USD ${Number(min).toLocaleString('es-AR')}–${Number(max).toLocaleString('es-AR')}`)
+  else if (max) parts.push(`· hasta USD ${Number(max).toLocaleString('es-AR')}`)
+  else if (min) parts.push(`· desde USD ${Number(min).toLocaleString('es-AR')}`)
+  return parts.join(' ')
+}
+
 const reveal = {
   initial: { opacity: 0, y: 16 },
   animate: { opacity: 1, y: 0 },
@@ -78,8 +106,36 @@ export default function ClientPortal({ onExit, favorites, onSelectProperty, isDa
   const [loggedIn, setLoggedIn] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [activeSection, setActiveSection] = useState('favorites')
-  const [alerts, setAlerts] = useState(INITIAL_ALERTS)
+  const [alerts, setAlerts] = useState(() => {
+    try {
+      const saved = localStorage.getItem(ALERTS_KEY)
+      if (saved) return JSON.parse(saved)
+    } catch {
+      /* ignore corrupt storage */
+    }
+    return INITIAL_ALERTS
+  })
   const [visitNotes, setVisitNotes] = useState({})
+  const [toast, setToast] = useState(null)
+  const [alertFormOpen, setAlertFormOpen] = useState(false)
+
+  // Persist alerts across reloads.
+  useEffect(() => {
+    try {
+      localStorage.setItem(ALERTS_KEY, JSON.stringify(alerts))
+    } catch {
+      /* ignore quota errors */
+    }
+  }, [alerts])
+
+  // Auto-dismiss toast.
+  useEffect(() => {
+    if (!toast) return
+    const t = setTimeout(() => setToast(null), 2600)
+    return () => clearTimeout(t)
+  }, [toast])
+
+  const showToast = (message, tone = 'success') => setToast({ key: Date.now(), message, tone })
 
   const handleLogin = (e) => {
     e.preventDefault()
@@ -90,8 +146,26 @@ export default function ClientPortal({ onExit, favorites, onSelectProperty, isDa
     }, 500)
   }
 
-  const toggleAlert = (id) =>
-    setAlerts((prev) => prev.map((a) => (a.id === id ? { ...a, active: !a.active } : a)))
+  const toggleAlert = (id) => {
+    const target = alerts.find((a) => a.id === id)
+    if (!target) return
+    const nowActive = !target.active
+    setAlerts((prev) => prev.map((a) => (a.id === id ? { ...a, active: nowActive } : a)))
+    showToast(nowActive ? 'Alerta activada' : 'Alerta pausada', nowActive ? 'success' : 'muted')
+  }
+
+  const createAlert = (criteria) => {
+    const newAlert = {
+      id: `A-${Date.now()}`,
+      label: buildAlertLabel(criteria),
+      matches: countMatches(criteria),
+      active: true,
+      criteria
+    }
+    setAlerts((prev) => [newAlert, ...prev])
+    setAlertFormOpen(false)
+    showToast('Alerta creada')
+  }
 
   const noteVisit = (id) => setVisitNotes((prev) => ({ ...prev, [id]: true }))
 
@@ -428,49 +502,87 @@ export default function ClientPortal({ onExit, favorites, onSelectProperty, isDa
                       title="Alertas"
                       subtitle="Recibí avisos cuando aparezcan propiedades que coincidan con tus búsquedas."
                     />
-                    <button className="px-4 py-2.5 rounded-lg bg-gold text-primary text-sm font-semibold hover:opacity-90 transition-opacity shrink-0">
-                      Crear nueva alerta
+                    <button
+                      onClick={() => setAlertFormOpen(true)}
+                      className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-gold text-primary text-sm font-semibold hover:opacity-90 transition-opacity shrink-0"
+                    >
+                      <Plus className="w-4 h-4" /> Crear nueva alerta
                     </button>
                   </div>
-                  <div className="space-y-3">
-                    {alerts.map((a) => (
-                      <div
-                        key={a.id}
-                        className="bg-surface border border-border rounded-xl p-4 flex items-center gap-4"
-                      >
-                        <div className="p-2.5 rounded-lg bg-accent/15 text-accent shrink-0">
-                          <BellRing className="w-5 h-5" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="font-medium text-text">{a.label}</div>
-                          <div className="text-sm text-accent mt-0.5">
-                            {a.matches} nuevas coincidencias
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => toggleAlert(a.id)}
-                          role="switch"
-                          aria-checked={a.active}
-                          aria-label="Activar alerta"
-                          className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${
-                            a.active ? 'bg-accent' : 'bg-surface-alt border border-border'
-                          }`}
+                  {alerts.length === 0 ? (
+                    <EmptyState
+                      icon={BellRing}
+                      title="No tenés alertas todavía"
+                      text="Creá una alerta con tus criterios y te avisamos cuando aparezcan coincidencias."
+                    />
+                  ) : (
+                    <div className="space-y-3">
+                      {alerts.map((a) => (
+                        <div
+                          key={a.id}
+                          className="bg-surface border border-border rounded-xl p-4 flex items-center gap-4"
                         >
-                          <span
-                            className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
-                              a.active ? 'translate-x-5' : 'translate-x-0.5'
+                          <div className={`p-2.5 rounded-lg shrink-0 ${
+                            a.active ? 'bg-accent/15 text-accent' : 'bg-surface-alt text-muted'
+                          }`}>
+                            <BellRing className="w-5 h-5" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="font-medium text-text">{a.label}</div>
+                            <div className={`text-sm mt-0.5 ${a.active ? 'text-accent' : 'text-muted'}`}>
+                              {a.active
+                                ? `${a.matches} ${a.matches === 1 ? 'coincidencia' : 'coincidencias'}`
+                                : 'Alerta pausada'}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => toggleAlert(a.id)}
+                            role="switch"
+                            aria-checked={a.active}
+                            aria-label={a.active ? 'Pausar alerta' : 'Activar alerta'}
+                            className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${
+                              a.active ? 'bg-accent' : 'bg-surface-alt border border-border'
                             }`}
-                          />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+                          >
+                            <span
+                              className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                                a.active ? 'translate-x-5' : 'translate-x-0.5'
+                              }`}
+                            />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </>
               )}
             </motion.section>
           </AnimatePresence>
         </main>
       </div>
+
+      <CreateAlertModal
+        open={alertFormOpen}
+        onClose={() => setAlertFormOpen(false)}
+        onCreate={createAlert}
+      />
+
+      {/* Toast */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            key={toast.key}
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 24 }}
+            transition={{ duration: 0.25 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[110] inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-surface border border-border shadow-medium"
+          >
+            <CheckCircle className={`w-5 h-5 ${toast.tone === 'muted' ? 'text-muted' : 'text-success'}`} />
+            <span className="text-sm font-medium text-text">{toast.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
@@ -484,5 +596,154 @@ function EmptyState({ icon: Icon, title, text }) {
       <h3 className="text-lg font-semibold text-primary">{title}</h3>
       <p className="text-sm text-muted mt-1 max-w-sm mx-auto">{text}</p>
     </div>
+  )
+}
+
+const ALERT_TYPES = ['apartment', 'house', 'ph', 'commercial', 'land']
+
+function CreateAlertModal({ open, onClose, onCreate }) {
+  const empty = { operation: 'sale', type: 'apartment', neighborhood: '', min: '', max: '' }
+  const [form, setForm] = useState(empty)
+
+  // Reset the form each time the modal opens.
+  useEffect(() => {
+    if (open) setForm(empty)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e) => e.key === 'Escape' && onClose()
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open, onClose])
+
+  const set = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }))
+
+  const rangeInvalid = form.min && form.max && Number(form.min) > Number(form.max)
+  const preview = countMatches(form)
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (rangeInvalid) return
+    onCreate(form)
+  }
+
+  const fieldCls =
+    'w-full rounded-lg bg-surface-alt border border-border px-3 py-2.5 text-text focus:outline-none focus:ring-2 focus:ring-accent'
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+          className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 md:p-6"
+        >
+          <motion.div
+            initial={{ scale: 0.96, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.96, opacity: 0 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-lg bg-surface rounded-2xl overflow-hidden shadow-2xl"
+          >
+            <div className="flex items-center justify-between gap-4 px-5 md:px-6 py-4 border-b border-border">
+              <div className="flex items-center gap-2.5">
+                <BellRing className="w-5 h-5 text-accent" />
+                <h3 className="font-semibold text-primary">Nueva alerta</h3>
+              </div>
+              <button
+                onClick={onClose}
+                aria-label="Cerrar"
+                className="p-2 rounded-lg text-muted hover:text-text hover:bg-surface-alt transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-5 md:p-6 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-text mb-1.5">Operación</label>
+                  <select value={form.operation} onChange={set('operation')} className={fieldCls}>
+                    {Object.entries(OPERATION_LABELS).map(([value, label]) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text mb-1.5">Tipo de propiedad</label>
+                  <select value={form.type} onChange={set('type')} className={fieldCls}>
+                    {ALERT_TYPES.map((value) => (
+                      <option key={value} value={value}>{TYPE_LABELS[value]}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-text mb-1.5">Zona / Barrio</label>
+                <select value={form.neighborhood} onChange={set('neighborhood')} className={fieldCls}>
+                  <option value="">Todas las zonas</option>
+                  {neighborhoods.map((n) => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-text mb-1.5">Rango de precio (USD)</label>
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    type="number" min="0" inputMode="numeric"
+                    value={form.min} onChange={set('min')}
+                    placeholder="Mínimo" className={fieldCls}
+                  />
+                  <input
+                    type="number" min="0" inputMode="numeric"
+                    value={form.max} onChange={set('max')}
+                    placeholder="Máximo" className={fieldCls}
+                  />
+                </div>
+                {rangeInvalid && (
+                  <p className="text-xs text-error mt-1.5">El mínimo no puede ser mayor que el máximo.</p>
+                )}
+              </div>
+
+              <div className="rounded-lg bg-surface-alt border border-border px-4 py-3 text-sm text-muted">
+                {rangeInvalid
+                  ? 'Ajustá el rango para ver coincidencias.'
+                  : (
+                    <>
+                      <span className="font-semibold text-accent">{preview}</span>{' '}
+                      {preview === 1 ? 'propiedad coincide' : 'propiedades coinciden'} con estos criterios hoy.
+                    </>
+                  )}
+              </div>
+
+              <div className="flex gap-3 pt-1">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="flex-1 py-2.5 rounded-lg border border-border text-text font-medium hover:bg-surface-alt transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={rangeInvalid}
+                  className="flex-1 py-2.5 rounded-lg bg-gold text-primary font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Guardar alerta
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }

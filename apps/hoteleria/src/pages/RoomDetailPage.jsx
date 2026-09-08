@@ -26,13 +26,8 @@ export default function RoomDetailPage({ room, onBack, onReserve }) {
     )
   }
 
-  // Extended images for gallery
-  const images = [
-    room.image,
-    room.image,
-    room.image,
-    room.image
-  ]
+  // Gallery images: use the room's curated set when available, fall back to its single image
+  const images = room.images?.length ? room.images : [room.image]
 
   // Room amenities
   const amenities = [
@@ -76,19 +71,22 @@ export default function RoomDetailPage({ room, onBack, onReserve }) {
           <Compass className="w-4 h-4" />
           Recorrido 360°
         </button>
-        <div className="absolute bottom-6 left-6 right-6 flex gap-2 justify-center">
-          {images.map((img, idx) => (
-            <button
-              key={idx}
-              onClick={() => setSelectedImage(idx)}
-              className={`h-2 transition-all ${
-                idx === selectedImage
-                  ? 'w-8 bg-accent'
-                  : 'w-2 bg-white/50 hover:bg-white/75'
-              }`}
-            />
-          ))}
-        </div>
+        {images.length > 1 && (
+          <div className="absolute bottom-6 left-6 right-6 flex gap-2 justify-center">
+            {images.map((img, idx) => (
+              <button
+                key={idx}
+                onClick={() => setSelectedImage(idx)}
+                aria-label={`View image ${idx + 1}`}
+                className={`h-2 rounded-full transition-all ${
+                  idx === selectedImage
+                    ? 'w-8 bg-accent'
+                    : 'w-2 bg-white/50 hover:bg-white/75'
+                }`}
+              />
+            ))}
+          </div>
+        )}
       </motion.div>
 
       <VirtualTour360 open={showTour} title={room.name} onClose={() => setShowTour(false)} />

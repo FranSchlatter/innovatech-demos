@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import LoginScreen from './LoginScreen'
 import {
   User,
   Calendar,
@@ -36,6 +37,14 @@ import {
 } from 'lucide-react'
 
 // Mock guest data - In production this would come from authentication/API
+// Build a YYYY-MM-DD string relative to today so the mock stay always stays current
+const toISODate = (offsetDays) => {
+  const date = new Date()
+  date.setHours(0, 0, 0, 0)
+  date.setDate(date.getDate() + offsetDays)
+  return date.toISOString().split('T')[0]
+}
+
 const MOCK_GUEST = {
   id: 'G-2024-001',
   name: 'Carlos Rodriguez',
@@ -49,8 +58,8 @@ const MOCK_GUEST = {
   },
   reservation: {
     id: 'RES-2024-5678',
-    checkIn: '2024-01-25',
-    checkOut: '2024-01-30',
+    checkIn: toISODate(-2),   // checked in 2 days ago
+    checkOut: toISODate(3),   // checks out in 3 days -> 5-night stay, currently staying
     nights: 5,
     guests: 2,
     status: 'checked-in',
@@ -132,14 +141,23 @@ const PORTAL_TABS = [
   { id: 'overview', name: 'My Stay', icon: Home },
   { id: 'services', name: 'Services', icon: Bell },
   { id: 'reservations', name: 'Reservations', icon: Calendar },
-  { id: 'requests', name: 'My Requests', icon: Clipboard },
   { id: 'help', name: 'Help', icon: HelpCircle }
 ]
 
+const REQUESTS_STORAGE_KEY = 'hotel-luxury-guest-requests'
+
 export default function GuestPortal({ onExit }) {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
   const [guest] = useState(MOCK_GUEST)
-  const [requests, setRequests] = useState([])
+  const [requests, setRequests] = useState(() => {
+    try {
+      const stored = localStorage.getItem(REQUESTS_STORAGE_KEY)
+      return stored ? JSON.parse(stored) : []
+    } catch {
+      return []
+    }
+  })
   const [showServiceModal, setShowServiceModal] = useState(null)
   const [showReservationModal, setShowReservationModal] = useState(null)
   const [serviceQuantity, setServiceQuantity] = useState(1)
@@ -148,6 +166,20 @@ export default function GuestPortal({ onExit }) {
   const [reservationTime, setReservationTime] = useState('')
   const [showSuccessToast, setShowSuccessToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
+
+  // Persist all portal requests (service requests + amenity reservations)
+  useEffect(() => {
+    try {
+      localStorage.setItem(REQUESTS_STORAGE_KEY, JSON.stringify(requests))
+    } catch {
+      // Ignore storage errors (e.g. private mode)
+    }
+  }, [requests])
+
+  const handleLogout = () => {
+    setIsAuthenticated(false)
+    setActiveTab('overview')
+  }
 
   const showToast = (message) => {
     setToastMessage(message)
@@ -216,8 +248,17 @@ export default function GuestPortal({ onExit }) {
     return diff > 0 ? diff : 0
   }
 
+  if (!isAuthenticated) {
+    return <LoginScreen onLogin={() => setIsAuthenticated(true)} />
+  }
+
   return (
-    <div className="min-h-screen bg-bg">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="min-h-screen bg-bg"
+    >
       {/* Header */}
       <header className="bg-surface border-b border-border sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4">
@@ -231,13 +272,22 @@ export default function GuestPortal({ onExit }) {
                 <p className="text-sm text-muted">Room {guest.room.number} | {guest.room.type}</p>
               </div>
             </div>
-            <button
-              onClick={onExit}
-              className="flex items-center gap-2 text-muted hover:text-primary transition"
-            >
-              <LogOut className="w-5 h-5" />
-              <span className="hidden sm:inline">Exit Portal</span>
-            </button>
+            <div className="flex items-center gap-2 sm:gap-4">
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 text-muted hover:text-primary transition"
+              >
+                <LogOut className="w-5 h-5" />
+                <span className="hidden sm:inline">Sign Out</span>
+              </button>
+              <button
+                onClick={onExit}
+                className="flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg border border-border text-muted hover:text-primary hover:border-accent transition"
+              >
+                <span className="hidden sm:inline">Exit Portal</span>
+                <X className="w-4 h-4 sm:hidden" />
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -405,6 +455,76 @@ export default function GuestPortal({ onExit }) {
                   </div>
                 </div>
               </div>
+
+              {/* Active Requests (only shown when there are requests) */}
+              {requests.length > 0 && (
+                <div className="mt-4 bg-surface rounded-2xl p-5 shadow-soft">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold flex items-center gap-2">
+                      <Clipboard className="w-4 h-4 text-accent" />
+                      Active Requests
+                    </h3>
+                    <span className="text-xs text-muted">{requests.length} active</span>
+                  </div>
+                  <div className="space-y-2">
+                    <AnimatePresence initial={false}>
+                      {requests.map((request) => (
+                        <motion.div
+                          key={request.id}
+                          layout
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          className="flex items-center gap-3 bg-bg rounded-xl p-3"
+                        >
+                          <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                            {request.status === 'pending' ? (
+                              <Clock className="w-4.5 h-4.5 text-accent" />
+                            ) : request.status === 'confirmed' ? (
+                              <CheckCircle className="w-4.5 h-4.5 text-accent" />
+                            ) : (
+                              <AlertCircle className="w-4.5 h-4.5 text-accent" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-semibold text-sm truncate">{request.service}</h4>
+                              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-accent/20 text-accent capitalize flex-shrink-0">
+                                {request.status}
+                              </span>
+                            </div>
+                            <p className="text-xs text-muted flex items-center gap-1 mt-0.5">
+                              {request.type === 'amenity' ? (
+                                <>
+                                  <Calendar className="w-3 h-3" />
+                                  {request.date} · {request.time}
+                                </>
+                              ) : (
+                                <>
+                                  <Clock className="w-3 h-3" />
+                                  {request.date} {request.time} · ETA {request.estimatedTime}
+                                </>
+                              )}
+                            </p>
+                          </div>
+                          {request.price > 0 && (
+                            <span className="text-sm font-bold text-accent whitespace-nowrap">${request.price}</span>
+                          )}
+                          {request.canCancel && (request.status === 'pending' || (request.status === 'confirmed' && request.type === 'amenity')) && (
+                            <button
+                              onClick={() => handleCancelRequest(request.id)}
+                              className="text-muted hover:text-primary transition flex-shrink-0"
+                              title="Cancel"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          )}
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </div>
+                </div>
+              )}
             </motion.div>
           )}
 
@@ -569,113 +689,6 @@ export default function GuestPortal({ onExit }) {
                   )
                 })}
               </div>
-            </motion.div>
-          )}
-
-          {/* My Requests Tab */}
-          {activeTab === 'requests' && (
-            <motion.div
-              key="requests"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="space-y-6"
-            >
-              <h2 className="text-xl font-bold">My Requests & Reservations</h2>
-              {requests.length === 0 ? (
-                <div className="bg-surface rounded-2xl p-12 text-center">
-                  <Clipboard className="w-16 h-16 mx-auto mb-4 text-muted" />
-                  <h3 className="text-xl font-bold mb-2">No requests yet</h3>
-                  <p className="text-muted mb-6">Your service requests and reservations will appear here.</p>
-                  <button
-                    onClick={() => setActiveTab('services')}
-                    className="bg-accent text-white px-6 py-3 rounded-xl font-semibold hover:bg-accent/90 transition"
-                  >
-                    Browse Services
-                  </button>
-                </div>
-              ) : (
-                <div className="max-w-4xl mx-auto space-y-3">
-                  {requests.map((request, idx) => (
-                    <motion.div
-                      key={request.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.03 }}
-                      className="bg-surface rounded-2xl p-4 shadow-soft hover:shadow-md transition-all"
-                    >
-                      <div className="flex items-start gap-3">
-                        {/* Status Indicator */}
-                        <div className="flex-shrink-0 mt-1">
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                            request.status === 'pending' ? 'bg-accent/10' :
-                            request.status === 'confirmed' ? 'bg-accent/10' :
-                            'bg-accent/10'
-                          }`}>
-                            {request.status === 'pending' ? (
-                              <Clock className="w-5 h-5 text-accent" />
-                            ) : request.status === 'confirmed' ? (
-                              <CheckCircle className="w-5 h-5 text-accent" />
-                            ) : (
-                              <AlertCircle className="w-5 h-5 text-accent" />
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-3 mb-2">
-                            <div>
-                              <h3 className="font-bold text-base">{request.service}</h3>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                                  request.status === 'pending' ? 'bg-accent/20 text-accent' :
-                                  request.status === 'confirmed' ? 'bg-accent/20 text-accent' :
-                                  'bg-accent/20 text-accent'
-                                }`}>
-                                  {request.status}
-                                </span>
-                                {request.type === 'amenity' ? (
-                                  <span className="text-xs text-muted flex items-center gap-1">
-                                    <Calendar className="w-3 h-3" />
-                                    {request.date} · {request.time}
-                                  </span>
-                                ) : (
-                                  <span className="text-xs text-muted flex items-center gap-1">
-                                    <Clock className="w-3 h-3" />
-                                    {request.time} · ETA {request.estimatedTime}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                            {request.price > 0 && (
-                              <span className="text-lg font-bold text-accent whitespace-nowrap">${request.price}</span>
-                            )}
-                          </div>
-
-                          {/* Notes */}
-                          {request.notes && (
-                            <div className="bg-bg rounded-lg p-2.5 mb-3">
-                              <p className="text-xs text-muted italic">"{request.notes}"</p>
-                            </div>
-                          )}
-
-                          {/* Actions */}
-                          {request.canCancel && (request.status === 'pending' || (request.status === 'confirmed' && request.type === 'amenity')) && (
-                            <button
-                              onClick={() => handleCancelRequest(request.id)}
-                              className="text-xs text-muted hover:text-primary transition flex items-center gap-1"
-                            >
-                              <X className="w-3 h-3" />
-                              Cancel {request.type === 'amenity' ? 'reservation' : 'request'}
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
             </motion.div>
           )}
 
@@ -949,6 +962,6 @@ export default function GuestPortal({ onExit }) {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   )
 }

@@ -6,62 +6,49 @@ Orden sugerido: fixes primero, despues admin (mas impacto visual), despues porta
 
 ---
 
-## I1: Fix bugs existentes
+## I1: Fix bugs existentes ✅ HECHO (7 sep 2026)
 **Esfuerzo:** Bajo-Medio (45-60 min)
-**Archivos:** PropertyDetailPage.jsx, ServicesSection.jsx, ClientPortal.jsx
+**Archivos:** PropertyDetailPage.jsx, ServicesSection.jsx, ClientPortal.jsx, +nuevo FloorPlanModal.jsx, VirtualTourModal.jsx
 
 Hacer todo junto porque son fixes rapidos:
-- [ ] **"Ver plano" en PropertyDetailPage**: el boton no hace nada. Crear modal FloorPlanModal con imagen placeholder de plano (o SVG generico). Abrir al click
-- [ ] **"Ver tour" en PropertyDetailPage**: actualmente abre tour del complejo. Cambiar para que sea SOLO la propiedad/casa/depto. Usar VirtualTourModal existente pero con URL de la propiedad especifica (campo `virtualTour` de properties.json)
-- [ ] **ServicesSection 8 servicios**: son solo visual, no hacen nada al click. Para cada servicio agregar: onClick que abre modal con descripcion expandida, beneficios detallados, y boton "Consultar" que scrollea a ContactSection
-- [ ] **Alertas en portal**: los toggle switches no dan feedback. Agregar toast/notificacion al cambiar toggle ("Alerta activada"/"Alerta pausada"). El boton "Crear nueva alerta" no funciona — agregar modal con: tipo operacion, zona, rango precio, tipo propiedad, boton guardar
+- [x] **"Ver plano" en PropertyDetailPage**: nuevo `FloorPlanModal` que abre al click, siempre visible. Muestra la imagen `floorPlan` y, como fallback/toggle, un esquema SVG generado que se adapta al tipo (residencial / oficina-local / terreno) y a la cantidad de dormitorios y baños. Se quitó el toggle inline que pisaba la galería
+- [x] **"Ver tour" en PropertyDetailPage**: `VirtualTourModal` ahora pasa una sola vista (sin la escala "Complejo") construida desde la propiedad. Adapta ambientes por dormitorios, casa→jardín, y oficina/local→salón/privado/office/baño
+- [x] **ServicesSection 8 servicios**: cada card es un botón que abre `ServiceDetailModal` con descripción extendida + lista de beneficios + botón "Consultar por este servicio" que cierra el modal y scrollea a #contact. Affordance "Ver más" en hover/focus
+- [x] **Alertas en portal**: toggle con toast ("Alerta activada"/"Alerta pausada"). Botón "Crear nueva alerta" abre `CreateAlertModal` (operación, tipo, zona desde neighborhoods.json, rango de precio) con preview en vivo de coincidencias calculadas sobre properties.json. Alertas persisten en localStorage (`inmob-portal-alerts`). Empty state + validación de rango
 
-**Criterio de exito:** Los 4 problemas corregidos. "Ver plano" abre modal, "Ver tour" muestra propiedad, servicios son clickeables, alertas responden al toggle.
+**Criterio de exito:** Los 4 problemas corregidos. Build OK, dev server OK. Verificado transform en Vite. Pendiente: check visual del owner en dark/light.
 
 ---
 
-## I2: Dashboard interactivo — KPIs clickeables + graficos
+## I2: Dashboard interactivo — KPIs clickeables + graficos ✅ HECHO (8 sep 2026)
 **Esfuerzo:** Medio-Alto (2-3 hrs)
-**Archivos:** AdminDashboard.jsx, AdminContext.jsx
+**Archivos:** AdminDashboard.jsx, LeadsManagement.jsx, ResponseTimeWidget.jsx
 
-- [ ] Hacer cada KPI card clickeable: al click, navegar al modulo correspondiente (ej: "Propiedades disponibles" → PropertyManagement, "Leads nuevos" → LeadsManagement, etc.)
-  - Agregar cursor-pointer, hover effect, icono de flecha
-  - Usar `dispatch({ type: 'SET_VIEW', payload: 'properties' })` del AdminContext
-- [ ] Agregar seccion "Tendencias" debajo de KPIs:
-  - Mini-grafico de leads por semana (ultimas 4 semanas, barras CSS)
-  - Mini-grafico de visitas por semana
-  - Mini-grafico de operaciones cerradas por mes
-  - Datos calculados del mock (agrupar por fecha)
-- [ ] Pipeline de leads: hacer cada barra clickeable, al click lleva a LeadsManagement filtrado por ese stage
-- [ ] Response time widget: expandir con comparativa "vs mes anterior" (mock)
-- [ ] Agregar seccion "Acciones rapidas": botones directos a "Agendar visita", "Crear lead", "Agregar propiedad"
-- [ ] KPIs deben tener indicador de tendencia: flechita verde (subio) o roja (bajo) con % vs periodo anterior (mock)
+- [x] Cada KPI card es un `<motion.button>` clickeable: navega al modulo (`setView` de AdminContext). cursor-pointer, hover (border/shadow), flecha `ChevronRight` que aparece en hover
+- [x] Seccion "Tendencias" con 3 mini-graficos de barras (componente `TrendChart`): leads/semana, visitas/semana, operaciones cerradas/mes. Delta % arriba de cada uno. **Nota:** series demo hardcodeadas coherentes con los KPIs (las fechas del mock estan concentradas en 1 semana, agrupar real daba barras vacias)
+- [x] Pipeline de leads: cada barra es boton → `setFilter('leads','stage', id)` + `setView('leads')`. LeadsManagement lee `filters.leads.stage`, resalta la columna (ring accent), banner "Enfocando etapa X" con boton quitar, y hace scrollIntoView
+- [x] Response time widget: card "Promedio equipo" ahora muestra "vs. 34 min mes anterior" (tachado) ademas del badge −% existente
+- [x] Seccion "Acciones rapidas": botones "Agendar visita"/"Crear lead"/"Agregar propiedad" (navegan al modulo respectivo — los modales de creacion llegan en I4/I5/I6)
+- [x] Indicador de tendencia por KPI: flecha verde/roja (`ArrowUpRight`/`ArrowDownRight`) con % (mock)
 
-**Criterio de exito:** Cada KPI lleva al modulo correspondiente. Hay graficos de tendencia. Dashboard es interactivo, no solo lectura.
+**Criterio de exito:** Cada KPI lleva al modulo correspondiente. Hay graficos de tendencia. Dashboard es interactivo, no solo lectura. Build OK.
 
 ---
 
-## I3: Bandeja IA — Agente puede escribir + templates
+## I3: Bandeja IA — Agente puede escribir + templates ✅ HECHO (8 sep 2026)
 **Esfuerzo:** Alto (2-3 hrs)
-**Archivos:** InboxManagement.jsx (108 lineas), mockConversations.js
+**Archivos:** InboxManagement.jsx, mockConversations.js
 
-- [ ] Agregar input de texto en la columna central del thread (abajo, tipo WhatsApp)
-- [ ] Boton enviar que agrega el mensaje al thread como "Staff" (alineado derecha, accent bg)
-- [ ] Dropdown/boton de mensajes pre-cargados (templates inmobiliarios):
-  - "Gracias por su consulta. La propiedad se encuentra disponible para coordinar visita."
-  - "Le confirmo la visita para [fecha]. La direccion es [direccion]."
-  - "Le envio la tasacion actualizada de su propiedad."
-  - "El contrato esta listo para firma. Coordinaremos en la oficina."
-  - "Le informamos que hemos recibido una oferta por su propiedad."
-  - "Los indices de ajuste ICL actualizados indican un incremento del X%."
-  - 2-3 templates mas relevantes para inmobiliaria
-- [ ] Al seleccionar template, se llena el input (editable antes de enviar)
-- [ ] Mensaje enviado aparece con timestamp actual y label "Staff"
-- [ ] Animacion de entrada del nuevo mensaje (Framer Motion)
-- [ ] Canal badge en la lista: WhatsApp (verde), Portal (azul), Web (gris) — ya existe, verificar
-- [ ] Persistir nuevos mensajes en localStorage (key: `inmob-admin-inbox`)
+- [x] Composer (textarea) al pie de la columna del thread, tipo WhatsApp. Enter envia, Shift+Enter salto de linea
+- [x] Boton enviar (`Send`, bg-accent) agrega el mensaje como "staff" (alineado derecha, burbuja accent con label "Asesor")
+- [x] Popover de plantillas (boton `FileText`): 9 templates inmobiliarios en `INBOX_TEMPLATES` (mockConversations.js) — disponibilidad, confirmar visita, tasacion, contrato listo, oferta recibida, ajuste ICL, requisitos alquiler, seguimiento, agradecimiento
+- [x] Al seleccionar template, se llena el textarea (editable antes de enviar)
+- [x] Mensaje enviado con timestamp actual (`nowTime()` HH:MM) y label "Asesor"
+- [x] Animacion de entrada del nuevo mensaje (Framer Motion, solo los `_new`) + auto-scroll al fondo
+- [x] Canal badge en la lista (verde/azul/gris) — verificado, ya existia
+- [x] Persistencia en localStorage key `inmob-admin-inbox` (mensajes por conversacion). El preview de la lista refleja el ultimo mensaje enviado
 
-**Criterio de exito:** El agente puede escribir mensajes libres y usar templates. Mensajes aparecen en el thread. Persisten al refrescar.
+**Criterio de exito:** El agente puede escribir mensajes libres y usar templates. Mensajes aparecen en el thread. Persisten al refrescar. Build OK.
 
 ---
 

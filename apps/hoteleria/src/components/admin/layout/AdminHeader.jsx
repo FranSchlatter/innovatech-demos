@@ -3,10 +3,13 @@ import { useAdmin } from '../../../context/AdminContext'
 
 const viewTitles = {
   dashboard: 'Dashboard',
+  inbox: 'Bandeja IA',
+  pricing: 'Precio dinámico',
   rooms: 'Room Management',
   housekeeping: 'Housekeeping',
   inventory: 'Inventory',
-  services: 'Service Requests'
+  services: 'Service Requests',
+  excursions: 'Excursiones'
 }
 
 export default function AdminHeader({ isDark, toggleTheme }) {
@@ -27,7 +30,7 @@ export default function AdminHeader({ isDark, toggleTheme }) {
 
           <div>
             <h1 className="text-lg font-bold text-text">
-              {viewTitles[currentView]}
+              {viewTitles[currentView] || 'Dashboard'}
             </h1>
             <p className="text-xs text-muted hidden sm:block">
               {new Date().toLocaleDateString('en-US', {

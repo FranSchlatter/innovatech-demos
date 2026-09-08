@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, X, Filter } from 'lucide-react'
 import { useAdminData } from '../../../hooks/useAdminData'
+import { useAdmin } from '../../../context/AdminContext'
 import StatusBadge from '../shared/StatusBadge'
 import { formatPrice } from '../../../utils/format'
 import { LEAD_STAGES } from '../../../data/admin/mockLeads'
@@ -37,7 +38,21 @@ const SOURCE_LABELS = {
 
 export default function LeadsManagement() {
   const { leads, agents, updateLead } = useAdminData()
+  const { filters, setFilter } = useAdmin()
   const [agentFilter, setAgentFilter] = useState('all')
+
+  // Stage focus comes from the dashboard pipeline (SET_FILTER + SET_VIEW)
+  const stageFilter = filters.leads.stage
+  const activeStage = stageFilter !== 'all' ? LEAD_STAGES.find((s) => s.id === stageFilter) : null
+  const focusRef = useRef(null)
+
+  useEffect(() => {
+    if (activeStage && focusRef.current) {
+      focusRef.current.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+    }
+  }, [stageFilter, activeStage])
+
+  const clearStageFilter = () => setFilter('leads', 'stage', 'all')
 
   const agentName = (id) => agents.find((a) => a.id === id)?.name || '—'
 
@@ -82,13 +97,35 @@ export default function LeadsManagement() {
         </select>
       </div>
 
+      {/* Active stage focus (from dashboard pipeline) */}
+      {activeStage && (
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2">
+          <p className="flex items-center gap-2 text-sm text-text">
+            <Filter className="w-4 h-4 text-accent shrink-0" />
+            Enfocando la etapa <span className="font-semibold">{activeStage.label}</span>
+          </p>
+          <button
+            type="button"
+            onClick={clearStageFilter}
+            className="inline-flex items-center gap-1 text-xs font-medium text-muted hover:text-text transition-colors"
+          >
+            <X className="w-3.5 h-3.5" /> Quitar
+          </button>
+        </div>
+      )}
+
       {/* Kanban board */}
       <div className="flex gap-4 overflow-x-auto pb-4">
         {LEAD_STAGES.map((stage) => {
           const stageLeads = visibleLeads.filter((l) => l.stage === stage.id)
+          const focused = activeStage?.id === stage.id
           return (
-            <div key={stage.id} className="w-72 flex-shrink-0">
-              <div className="bg-surface border border-border rounded-xl overflow-hidden">
+            <div key={stage.id} ref={focused ? focusRef : null} className="w-72 flex-shrink-0">
+              <div
+                className={`bg-surface border rounded-xl overflow-hidden transition-shadow ${
+                  focused ? 'border-accent ring-2 ring-accent/40 shadow-md' : 'border-border'
+                }`}
+              >
                 <div className={`h-1 ${STAGE_ACCENT[stage.color]}`} />
                 <div className="flex items-center justify-between px-3 py-2.5 border-b border-border">
                   <div className="flex items-center gap-2">

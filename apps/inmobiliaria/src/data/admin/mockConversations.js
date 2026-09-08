@@ -51,3 +51,17 @@ export const SCORE = {
   warm: { label: 'Tibio', cls: 'bg-warning/15 text-warning' },
   cold: { label: 'Frío', cls: 'bg-info/15 text-info' }
 }
+
+// Pre-loaded reply templates for the staff/agent (real-estate specific).
+// Selecting one fills the composer so it can be edited before sending.
+export const INBOX_TEMPLATES = [
+  { id: 't1', label: 'Disponibilidad', text: 'Gracias por su consulta. La propiedad se encuentra disponible para coordinar una visita.' },
+  { id: 't2', label: 'Confirmar visita', text: 'Le confirmo la visita para [fecha]. La dirección es [dirección]. Ante cualquier cambio, avíseme.' },
+  { id: 't3', label: 'Tasación', text: 'Le envío la tasación actualizada de su propiedad. Quedo a disposición para comentarla.' },
+  { id: 't4', label: 'Contrato listo', text: 'El contrato está listo para la firma. Coordinamos día y horario en nuestra oficina.' },
+  { id: 't5', label: 'Oferta recibida', text: 'Le informamos que hemos recibido una oferta por su propiedad. La contactamos para avanzar.' },
+  { id: 't6', label: 'Ajuste ICL', text: 'Los índices de ajuste ICL actualizados indican un incremento del [X]% para el próximo período.' },
+  { id: 't7', label: 'Requisitos alquiler', text: 'Para avanzar con el alquiler necesitamos: DNI, recibos de sueldo (últimos 3) y garantía propietaria.' },
+  { id: 't8', label: 'Seguimiento', text: '¿Pudo ver la información que le envié? Quedo atento a sus comentarios para coordinar los próximos pasos.' },
+  { id: 't9', label: 'Agradecimiento', text: '¡Muchas gracias por elegirnos! Ante cualquier consulta durante el proceso, estamos a disposición.' }
+]

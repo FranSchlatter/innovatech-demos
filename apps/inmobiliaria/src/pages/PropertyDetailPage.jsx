@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import PropertyMap from '../components/PropertyMap'
 import VirtualTourModal from '../components/VirtualTourModal'
+import FloorPlanModal from '../components/FloorPlanModal'
 import agents from '../data/agents.json'
 import {
   formatPrice,
@@ -40,15 +41,13 @@ const fadeUp = {
 export default function PropertyDetailPage({ property, favorites, onBack, onSchedule }) {
   const [activeImage, setActiveImage] = useState(0)
   const [tourOpen, setTourOpen] = useState(false)
-  const [showFloorPlan, setShowFloorPlan] = useState(false)
+  const [floorPlanOpen, setFloorPlanOpen] = useState(false)
 
   const agent = agents.find((a) => a.id === property.agentId)
   const isFav = favorites.isFavorite(property.id)
   const isAvailable = property.status === 'available'
 
-  const mainSrc = showFloorPlan && property.floorPlan
-    ? property.floorPlan
-    : property.images[activeImage]
+  const mainSrc = property.images[activeImage]
 
   // Specs tiles (skip empty / zero values)
   const specs = [
@@ -133,15 +132,13 @@ export default function PropertyDetailPage({ property, favorites, onBack, onSche
                 Ver tour 360°
               </button>
             )}
-            {property.floorPlan && (
-              <button
-                onClick={() => setShowFloorPlan((v) => !v)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/60 text-white text-sm font-medium hover:bg-black/80 transition-colors"
-              >
-                <LayoutPanelTop className="w-4 h-4" />
-                {showFloorPlan ? 'Ver fotos' : 'Ver plano'}
-              </button>
-            )}
+            <button
+              onClick={() => setFloorPlanOpen(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/60 text-white text-sm font-medium hover:bg-black/80 transition-colors"
+            >
+              <LayoutPanelTop className="w-4 h-4" />
+              Ver plano
+            </button>
           </div>
         </div>
 
@@ -150,12 +147,9 @@ export default function PropertyDetailPage({ property, favorites, onBack, onSche
           {property.images.map((img, i) => (
             <button
               key={i}
-              onClick={() => {
-                setActiveImage(i)
-                setShowFloorPlan(false)
-              }}
+              onClick={() => setActiveImage(i)}
               className={`flex-shrink-0 w-24 h-16 md:w-28 md:h-20 rounded-lg overflow-hidden transition-all ${
-                !showFloorPlan && activeImage === i ? 'ring-2 ring-accent' : 'opacity-70 hover:opacity-100'
+                activeImage === i ? 'ring-2 ring-accent' : 'opacity-70 hover:opacity-100'
               }`}
             >
               <img src={img} alt={`Vista ${i + 1}`} className="w-full h-full object-cover" />
@@ -166,9 +160,15 @@ export default function PropertyDetailPage({ property, favorites, onBack, onSche
 
       <VirtualTourModal
         open={tourOpen}
-        images={property.images}
+        property={property}
         title={property.title}
         onClose={() => setTourOpen(false)}
+      />
+
+      <FloorPlanModal
+        open={floorPlanOpen}
+        property={property}
+        onClose={() => setFloorPlanOpen(false)}
       />
 
       {/* Layout */}

@@ -14,6 +14,12 @@ export default function AccommodationTiers({ onSelectRoom }) {
         guests: 2,
         price: 189,
         image: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&q=80',
+        images: [
+          'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80',
+          'https://cdn.pixabay.com/photo/2021/12/18/06/13/hotel-6878054_1280.jpg',
+          'https://cdn.pixabay.com/photo/2023/04/13/07/27/bedroom-7921915_1280.jpg',
+          'https://cdn.pixabay.com/photo/2016/10/13/09/06/travel-1737168_1280.jpg'
+        ],
         description: 'Spacious rooms with modern amenities and city views'
       },
       {
@@ -24,6 +30,12 @@ export default function AccommodationTiers({ onSelectRoom }) {
         guests: 2,
         price: 239,
         image: 'https://cdn.pixabay.com/photo/2021/12/18/06/13/hotel-6878054_1280.jpg?w=600&q=80',
+        images: [
+          'https://cdn.pixabay.com/photo/2021/12/18/06/13/hotel-6878054_1280.jpg',
+          'https://cdn.pixabay.com/photo/2023/04/13/07/27/bedroom-7921915_1280.jpg',
+          'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80',
+          'https://images.unsplash.com/photo-1685592437742-3b56edb46b15?w=800&q=80'
+        ],
         description: 'Premium accommodations with enhanced comfort'
       },
       {
@@ -34,6 +46,12 @@ export default function AccommodationTiers({ onSelectRoom }) {
         guests: 3,
         price: 299,
         image: 'https://cdn.pixabay.com/photo/2023/04/13/07/27/bedroom-7921915_1280.jpg?w=600&q=80',
+        images: [
+          'https://cdn.pixabay.com/photo/2023/04/13/07/27/bedroom-7921915_1280.jpg',
+          'https://images.unsplash.com/photo-1685592437742-3b56edb46b15?w=800&q=80',
+          'https://cdn.pixabay.com/photo/2017/08/27/10/16/interior-2685521_1280.jpg',
+          'https://cdn.pixabay.com/photo/2021/12/18/06/13/hotel-6878054_1280.jpg'
+        ],
         description: 'Executive rooms featuring work areas and lounge access'
       }
     ],
@@ -46,6 +64,12 @@ export default function AccommodationTiers({ onSelectRoom }) {
         guests: 2,
         price: 380,
         image: 'https://cdn.pixabay.com/photo/2016/10/13/09/06/travel-1737168_1280.jpg?w=600&q=80',
+        images: [
+          'https://cdn.pixabay.com/photo/2016/10/13/09/06/travel-1737168_1280.jpg',
+          'https://cdn.pixabay.com/photo/2017/08/27/10/16/interior-2685521_1280.jpg',
+          'https://images.unsplash.com/photo-1685592437742-3b56edb46b15?w=800&q=80',
+          'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80'
+        ],
         description: 'Elegant suites with separate living areas'
       },
       {
@@ -56,6 +80,12 @@ export default function AccommodationTiers({ onSelectRoom }) {
         guests: 4,
         price: 520,
         image: 'https://images.unsplash.com/photo-1685592437742-3b56edb46b15?w=600&q=80',
+        images: [
+          'https://images.unsplash.com/photo-1685592437742-3b56edb46b15?w=800&q=80',
+          'https://cdn.pixabay.com/photo/2017/08/27/10/16/interior-2685521_1280.jpg',
+          'https://cdn.pixabay.com/photo/2016/10/13/09/06/travel-1737168_1280.jpg',
+          'https://cdn.pixabay.com/photo/2020/03/21/20/04/real-estate-4955093_1280.jpg'
+        ],
         description: 'Spacious suites with premium finishes'
       },
       {
@@ -66,6 +96,12 @@ export default function AccommodationTiers({ onSelectRoom }) {
         guests: 4,
         price: 680,
         image: 'https://cdn.pixabay.com/photo/2017/08/27/10/16/interior-2685521_1280.jpg?w=600&q=80',
+        images: [
+          'https://cdn.pixabay.com/photo/2017/08/27/10/16/interior-2685521_1280.jpg',
+          'https://images.unsplash.com/photo-1685592437742-3b56edb46b15?w=800&q=80',
+          'https://cdn.pixabay.com/photo/2016/10/13/09/06/travel-1737168_1280.jpg',
+          'https://cdn.pixabay.com/photo/2020/11/28/02/17/lagoon-5783445_1280.jpg'
+        ],
         description: 'Luxury suites with panoramic views'
       }
     ],
@@ -78,6 +114,12 @@ export default function AccommodationTiers({ onSelectRoom }) {
         guests: 4,
         price: 980,
         image: 'https://cdn.pixabay.com/photo/2020/11/28/02/17/lagoon-5783445_1280.jpg?w=600&q=80',
+        images: [
+          'https://cdn.pixabay.com/photo/2020/11/28/02/17/lagoon-5783445_1280.jpg',
+          'https://cdn.pixabay.com/photo/2020/03/21/20/04/real-estate-4955093_1280.jpg',
+          'https://cdn.pixabay.com/photo/2020/03/21/20/03/real-estate-4955087_1280.jpg',
+          'https://cdn.pixabay.com/photo/2016/10/13/09/06/travel-1737168_1280.jpg'
+        ],
         description: 'Private villas with manicured gardens and pools'
       },
       {
@@ -88,6 +130,12 @@ export default function AccommodationTiers({ onSelectRoom }) {
         guests: 6,
         price: 1380,
         image: 'https://cdn.pixabay.com/photo/2020/03/21/20/04/real-estate-4955093_1280.jpg?w=600&q=80',
+        images: [
+          'https://cdn.pixabay.com/photo/2020/03/21/20/04/real-estate-4955093_1280.jpg',
+          'https://cdn.pixabay.com/photo/2020/03/21/20/03/real-estate-4955087_1280.jpg',
+          'https://cdn.pixabay.com/photo/2020/11/28/02/17/lagoon-5783445_1280.jpg',
+          'https://cdn.pixabay.com/photo/2017/08/27/10/16/interior-2685521_1280.jpg'
+        ],
         description: 'Ultimate luxury with private terraces'
       },
       {
@@ -98,6 +146,12 @@ export default function AccommodationTiers({ onSelectRoom }) {
         guests: 8,
         price: 1980,
         image: 'https://cdn.pixabay.com/photo/2020/03/21/20/03/real-estate-4955087_1280.jpg?w=600&q=80',
+        images: [
+          'https://cdn.pixabay.com/photo/2020/03/21/20/03/real-estate-4955087_1280.jpg',
+          'https://cdn.pixabay.com/photo/2020/03/21/20/04/real-estate-4955093_1280.jpg',
+          'https://cdn.pixabay.com/photo/2020/11/28/02/17/lagoon-5783445_1280.jpg',
+          'https://images.unsplash.com/photo-1685592437742-3b56edb46b15?w=800&q=80'
+        ],
         description: 'Exclusive estates with concierge service'
       }
     ]

@@ -20,33 +20,33 @@ Hacer todo junto porque son fixes rapidos:
 
 ---
 
-## H2: Guest Portal — Login simulado
+## H2: Guest Portal — Login simulado ✅
 **Esfuerzo:** Medio (1-2 hrs)
 **Archivos:** GuestPortal.jsx (o nuevo LoginScreen.jsx)
 
-- [ ] Crear pantalla de login ANTES de mostrar el portal
-- [ ] Formulario: email + password (cualquier credencial funciona, es demo)
-- [ ] Boton "Iniciar sesion" con delay simulado 500ms + loading state
-- [ ] Opcion Google/Apple login (disabled, placeholder visual)
-- [ ] Al loguearse, mostrar el portal actual con datos mock
-- [ ] Boton "Cerrar sesion" en el header del portal que vuelve al login
-- [ ] Dark mode, responsive, Framer Motion en transicion login → portal
+- [x] Crear pantalla de login ANTES de mostrar el portal
+- [x] Formulario: email + password (cualquier credencial funciona, es demo)
+- [x] Boton "Iniciar sesion" con delay simulado 500ms + loading state
+- [x] Opcion Google/Apple login (disabled, placeholder visual)
+- [x] Al loguearse, mostrar el portal actual con datos mock
+- [x] Boton "Cerrar sesion" en el header del portal que vuelve al login
+- [x] Dark mode, responsive, Framer Motion en transicion login → portal
 
 **Criterio de exito:** El portal ya no carga directo. Hay pantalla de login profesional.
 
 ---
 
-## H3: Guest Portal — Merge "My Requests" en "My Stay" + localStorage
+## H3: Guest Portal — Merge "My Requests" en "My Stay" + localStorage ✅
 **Esfuerzo:** Medio (1.5-2 hrs)
 **Archivos:** GuestPortal.jsx
 
-- [ ] Eliminar tab "My Requests" de la navegacion
-- [ ] Agregar seccion "Solicitudes activas" dentro del tab "My Stay", debajo del billing
-- [ ] Mostrar requests como cards compactas con estado, servicio, timestamp
-- [ ] Si no hay requests: no mostrar seccion (no empty state)
-- [ ] Implementar persistencia localStorage para todos los requests del portal (service requests + amenity reservations)
-- [ ] Key: `hotel-luxury-guest-requests`
-- [ ] Al refrescar, los requests deben persistir
+- [x] Eliminar tab "My Requests" de la navegacion
+- [x] Agregar seccion "Solicitudes activas" dentro del tab "My Stay", debajo del billing
+- [x] Mostrar requests como cards compactas con estado, servicio, timestamp
+- [x] Si no hay requests: no mostrar seccion (no empty state)
+- [x] Implementar persistencia localStorage para todos los requests del portal (service requests + amenity reservations)
+- [x] Key: `hotel-luxury-guest-requests`
+- [x] Al refrescar, los requests deben persistir
 
 **Criterio de exito:** Tab "My Requests" no existe. Requests visibles en "My Stay". Persisten al refrescar.
 

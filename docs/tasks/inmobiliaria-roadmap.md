@@ -10,12 +10,12 @@ Owner admits: "No tengo mucha idea de lo que necesita una inmobiliaria" — INVE
 
 ---
 
-## FIXES (Hacer primero)
+## FIXES (Hacer primero) — ✅ HECHO (I1, 7 sep 2026)
 
-- [ ] **"Ver plano" en PropertyDetail**: no hace nada. Arreglar
-- [ ] **"Ver tour"**: sacar lo del complejo, que sea SOLO la propiedad/casa/depto
-- [ ] **ServicesSection ("Servicios Integrales")**: 8 servicios son solo visual, no hacen nada. Agregar accion (modal, detalle, contacto)
-- [ ] **Alertas en portal**: no hacen nada. Toggle debe dar feedback, poder crear nueva alerta
+- [x] **"Ver plano" en PropertyDetail**: FloorPlanModal (imagen + esquema SVG type-aware)
+- [x] **"Ver tour"**: ahora solo la propiedad, sin escala complejo; adapta ambientes por tipo
+- [x] **ServicesSection ("Servicios Integrales")**: cada servicio abre modal con detalle + beneficios + "Consultar" → scroll a contacto
+- [x] **Alertas en portal**: toggle con toast, modal "Crear nueva alerta" funcional con matches reales + persistencia localStorage
 
 ---
 

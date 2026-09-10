@@ -9,7 +9,8 @@ import {
   Building2,
   Edit2,
   User,
-  Users
+  Users,
+  UserCog
 } from 'lucide-react'
 import { useAdminData } from '../../../hooks/useAdminData'
 import StatusBadge from '../shared/StatusBadge'
@@ -113,7 +114,7 @@ const typeFilters = [
   { value: 'premium', label: 'Premium' }
 ]
 
-function RoomCard({ room, onEdit }) {
+function RoomCard({ room, onEdit, managerName }) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -144,6 +145,11 @@ function RoomCard({ room, onEdit }) {
           <span className="text-muted">Price:</span>
           <span className="text-text font-medium">${room.price}/night</span>
         </div>
+        <div className="flex items-center gap-2 text-sm">
+          <UserCog className="w-4 h-4 text-muted" />
+          <span className="text-muted">Manager:</span>
+          <span className={managerName ? 'text-text' : 'text-muted'}>{managerName || 'Unassigned'}</span>
+        </div>
       </div>
 
       {room.currentGuest && (
@@ -168,7 +174,7 @@ function RoomCard({ room, onEdit }) {
   )
 }
 
-function RoomRow({ room, onEdit }) {
+function RoomRow({ room, onEdit, managerName }) {
   return (
     <motion.tr
       initial={{ opacity: 0 }}
@@ -206,6 +212,13 @@ function RoomRow({ room, onEdit }) {
         )}
       </td>
       <td className="px-4 py-3">
+        {managerName ? (
+          <span className="text-sm text-text">{managerName}</span>
+        ) : (
+          <span className="text-sm text-muted">Unassigned</span>
+        )}
+      </td>
+      <td className="px-4 py-3">
         <button
           onClick={() => onEdit(room)}
           className="p-2 rounded-lg hover:bg-primary/10 text-muted hover:text-primary transition-colors"
@@ -218,13 +231,26 @@ function RoomRow({ room, onEdit }) {
 }
 
 export default function RoomManagement() {
-  const { rooms, updateRoomStatus } = useAdminData()
+  const { rooms, staff, updateRoom } = useAdminData()
   const [viewMode, setViewMode] = useState('grid') // 'grid' | 'table'
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [floorFilter, setFloorFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
+  const [managerFilter, setManagerFilter] = useState('all')
   const [editingRoom, setEditingRoom] = useState(null)
+
+  // Resolve a manager id to a display name.
+  const managerName = (id) => staff.find((s) => s.id === id)?.name || null
+
+  // Managers that are actually assigned to at least one room (for the filter).
+  const assignedManagers = useMemo(() => {
+    const ids = [...new Set(rooms.map((r) => r.managerId).filter(Boolean))]
+    return ids
+      .map((id) => staff.find((s) => s.id === id))
+      .filter(Boolean)
+      .sort((a, b) => a.name.localeCompare(b.name))
+  }, [rooms, staff])
 
   // Filter rooms
   const filteredRooms = useMemo(() => {
@@ -249,12 +275,16 @@ export default function RoomManagement() {
       // Type filter
       if (typeFilter !== 'all' && room.type !== typeFilter) return false
 
+      // Manager filter
+      if (managerFilter === 'unassigned' && room.managerId) return false
+      if (managerFilter !== 'all' && managerFilter !== 'unassigned' && room.managerId !== managerFilter) return false
+
       return true
     })
-  }, [rooms, searchQuery, statusFilter, floorFilter, typeFilter])
+  }, [rooms, searchQuery, statusFilter, floorFilter, typeFilter, managerFilter])
 
   const handleSaveRoom = async (roomId, data) => {
-    await updateRoomStatus(roomId, data.status, data.notes)
+    await updateRoom(roomId, data)
   }
 
   // Status counts
@@ -370,6 +400,21 @@ export default function RoomManagement() {
                 </option>
               ))}
             </select>
+
+            <select
+              value={managerFilter}
+              onChange={(e) => setManagerFilter(e.target.value)}
+              className="px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text
+                focus:outline-none focus:ring-2 focus:ring-primary/50"
+            >
+              <option value="all">All Managers</option>
+              <option value="unassigned">Unassigned</option>
+              {assignedManagers.map(m => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </div>
@@ -384,6 +429,7 @@ export default function RoomManagement() {
               key={room.id}
               room={room}
               onEdit={setEditingRoom}
+              managerName={managerName(room.managerId)}
             />
           ))}
         </div>
@@ -399,6 +445,7 @@ export default function RoomManagement() {
                   <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">Price</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">Status</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">Guest</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">Manager</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">Actions</th>
                 </tr>
               </thead>
@@ -408,6 +455,7 @@ export default function RoomManagement() {
                     key={room.id}
                     room={room}
                     onEdit={setEditingRoom}
+                    managerName={managerName(room.managerId)}
                   />
                 ))}
               </tbody>
@@ -437,6 +485,7 @@ export default function RoomManagement() {
         isOpen={!!editingRoom}
         onClose={() => setEditingRoom(null)}
         onSave={handleSaveRoom}
+        staff={staff}
       />
     </div>
   )

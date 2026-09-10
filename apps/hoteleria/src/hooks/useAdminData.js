@@ -14,8 +14,14 @@ const simulateApiDelay = (min = 300, max = 800) => {
   return new Promise(resolve => setTimeout(resolve, delay))
 }
 
-// Generate room status based on reservations
-const generateRoomStatuses = (roomsData, reservationsData) => {
+// Staff who can be assigned as a room's manager (used for the default assignment).
+const MANAGER_POOL = mockStaff.filter(s =>
+  ['housekeeping', 'front-desk', 'concierge'].includes(s.role)
+)
+
+// Generate room status based on reservations, then apply any persisted overrides
+// (manual edits from the Room Management modal: status, price, manager, etc.).
+const generateRoomStatuses = (roomsData, reservationsData, overrides = {}) => {
   const today = new Date().toISOString().split('T')[0]
 
   return roomsData.map(room => {
@@ -41,15 +47,21 @@ const generateRoomStatuses = (roomsData, reservationsData) => {
       status = 'cleaning'
     }
 
-    return {
+    const base = {
       ...room,
       roomNumber: `${room.floor}0${room.id}`,
       status,
       currentReservation: currentReservation?.id || null,
       currentGuest: currentReservation?.guestName || null,
       nextReservation: nextReservation?.id || null,
+      // Default manager assigned round-robin so the grid is populated out of the box.
+      managerId: MANAGER_POOL[(room.id - 1) % MANAGER_POOL.length]?.id || null,
+      history: [],
       lastCleaned: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000).toISOString()
     }
+
+    // Persisted manual edits win over generated defaults.
+    return overrides[room.id] ? { ...base, ...overrides[room.id] } : base
   })
 }
 
@@ -60,6 +72,7 @@ export function useAdminData() {
     housekeepingTasks: mockHousekeepingTasks,
     inventory: mockInventory,
     staff: mockStaff,
+    roomOverrides: {},
     rooms: generateRoomStatuses(rooms, mockReservations)
   })
 
@@ -75,8 +88,13 @@ export function useAdminData() {
         setData(prev => ({
           ...prev,
           ...parsed,
-          // Always regenerate room statuses
-          rooms: generateRoomStatuses(rooms, parsed.reservations || mockReservations)
+          roomOverrides: parsed.roomOverrides || {},
+          // Always regenerate room statuses, then re-apply persisted overrides
+          rooms: generateRoomStatuses(
+            rooms,
+            parsed.reservations || mockReservations,
+            parsed.roomOverrides || {}
+          )
         }))
       }
     } catch (err) {
@@ -91,7 +109,8 @@ export function useAdminData() {
         reservations: data.reservations,
         serviceRequests: data.serviceRequests,
         housekeepingTasks: data.housekeepingTasks,
-        inventory: data.inventory
+        inventory: data.inventory,
+        roomOverrides: data.roomOverrides
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
     } catch (err) {
@@ -207,15 +226,20 @@ export function useAdminData() {
     }
   }, [])
 
-  // Update room status
-  const updateRoomStatus = useCallback(async (roomId, status, notes = '') => {
+  // Merge arbitrary room fields (status, price, description, amenities, manager,
+  // notes, gallery, history…) and persist them as an override so edits survive refresh.
+  const updateRoom = useCallback(async (roomId, updates) => {
     setLoading(true)
     try {
       await simulateApiDelay()
       setData(prev => ({
         ...prev,
+        roomOverrides: {
+          ...prev.roomOverrides,
+          [roomId]: { ...(prev.roomOverrides[roomId] || {}), ...updates }
+        },
         rooms: prev.rooms.map(r =>
-          r.id === roomId ? { ...r, status, notes } : r
+          r.id === roomId ? { ...r, ...updates } : r
         )
       }))
     } catch (err) {
@@ -224,6 +248,10 @@ export function useAdminData() {
       setLoading(false)
     }
   }, [])
+
+  // Backwards-compatible helper — status + notes only.
+  const updateRoomStatus = useCallback((roomId, status, notes = '') =>
+    updateRoom(roomId, { status, notes }), [updateRoom])
 
   // Update inventory
   const updateInventory = useCallback(async (id, updates) => {
@@ -279,6 +307,7 @@ export function useAdminData() {
       housekeepingTasks: mockHousekeepingTasks,
       inventory: mockInventory,
       staff: mockStaff,
+      roomOverrides: {},
       rooms: generateRoomStatuses(rooms, mockReservations)
     })
   }, [])
@@ -291,6 +320,7 @@ export function useAdminData() {
     updateReservation,
     updateServiceRequest,
     updateHousekeepingTask,
+    updateRoom,
     updateRoomStatus,
     updateInventory,
     restockItem,

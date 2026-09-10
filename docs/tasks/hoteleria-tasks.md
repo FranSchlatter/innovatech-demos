@@ -107,63 +107,63 @@ Hacer todo junto porque son fixes rapidos:
 
 ---
 
-## H7: F&B — Restaurante con menu digital + QR ordering
+## H7: F&B — Restaurante con menu digital + QR ordering ✅
 **Esfuerzo:** Alto (3-4 hrs)
 **Archivos:** Nuevo: components/client/restaurant/ (MenuBrowser.jsx, CartDrawer.jsx, OrderConfirmation.jsx), data/menuItems.json
 
-- [ ] Crear data/menuItems.json: 15-20 items organizados por categoria (Desayuno, Almuerzo, Cena, Bebidas, Postres). Cada item: id, name, description, price, image, category, allergens[], available, popular (boolean)
-- [ ] MenuBrowser.jsx: grid de items con foto, nombre, precio, descripcion corta, badges (popular, vegetariano, sin gluten). Filtros por categoria + filtro alergenos. Busqueda
-- [ ] Agregar al Guest Portal tab "Services" como seccion "Restaurante" con boton "Ver carta"
-- [ ] Al click, abre el menu browser
-- [ ] Cada item tiene boton "Agregar" con cantidad (+/-)
-- [ ] CartDrawer: drawer lateral con items seleccionados, cantidades, subtotal, notas especiales, boton "Enviar pedido"
-- [ ] Enviar pedido: delay 800ms, confirmacion con numero de orden, ETA estimado
-- [ ] El pedido aparece en "My Stay" como request activa
-- [ ] Dark mode, responsive, animaciones
+- [x] Crear data/menuItems.json: 19 items organizados por categoria (Breakfast, Lunch, Dinner, Desserts, Drinks). Cada item: id, name, description, price, image, category, allergens[], available, popular, vegetarian, glutenFree
+- [x] MenuBrowser.jsx: grid de items con foto, nombre, precio, descripcion corta, badges (popular, vegetariano, sin gluten). Filtros por categoria + dietary + avoid alergenos. Busqueda
+- [x] Agregar al Guest Portal tab "Services" como seccion "Restaurante" con boton "View menu"
+- [x] Al click, abre el menu browser (overlay full-screen)
+- [x] Cada item tiene boton "Add" con cantidad (+/-)
+- [x] CartDrawer: drawer lateral con items seleccionados, cantidades, subtotal, notas especiales, boton "Place order"
+- [x] Enviar pedido: delay 800ms, confirmacion con numero de orden, ETA estimado
+- [x] El pedido aparece en "My Stay" como request activa
+- [x] Dark mode, responsive, animaciones
 
-**Criterio de exito:** Huesped puede explorar carta, armar pedido, confirmar. Pedido aparece en sus requests.
+**Criterio de exito:** Huesped puede explorar carta, armar pedido, confirmar. Pedido aparece en sus requests. ✅
 
 ---
 
-## H8: Dynamic Pricing — Ofertas + sugerencias automaticas + temporadas
+## H8: Dynamic Pricing — Ofertas + sugerencias automaticas + temporadas ✅
 **Esfuerzo:** Alto (2-3 hrs)
 **Archivos:** DynamicPricing.jsx, mockPricing.js
 
-- [ ] Seccion nueva: "Ofertas activas" — lista de ofertas manuales creadas
+- [x] Seccion nueva: "Ofertas activas" — lista de ofertas manuales creadas
   - Boton "Crear oferta": modal con nombre, % descuento, tipos de habitacion aplicables, fecha inicio/fin
-  - Cada oferta: card con nombre, descuento, habitaciones, estado (activa/expirada/programada), toggle activar/desactivar
-- [ ] Seccion nueva: "Sugerencias automaticas" — el sistema detecta habitaciones sin reservar
-  - Logica: si una habitacion no tiene reserva para los proximos X dias (configurable, default 3), sugerir descuento
-  - Card de sugerencia: "Room 305 (Deluxe) sin reserva hace 5 dias. Sugerencia: -15% descuento"
-  - Botones: "Aplicar descuento" / "Ignorar"
-- [ ] Seccion nueva: "Temporadas" — definir periodos de alta/baja
-  - Lista de temporadas: nombre, fecha inicio, fecha fin, multiplicador de precio (ej: Alta x1.3, Baja x0.8)
-  - Boton agregar temporada
-- [ ] Mantener la tabla actual de nominal vs real como esta (funciona bien)
-- [ ] Todo persiste en localStorage
+  - Cada oferta: card con nombre, descuento, habitaciones, estado (activa/expirada/programada/pausada), toggle activar/desactivar + eliminar
+- [x] Seccion nueva: "Sugerencias automaticas" — el sistema detecta habitaciones sin reservar
+  - Logica: si una habitacion no tiene reserva para los proximos X dias (configurable con stepper, default 3), sugerir descuento (escala 10/15/20% segun gap)
+  - Card de sugerencia: "Room 305 (Deluxe) · Proxima reserva en X dias. Sugerencia: -15%"
+  - Botones: "Aplicar" (crea oferta auto) / "Ignorar"
+- [x] Seccion nueva: "Temporadas" — definir periodos de alta/baja
+  - Lista de temporadas: nombre, fecha inicio, fecha fin, multiplicador de precio (Alta x1.3, Baja x0.8) con badge
+  - Boton agregar temporada (modal)
+- [x] Mantener la tabla actual de nominal vs real como esta (funciona bien)
+- [x] Todo persiste en localStorage (key: hotel-pricing-config)
 
-**Criterio de exito:** Admin puede crear ofertas, ver sugerencias de descuento automaticas, definir temporadas. Interactivo.
+**Criterio de exito:** Admin puede crear ofertas, ver sugerencias de descuento automaticas, definir temporadas. Interactivo. ✅
 
 ---
 
-## H9: Room Management — Edicion expandida + encargados
+## H9: Room Management — Edicion expandida + encargados ✅
 **Esfuerzo:** Medio-Alto (2-3 hrs)
-**Archivos:** RoomManagement.jsx, RoomEditModal.jsx, rooms.json
+**Archivos:** RoomManagement.jsx, RoomEditModal.jsx, useAdminData.js
 
-- [ ] Expandir RoomEditModal significativamente:
+- [x] Expandir RoomEditModal significativamente:
   - Status (ya existe)
   - Precio por noche (input numerico editable)
   - Descripcion (textarea editable)
-  - Amenities (checklist toggleable de amenities disponibles)
+  - Amenities (checklist toggleable con iconos; pre-seleccion inferida de los amenities en español)
   - Encargado asignado (dropdown de staff de mockStaff.js)
   - Notas internas (textarea, ya existe)
-  - Galeria de imagenes (mostrar thumbnails, placeholder para "subir mas")
-  - Historial de cambios (ultimos 3 cambios: "Estado cambiado a Cleaning por Admin, hace 2hs")
-- [ ] En la vista grid/tabla, mostrar nombre del encargado asignado
-- [ ] Nuevo filtro: por encargado
-- [ ] Todos los cambios persisten en localStorage
+  - Galeria de imagenes (thumbnails + placeholder "Upload")
+  - Historial de cambios (ultimos 3, con timestamp relativo: "Status changed to Cleaning by Admin · 2h ago")
+- [x] En la vista grid/tabla, mostrar nombre del encargado asignado (asignacion default round-robin)
+- [x] Nuevo filtro: por encargado (+ Unassigned)
+- [x] Todos los cambios persisten en localStorage (roomOverrides en hotel-admin-data)
 
-**Criterio de exito:** El modal de edicion tiene 8+ campos editables. Se puede asignar encargado. Mucho mas completo que antes.
+**Criterio de exito:** El modal de edicion tiene 8+ campos editables. Se puede asignar encargado. Mucho mas completo que antes. ✅
 
 ---
 

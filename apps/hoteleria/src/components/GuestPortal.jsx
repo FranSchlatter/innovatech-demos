@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import LoginScreen from './LoginScreen'
 import GuestChat from './GuestChat'
+import MenuBrowser from './client/restaurant/MenuBrowser'
 import { useLiveChat, peekLiveChat } from '../hooks/useLiveChat'
 import {
   User,
@@ -36,7 +37,8 @@ import {
   Plus,
   Minus,
   Send,
-  Headset
+  Headset,
+  ChefHat
 } from 'lucide-react'
 
 // Mock guest data - In production this would come from authentication/API
@@ -169,6 +171,7 @@ export default function GuestPortal({ onExit }) {
   const [reservationTime, setReservationTime] = useState('')
   const [showSuccessToast, setShowSuccessToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
+  const [showMenu, setShowMenu] = useState(false)
 
   // Live chat (H5) — shared with the admin inbox via useLiveChat.
   const liveChat = useLiveChat()
@@ -260,6 +263,26 @@ export default function GuestPortal({ onExit }) {
   const handleCancelRequest = (requestId) => {
     setRequests(requests.filter(req => req.id !== requestId))
     showToast('Request cancelled successfully')
+  }
+
+  // Restaurant order (H7) → shows up as an active request in "My Stay".
+  const handleOrderPlaced = (order) => {
+    const summary = order.items.map((l) => `${l.qty}× ${l.name}`).join(', ')
+    const newRequest = {
+      id: `ORD-${order.number}`,
+      type: 'restaurant',
+      service: `Restaurant Order #${order.number}`,
+      summary,
+      notes: order.notes,
+      status: 'pending',
+      time: new Date().toLocaleTimeString(),
+      date: new Date().toLocaleDateString(),
+      estimatedTime: order.eta,
+      price: order.total,
+      canCancel: true
+    }
+    setRequests((prev) => [newRequest, ...prev])
+    showToast(`Order #${order.number} sent to the kitchen!`)
   }
 
   const handleAmenityReservation = (amenity) => {
@@ -555,6 +578,9 @@ export default function GuestPortal({ onExit }) {
                                 </>
                               )}
                             </p>
+                            {request.summary && (
+                              <p className="text-xs text-muted mt-0.5 truncate">{request.summary}</p>
+                            )}
                           </div>
                           {request.price > 0 && (
                             <span className="text-sm font-bold text-accent whitespace-nowrap">${request.price}</span>
@@ -586,6 +612,36 @@ export default function GuestPortal({ onExit }) {
               exit={{ opacity: 0, y: -20 }}
               className="space-y-8"
             >
+              {/* Restaurant — digital menu & ordering (H7) */}
+              <div>
+                <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                  <ChefHat className="w-5 h-5 text-accent" />
+                  Restaurant
+                </h2>
+                <div className="relative overflow-hidden rounded-2xl shadow-soft">
+                  <img
+                    src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&h=500&fit=crop"
+                    alt="Hotel restaurant"
+                    className="w-full h-48 md:h-56 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
+                  <div className="absolute inset-0 p-6 flex flex-col justify-center max-w-md">
+                    <h3 className="text-2xl font-bold text-white mb-1">Order to your room</h3>
+                    <p className="text-white/85 text-sm mb-4">
+                      Browse our full menu — breakfast, dinner, desserts and drinks — and get it
+                      delivered straight to Room {guest.room.number}.
+                    </p>
+                    <button
+                      onClick={() => setShowMenu(true)}
+                      className="self-start inline-flex items-center gap-2 bg-accent text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-accent/90 transition"
+                    >
+                      <UtensilsCrossed className="w-5 h-5" />
+                      View menu
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               {/* Room Service */}
               <div>
                 <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
@@ -1047,6 +1103,14 @@ export default function GuestPortal({ onExit }) {
         draft={chatDraft}
         setDraft={setChatDraft}
         onSend={handleSendChat}
+      />
+
+      {/* Restaurant menu & ordering (H7) */}
+      <MenuBrowser
+        open={showMenu}
+        onClose={() => setShowMenu(false)}
+        onOrderPlaced={handleOrderPlaced}
+        room={guest.room.number}
       />
     </motion.div>
   )

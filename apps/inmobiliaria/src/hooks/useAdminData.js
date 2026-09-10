@@ -5,9 +5,9 @@ import { mockOperations, getOpenOperations } from '../data/admin/mockOperations'
 import { mockAgents, getOnDutyAgents } from '../data/admin/mockAgents'
 import properties from '../data/properties.json'
 
-// v2: operations gained buyer/seller/documents/timeline/notes and agents gained
-// full HR records — bump the key so returning demos load the enriched dataset.
-const STORAGE_KEY = 'terranova-admin-data-v2'
+// v3: operation documents are now stage-scoped with an upload/verify status
+// (pending|uploaded|verified) — bump the key so returning demos load the new shape.
+const STORAGE_KEY = 'terranova-admin-data-v3'
 const TODAY = '2026-08-27'
 
 // Simulated API delay for realism

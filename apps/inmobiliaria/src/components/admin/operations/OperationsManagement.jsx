@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import {
-  ArrowRight, Calendar, TrendingUp, Plus, FileCheck2, Clock,
-  StickyNote, Handshake, Building2, MapPin, CheckCircle2, Circle, Timer, Percent
+  ArrowRight, ArrowLeft, Calendar, TrendingUp, Plus, FileCheck2, Clock,
+  StickyNote, Handshake, Building2, MapPin, CheckCircle2, Circle, Timer, Percent,
+  Upload, Download, Loader2, FileText, Check
 } from 'lucide-react'
 import { useAdminData } from '../../../hooks/useAdminData'
 import StatusBadge from '../shared/StatusBadge'
@@ -39,6 +40,14 @@ const formatDateTime = (iso) => {
       day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
     }).format(new Date(iso))
   } catch { return iso }
+}
+
+// Document status (tolerates legacy docs that only had a `done` boolean)
+const docStatus = (d) => d.status || (d.done ? 'verified' : 'pending')
+const DOC_STATUS_META = {
+  pending: { label: 'Pendiente', icon: Circle, cls: 'text-muted' },
+  uploaded: { label: 'Cargado', icon: FileText, cls: 'text-info' },
+  verified: { label: 'Verificado', icon: CheckCircle2, cls: 'text-success' }
 }
 
 // Commission for a given amount + percentage (rent uses % of a month's rent)
@@ -88,7 +97,26 @@ export default function OperationsManagement() {
       progress: STAGE_PROGRESS[nextStage],
       timeline: [...(op.timeline || []), entry]
     })
-    showToast(`Etapa: ${STAGE_LABELS[nextStage]}`)
+    showToast(`Avanzó a ${STAGE_LABELS[nextStage]}`)
+  }
+
+  // Reversible: mistakes on the stage flow can be undone by stepping back.
+  const retreatStage = (op) => {
+    const idx = stageOrder.indexOf(op.stage)
+    if (idx <= 0) return
+    const prevStage = stageOrder[idx - 1]
+    const entry = {
+      id: `T-${Date.now()}`,
+      stage: prevStage,
+      label: `Volvió a ${STAGE_LABELS[prevStage]}`,
+      date: todayISO()
+    }
+    updateOperation(op.id, {
+      stage: prevStage,
+      progress: STAGE_PROGRESS[prevStage],
+      timeline: [...(op.timeline || []), entry]
+    })
+    showToast(`Volvió a ${STAGE_LABELS[prevStage]}`, 'muted')
   }
 
   const summary = [
@@ -134,8 +162,9 @@ export default function OperationsManagement() {
       <div className="space-y-3">
         {operations.map((op, i) => {
           const isClosed = op.stage === 'closed'
-          const docsDone = (op.documents || []).filter((d) => d.done).length
+          const docsDone = (op.documents || []).filter((d) => docStatus(d) === 'verified').length
           const docsTotal = (op.documents || []).length
+          const nextStageId = stageOrder[stageOrder.indexOf(op.stage) + 1]
           return (
             <motion.div
               key={op.id}
@@ -203,7 +232,7 @@ export default function OperationsManagement() {
                     disabled={isClosed}
                     className="mt-3 w-full inline-flex items-center justify-center gap-1.5 text-xs font-semibold rounded-lg px-3 py-2 bg-primary text-primary-contrast hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
                   >
-                    {isClosed ? 'Operación cerrada' : 'Avanzar etapa'}
+                    {isClosed ? 'Operación cerrada' : `Avanzar a ${STAGE_LABELS[nextStageId]}`}
                     {!isClosed && <ArrowRight className="w-3.5 h-3.5" />}
                   </button>
                 </div>
@@ -220,6 +249,7 @@ export default function OperationsManagement() {
         stageOrder={stageOrder}
         onClose={() => setSelectedId(null)}
         onAdvance={advanceStage}
+        onRetreat={retreatStage}
         updateOperation={updateOperation}
         showToast={showToast}
       />
@@ -240,11 +270,12 @@ export default function OperationsManagement() {
 
 /* ---------- Operation detail (editable + docs + timeline + notes) ---------- */
 
-function OperationDetailModal({ operation, property, agents, stageOrder, onClose, onAdvance, updateOperation, showToast }) {
+function OperationDetailModal({ operation, property, agents, stageOrder, onClose, onAdvance, onRetreat, updateOperation, showToast }) {
   const [form, setForm] = useState({})
   const [documents, setDocuments] = useState([])
   const [noteLog, setNoteLog] = useState([])
   const [noteDraft, setNoteDraft] = useState('')
+  const [uploadingId, setUploadingId] = useState(null)
 
   useEffect(() => {
     if (!operation) return
@@ -267,17 +298,37 @@ function OperationDetailModal({ operation, property, agents, stageOrder, onClose
 
   const isClosed = operation.stage === 'closed'
   const idx = stageOrder.indexOf(operation.stage)
+  const nextStageId = stageOrder[idx + 1]
+  const prevStageId = stageOrder[idx - 1]
   const commission = computeCommission(form.amount, form.commissionPct)
 
   const setContact = (party, field) => (e) =>
     setForm((prev) => ({ ...prev, [party]: { ...prev[party], [field]: e.target.value } }))
   const set = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }))
 
-  const toggleDoc = (docId) => {
-    const next = documents.map((d) => (d.id === docId ? { ...d, done: !d.done } : d))
-    setDocuments(next)
-    updateOperation(operation.id, { documents: next })
+  // Persist a status change for a single doc (functional update stays correct
+  // even when an upload resolves after the state has moved on).
+  const patchDoc = (docId, status) => {
+    setDocuments((prev) => {
+      const next = prev.map((d) => (d.id === docId ? { ...d, status } : d))
+      updateOperation(operation.id, { documents: next })
+      return next
+    })
   }
+
+  const uploadDoc = (doc) => {
+    if (uploadingId) return
+    setUploadingId(doc.id)
+    // Simulated upload with a short delay for realism
+    setTimeout(() => {
+      patchDoc(doc.id, 'uploaded')
+      setUploadingId(null)
+      showToast(`"${doc.label}" cargado`)
+    }, 700)
+  }
+  const verifyDoc = (doc) => { patchDoc(doc.id, 'verified'); showToast(`"${doc.label}" verificado`) }
+  const resetDoc = (doc) => { patchDoc(doc.id, 'pending'); showToast(`"${doc.label}" marcado pendiente`, 'muted') }
+  const downloadDoc = (doc) => showToast(`Descargando "${doc.label}"…`)
 
   const addNote = () => {
     const text = noteDraft.trim()
@@ -308,7 +359,7 @@ function OperationDetailModal({ operation, property, agents, stageOrder, onClose
     onClose()
   }
 
-  const docsDone = documents.filter((d) => d.done).length
+  const docsVerified = documents.filter((d) => docStatus(d) === 'verified').length
 
   return (
     <Modal
@@ -318,19 +369,9 @@ function OperationDetailModal({ operation, property, agents, stageOrder, onClose
       icon={Handshake}
       size="lg"
       footer={
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:justify-between">
-          <button
-            type="button"
-            onClick={() => onAdvance(operation)}
-            disabled={isClosed}
-            className="inline-flex items-center justify-center gap-1.5 text-sm font-semibold rounded-lg px-3 py-2.5 bg-primary text-primary-contrast hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
-          >
-            {isClosed ? 'Operación cerrada' : <>Avanzar etapa <ArrowRight className="w-4 h-4" /></>}
-          </button>
-          <div className="flex items-center gap-2">
-            <button type="button" onClick={onClose} className={btnGhost}>Cerrar</button>
-            <button type="button" onClick={save} className={btnPrimary}>Guardar cambios</button>
-          </div>
+        <div className="flex items-center justify-end gap-2">
+          <button type="button" onClick={onClose} className={btnGhost}>Cerrar</button>
+          <button type="button" onClick={save} className={btnPrimary}>Guardar cambios</button>
         </div>
       }
     >
@@ -342,6 +383,53 @@ function OperationDetailModal({ operation, property, agents, stageOrder, onClose
             {TYPE_LABELS[operation.type] || operation.type}
           </span>
           <span className="text-xs text-muted">{operation.id}</span>
+        </div>
+
+        {/* Stage flow — visual stepper with clear, reversible controls */}
+        <div className="rounded-xl border border-border p-4">
+          <div className="flex items-center gap-1">
+            {OPERATION_STAGES.map((s, i) => {
+              const done = i < idx
+              const current = i === idx
+              return (
+                <div key={s.id} className="flex-1 flex flex-col items-center gap-1.5 min-w-0">
+                  <div className="flex items-center w-full">
+                    <span className={`h-0.5 flex-1 ${i > 0 && i <= idx ? 'bg-accent' : i > 0 ? 'bg-surface-alt' : 'bg-transparent'}`} />
+                    <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold shrink-0 transition-colors ${
+                      current ? 'bg-accent text-white' : done ? 'bg-accent/20 text-accent' : 'bg-surface-alt text-muted'
+                    }`}>
+                      {done ? <Check className="w-4 h-4" /> : i + 1}
+                    </span>
+                    <span className={`h-0.5 flex-1 ${i < idx ? 'bg-accent' : i < OPERATION_STAGES.length - 1 ? 'bg-surface-alt' : 'bg-transparent'}`} />
+                  </div>
+                  <span className={`text-[11px] text-center truncate w-full ${current ? 'text-text font-semibold' : 'text-muted'}`}>
+                    {s.label}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+          <div className="flex items-center justify-between gap-2 mt-4">
+            <button
+              type="button"
+              onClick={() => onRetreat(operation)}
+              disabled={idx <= 0}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold rounded-lg px-3 py-2 border border-border text-muted hover:text-text hover:border-accent/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" /> Retroceder
+            </button>
+            <p className="text-xs text-muted text-center min-w-0 truncate">
+              {isClosed ? '✓ Operación cerrada' : <>Siguiente: <span className="font-semibold text-text">{STAGE_LABELS[nextStageId]}</span></>}
+            </p>
+            <button
+              type="button"
+              onClick={() => onAdvance(operation)}
+              disabled={isClosed}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold rounded-lg px-3 py-2 bg-primary text-primary-contrast hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+            >
+              Avanzar <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
         <div className="flex gap-3 rounded-xl bg-surface-alt border border-border p-3">
@@ -417,29 +505,47 @@ function OperationDetailModal({ operation, property, agents, stageOrder, onClose
           </div>
         </div>
 
-        {/* Documents checklist */}
+        {/* Documents grouped by stage — upload, review and download each one */}
         <div className="border-t border-border pt-5">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
               <FileCheck2 className="w-4 h-4 text-accent" />
-              <h4 className="text-sm font-bold text-text">Documentación</h4>
+              <h4 className="text-sm font-bold text-text">Documentación por etapa</h4>
             </div>
-            <span className="text-xs text-muted">{docsDone}/{documents.length} completos</span>
+            <span className="text-xs text-muted">{docsVerified}/{documents.length} verificados</span>
           </div>
-          <div className="space-y-1.5">
-            {documents.map((d) => (
-              <button
-                key={d.id}
-                type="button"
-                onClick={() => toggleDoc(d.id)}
-                className="w-full flex items-center gap-2.5 text-left rounded-lg px-3 py-2 border border-border bg-surface-alt hover:border-accent/50 transition-colors"
-              >
-                {d.done
-                  ? <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
-                  : <Circle className="w-4 h-4 text-muted shrink-0" />}
-                <span className={`text-sm ${d.done ? 'text-text line-through decoration-success/60' : 'text-text'}`}>{d.label}</span>
-              </button>
-            ))}
+          <p className="text-xs text-muted mb-3">Cada etapa pide sus propios documentos. Cargalos, revisalos y descargalos.</p>
+          <div className="space-y-4">
+            {OPERATION_STAGES.map((s) => {
+              const stageDocs = documents.filter((d) => (d.stage || 'negotiation') === s.id)
+              if (stageDocs.length === 0) return null
+              const current = s.id === operation.stage
+              return (
+                <div key={s.id} className={`rounded-xl border p-3 ${current ? 'border-accent/50 bg-accent/5' : 'border-border'}`}>
+                  <div className="flex items-center gap-2 mb-2.5">
+                    <span className={`text-xs font-bold ${current ? 'text-accent' : 'text-muted'}`}>{s.label}</span>
+                    {current && (
+                      <span className="text-[10px] font-semibold uppercase tracking-wide text-accent bg-accent/15 rounded-full px-2 py-0.5">
+                        Etapa actual
+                      </span>
+                    )}
+                  </div>
+                  <div className="space-y-1.5">
+                    {stageDocs.map((d) => (
+                      <DocRow
+                        key={d.id}
+                        doc={d}
+                        uploading={uploadingId === d.id}
+                        onUpload={() => uploadDoc(d)}
+                        onVerify={() => verifyDoc(d)}
+                        onReset={() => resetDoc(d)}
+                        onDownload={() => downloadDoc(d)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
             {documents.length === 0 && <p className="text-xs text-muted">Sin documentos.</p>}
           </div>
         </div>
@@ -498,6 +604,68 @@ function OperationDetailModal({ operation, property, agents, stageOrder, onClose
         </div>
       </div>
     </Modal>
+  )
+}
+
+/* ---------- Document row (upload / review / download, per status) ---------- */
+
+function DocRow({ doc, uploading, onUpload, onVerify, onReset, onDownload }) {
+  const status = docStatus(doc)
+  const meta = DOC_STATUS_META[status]
+  const Icon = meta.icon
+  return (
+    <div className="flex items-center gap-2.5 rounded-lg px-3 py-2 border border-border bg-surface">
+      <Icon className={`w-4 h-4 shrink-0 ${meta.cls}`} />
+      <div className="min-w-0 flex-1">
+        <p className="text-sm text-text truncate">{doc.label}</p>
+        <p className={`text-[11px] ${meta.cls}`}>{meta.label}</p>
+      </div>
+      <div className="flex items-center gap-1.5 shrink-0">
+        {status === 'pending' ? (
+          <button
+            type="button"
+            onClick={onUpload}
+            disabled={uploading}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold rounded-lg px-2.5 py-1.5 border border-border text-text hover:border-accent/60 hover:text-accent disabled:opacity-50 transition-colors"
+          >
+            {uploading
+              ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Subiendo…</>
+              : <><Upload className="w-3.5 h-3.5" /> Subir</>}
+          </button>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={onDownload}
+              title="Descargar"
+              aria-label="Descargar"
+              className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-border text-muted hover:text-accent hover:border-accent/60 transition-colors"
+            >
+              <Download className="w-3.5 h-3.5" />
+            </button>
+            {status === 'uploaded' ? (
+              <button
+                type="button"
+                onClick={onVerify}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold rounded-lg px-2.5 py-1.5 border border-success/50 text-success hover:bg-success/10 transition-colors"
+              >
+                <Check className="w-3.5 h-3.5" /> Verificar
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={onReset}
+                title="Marcar pendiente"
+                aria-label="Marcar pendiente"
+                className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-border text-muted hover:text-error hover:border-error/50 transition-colors"
+              >
+                <Circle className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </>
+        )}
+      </div>
+    </div>
   )
 }
 

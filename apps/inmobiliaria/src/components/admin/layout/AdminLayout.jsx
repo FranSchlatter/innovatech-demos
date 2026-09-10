@@ -42,7 +42,7 @@ function AdminContent({ onExit, isDark, toggleTheme }) {
   return (
     <div className="min-h-screen bg-bg flex">
       <AdminSidebar onExit={onExit} />
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex-1 flex flex-col min-h-screen min-w-0">
         <AdminHeader isDark={isDark} toggleTheme={toggleTheme} />
         <main className="flex-1 p-4 lg:p-6 overflow-auto">
           {renderView()}

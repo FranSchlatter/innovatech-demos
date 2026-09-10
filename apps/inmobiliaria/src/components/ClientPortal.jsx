@@ -541,12 +541,12 @@ export default function ClientPortal({ onExit, favorites, onSelectProperty, isDa
                             aria-checked={a.active}
                             aria-label={a.active ? 'Pausar alerta' : 'Activar alerta'}
                             className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${
-                              a.active ? 'bg-accent' : 'bg-surface-alt border border-border'
+                              a.active ? 'bg-accent' : 'bg-muted/40'
                             }`}
                           >
                             <span
-                              className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
-                                a.active ? 'translate-x-5' : 'translate-x-0.5'
+                              className={`absolute left-0.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                                a.active ? 'translate-x-5' : 'translate-x-0'
                               }`}
                             />
                           </button>

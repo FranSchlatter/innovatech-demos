@@ -1,24 +1,37 @@
 // Operations / deals in progress mock data (reservations, signings, closings)
 
-// Standard document checklist per operation type. `done` reflects the current state.
+// Documents required per operation type, each tied to the stage where it comes
+// into play. Grouping docs by stage makes it obvious what each step needs.
+// status: 'pending' | 'uploaded' | 'verified'
 export const SALE_DOCS = [
-  'Reserva firmada',
-  'Boleto de compraventa',
-  'Informe de dominio',
-  'Informe de inhibiciones',
-  'Certificado catastral',
-  'Escritura'
+  { label: 'Tasación / oferta presentada', stage: 'negotiation' },
+  { label: 'Reserva firmada', stage: 'reserved' },
+  { label: 'Comprobante de seña', stage: 'reserved' },
+  { label: 'Boleto de compraventa', stage: 'signing' },
+  { label: 'Informe de dominio', stage: 'signing' },
+  { label: 'Informe de inhibiciones', stage: 'signing' },
+  { label: 'Certificado catastral', stage: 'closed' },
+  { label: 'Escritura', stage: 'closed' }
 ]
 export const RENT_DOCS = [
-  'Reserva firmada',
-  'Garantía aprobada',
-  'Contrato de locación',
-  'Seguro de caución',
-  'Inventario / estado del inmueble'
+  { label: 'Solicitud de alquiler', stage: 'negotiation' },
+  { label: 'Recibos de sueldo', stage: 'negotiation' },
+  { label: 'Reserva firmada', stage: 'reserved' },
+  { label: 'Garantía propuesta', stage: 'reserved' },
+  { label: 'Garantía aprobada', stage: 'signing' },
+  { label: 'Contrato de locación', stage: 'signing' },
+  { label: 'Seguro de caución', stage: 'closed' },
+  { label: 'Inventario / estado del inmueble', stage: 'closed' }
 ]
 
-const docList = (labels, doneCount) =>
-  labels.map((label, i) => ({ id: `DOC-${i + 1}`, label, done: i < doneCount }))
+// First `verifiedCount` docs are marked verified (they map to earlier stages).
+const docList = (defs, verifiedCount) =>
+  defs.map((def, i) => ({
+    id: `DOC-${i + 1}`,
+    label: def.label,
+    stage: def.stage,
+    status: i < verifiedCount ? 'verified' : 'pending'
+  }))
 
 export const mockOperations = [
   {
@@ -39,7 +52,7 @@ export const mockOperations = [
     reserveDate: '2026-08-22',
     closeDate: '2026-09-20',
     progress: 65,
-    documents: docList(SALE_DOCS, 4),
+    documents: docList(SALE_DOCS, 5),
     timeline: [
       { id: 'T1', stage: 'negotiation', label: 'Oferta aceptada', date: '2026-08-18' },
       { id: 'T2', stage: 'reserved', label: 'Reserva cobrada', date: '2026-08-22' },
@@ -67,7 +80,7 @@ export const mockOperations = [
     reserveDate: '2026-08-25',
     closeDate: '2026-09-05',
     progress: 35,
-    documents: docList(RENT_DOCS, 2),
+    documents: docList(RENT_DOCS, 3),
     timeline: [
       { id: 'T1', stage: 'negotiation', label: 'Interesado seleccionado', date: '2026-08-20' },
       { id: 'T2', stage: 'reserved', label: 'Reserva y seña recibida', date: '2026-08-25' }
@@ -94,7 +107,7 @@ export const mockOperations = [
     reserveDate: '2026-07-10',
     closeDate: '2026-08-15',
     progress: 100,
-    documents: docList(SALE_DOCS, 6),
+    documents: docList(SALE_DOCS, 8),
     timeline: [
       { id: 'T1', stage: 'negotiation', label: 'Oferta aceptada', date: '2026-07-05' },
       { id: 'T2', stage: 'reserved', label: 'Reserva cobrada', date: '2026-07-10' },

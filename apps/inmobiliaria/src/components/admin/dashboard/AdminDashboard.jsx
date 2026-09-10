@@ -129,20 +129,23 @@ function TrendChart({ title, unit, tone, data, delay = 0 }) {
           {delta}%
         </span>
       </div>
+      {/* Bars are direct children of a fixed-height flex row so the % height
+          resolves against a definite container (nested flex-1 collapsed to 0). */}
       <div className="flex items-end gap-1.5 h-24">
         {data.map((d, i) => (
-          <div key={i} className="flex-1 flex flex-col items-center gap-1 min-w-0">
-            <div className="w-full flex items-end justify-center flex-1">
-              <motion.div
-                initial={{ height: 0 }}
-                animate={{ height: `${(d.v / max) * 100}%` }}
-                transition={{ duration: 0.6, delay: delay + i * 0.05 }}
-                className={`w-full rounded-t-md ${tone}`}
-                title={`${d.v} ${unit}`}
-              />
-            </div>
-            <span className="text-[10px] text-muted truncate w-full text-center">{d.k}</span>
-          </div>
+          <motion.div
+            key={i}
+            initial={{ height: 0 }}
+            animate={{ height: `${Math.max(4, (d.v / max) * 100)}%` }}
+            transition={{ duration: 0.6, delay: delay + i * 0.05 }}
+            className={`flex-1 rounded-t-md ${tone}`}
+            title={`${d.k}: ${d.v} ${unit}`}
+          />
+        ))}
+      </div>
+      <div className="flex gap-1.5 mt-1">
+        {data.map((d, i) => (
+          <span key={i} className="flex-1 text-[10px] text-muted truncate text-center">{d.k}</span>
         ))}
       </div>
     </motion.div>

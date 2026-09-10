@@ -64,7 +64,10 @@ export default function LeadsManagement() {
   const { filters, setFilter } = useAdmin()
   const { showToast, toastNode } = useToast()
 
-  const [agentFilter, setAgentFilter] = useState('all')
+  // Agent filter is driven by AdminContext so other modules (e.g. the team
+  // panel) can deep-link into "leads of agent X".
+  const agentFilter = filters.leads.agent
+  const setAgentFilter = (value) => setFilter('leads', 'agent', value)
   const [search, setSearch] = useState('')
   const [selectedLead, setSelectedLead] = useState(null)
   const [newOpen, setNewOpen] = useState(false)

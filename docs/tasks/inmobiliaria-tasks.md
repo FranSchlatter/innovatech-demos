@@ -126,82 +126,59 @@ Actualmente solo se puede cambiar status. Necesita CRUD completo:
 
 ---
 
-## I7: Operaciones — Interactividad y edicion
+## I7: Operaciones — Interactividad y edicion ✅ HECHO (9 sep 2026)
 **Esfuerzo:** Medio (1.5-2 hrs)
-**Archivos:** OperationsManagement.jsx (162 lineas), mockOperations.js
+**Archivos:** OperationsManagement.jsx, mockOperations.js (+buyer/seller/docs/timeline/notas/commissionPct), useAdminData.js (+addOperation, +persist agents)
 
-- [ ] **Click en operacion**: abrir modal detalle con:
-  - Propiedad: titulo, foto, direccion, precio publicado
-  - Comprador/Inquilino: nombre, email, telefono
-  - Vendedor/Propietario: nombre, email, telefono
-  - Tipo: venta/alquiler
-  - Monto acordado (editable)
-  - Comision % (editable) + monto calculado
-  - Fecha inicio, fecha estimada cierre
-  - Documentos pendientes: checklist (Boleto, Escritura, Certificado dominio, Informe inhibiciones, etc.)
-  - Timeline de la operacion: etapas con fecha de cada avance
-- [ ] **Agregar operacion nueva**: boton + modal con propiedad, cliente, tipo, monto
-- [ ] **KPIs expandidos**: agregar "Tiempo promedio de cierre" y "Comision promedio"
-- [ ] **Notas por operacion**: textarea con historial
-- [ ] Persistir en localStorage
+- [x] **Click en operacion**: abrir `OperationDetailModal` con:
+  - Propiedad: titulo, foto (lookup properties.json), direccion, precio publicado
+  - Comprador/Inquilino y Vendedor/Propietario: nombre, email, telefono (editables, labels segun tipo)
+  - Tipo, monto acordado editable, comision % editable + monto calculado en vivo
+  - Fecha inicio + fecha estimada cierre (date pickers), agente editable
+  - Documentos: checklist por tipo (SALE_DOCS/RENT_DOCS) con toggle done, contador
+  - Timeline visual de etapas con fecha; "Avanzar etapa" agrega entrada + actualiza progreso
+- [x] **Agregar operacion nueva**: `NewOperationModal` (propiedad autocompletable, comprador/vendedor, tipo, monto, comision, fechas, agente). nextId OP-###
+- [x] **KPIs expandidos**: 6 cards con "Tiempo promedio de cierre" (dias) y "Comision promedio" (USD equiv.)
+- [x] **Notas por operacion**: textarea + historial con timestamp
+- [x] Persistir en localStorage (key v2)
 
-**Criterio de exito:** Operaciones son editables con detalle completo. Se puede crear nueva. Checklist de documentos. Timeline de avances.
+**Criterio de exito:** Operaciones editables con detalle completo. Se puede crear nueva. Checklist de documentos. Timeline de avances. Build OK, sin diagnosticos.
 
 ---
 
-## I8: Liquidaciones — Expansion completa
+## I8: Liquidaciones — Expansion completa ✅ HECHO (9 sep 2026)
 **Esfuerzo:** Medio-Alto (2-3 hrs)
-**Archivos:** OwnerLiquidations.jsx (99 lineas), mockLiquidations.js
+**Archivos:** OwnerLiquidations.jsx (reescrito), mockLiquidations.js (owners + periodos + gastos por propiedad + banco), nuevo useLiquidations.js
 
-- [ ] **Expandir detalle de liquidacion** (panel derecho):
-  - Encabezado: owner info (nombre, CUIT, direccion, datos bancarios mock)
-  - Periodo (mes/ano) con selector para ver otros periodos
-  - Por cada propiedad:
-    - Titulo, direccion, inquilino
-    - Alquiler cobrado (monto + fecha cobro)
-    - Estado de cobro (cobrado/pendiente/parcial/atrasado) con badge color
-    - Detalles gastos: desglose editable (expensas, ABL, impuesto inmobiliario, reparaciones, seguro)
-    - Cada gasto con monto editable y tipo
-  - Subtotal por propiedad
-  - Resumen general: Total cobrado - Comision (%) - Gastos = Neto a pagar
-  - Comision % editable (default del contrato)
-- [ ] **Historial de liquidaciones**: lista de ultimos 6 meses por owner, click para ver cada una
-- [ ] **"Generar recibo"**: boton que muestra preview estilo PDF con datos formateados, layout profesional, "Descargar" simulado
-- [ ] **"Agregar gasto"**: boton por propiedad para agregar gasto extra (concepto + monto)
-- [ ] **Boton "Nueva liquidacion"**: seleccionar owner + periodo, auto-calcula desde datos
-- [ ] Persistir en localStorage
+- [x] **Expandir detalle de liquidacion** (panel derecho):
+  - Encabezado: owner info (nombre, CUIT, direccion, banco/alias mock)
+  - Periodo (mes/ano) con selector — cada owner tiene 6 periodos de historial generados
+  - Por cada propiedad: titulo, direccion, inquilino; alquiler cobrado + fecha; estado (cobrado/parcial/pendiente/atrasado) con select + badge; gastos desglosados editables (tipo select + concepto + monto + eliminar); subtotal por propiedad
+  - Resumen general: Total cobrado − Comision (%) − Gastos = Neto; comision % editable inline; aviso de pendiente
+- [x] **Historial de liquidaciones**: 6 periodos por owner, selector dropdown para ver cada uno
+- [x] **"Generar recibo"**: `ReceiptModal` preview estilo PDF (membrete agencia, datos owner+banco, tabla, totales, disclaimer) + "Descargar" simulado con toast
+- [x] **"Agregar gasto"**: boton por propiedad (agrega gasto editable inline)
+- [x] **Boton "Nueva liquidacion"**: selecciona owner + mes/ano, clona propiedades como pendientes
+- [x] Persistir en localStorage (key `terranova-liquidations`)
 
-**Criterio de exito:** Liquidacion con desglose completo editable. Historial mensual. Preview de recibo profesional. Se puede agregar gastos.
+**Criterio de exito:** Liquidacion con desglose completo editable. Historial mensual. Preview de recibo profesional. Se puede agregar gastos. Build OK, sin diagnosticos.
 
 ---
 
-## I9: Equipo/Agentes — Panel completo
+## I9: Equipo/Agentes — Panel completo ✅ HECHO (9 sep 2026)
 **Esfuerzo:** Alto (2-3 hrs)
-**Archivos:** AgentsManagement.jsx (130 lineas), mockAgents.js
+**Archivos:** AgentsManagement.jsx (reescrito), mockAgents.js (records HR completos + roles/turnos/estados/especialidades), useAdminData.js (+updateAgent/addAgent/persist), LeadsManagement.jsx (filtro agente por contexto)
 
-Owner dijo "SUPER POBRE". Necesita ser panel de gestion real:
+Owner dijo "SUPER POBRE". Ahora es panel de gestion real:
 
-- [ ] **Click en agente**: modal detalle con TODOS los campos editables:
-  - Datos personales: nombre, email, telefono, foto (URL), rol (Agente senior/Junior/Director/Asistente)
-  - Zona asignada (dropdown de barrios, multi-select)
-  - Propiedades asignadas: lista de propiedades con checkbox para asignar/desasignar
-  - Especialidad (venta/alquiler/comercial/terrenos — multi-select)
-  - Estado: activo/inactivo/vacaciones
-  - Horario: turno (manana/tarde/completo)
-- [ ] **Metricas por agente** (seccion en el modal o panel lateral):
-  - Operaciones cerradas este mes / este trimestre / este ano
-  - Comision total generada
-  - Leads activos asignados (con link a LeadsManagement filtrado)
-  - Visitas completadas vs agendadas (% conversion)
-  - Tiempo promedio de respuesta
-  - Rating de clientes (1-5 estrellas con barra visual)
-  - Ranking vs equipo (posicion X de Y agentes)
-- [ ] **Historial**: ultimas 10 acciones (cerro operacion X, atendio visita Y, respondio lead Z) con fecha
-- [ ] **Agregar agente**: boton + modal con todos los campos
-- [ ] **KPIs del equipo en header**: operaciones totales equipo, mejor agente del mes, conversion promedio
-- [ ] Vista toggle: cards (actual) o tabla
+- [x] **Click en agente**: `AgentDetailModal` con campos editables: datos personales (nombre, email, telefono, foto URL, rol), zonas multi-select (neighborhoods), propiedades asignadas (checklist), especialidad multi-select, estado (activo/inactivo/vacaciones), turno (mañana/tarde/completo), objetivo mensual
+- [x] **Metricas por agente** (panel lateral): cierres mes/trimestre/año, comision generada, leads activos (con link a LeadsManagement filtrado via AdminContext), visitas completadas/agendadas + % conversion, tiempo promedio de respuesta, rating 1-5 estrellas, ranking #X de Y (por comision)
+- [x] **Historial**: ultimas 10 acciones con icono por tipo (operacion/visita/lead/listing) + fecha
+- [x] **Agregar agente**: `NewAgentModal` con todos los campos. nextId AG-###
+- [x] **KPIs del equipo en header**: agentes activos, cierres del mes, comision generada, conversion promedio + card destacada "Mejor agente del mes"
+- [x] Vista toggle: cards o tabla
 
-**Criterio de exito:** Panel de gestion de personal completo. Cada agente editable con metricas, historial, propiedades asignadas. Se siente profesional.
+**Criterio de exito:** Panel de gestion de personal completo. Cada agente editable con metricas, historial, propiedades asignadas. Se siente profesional. Build OK, sin diagnosticos.
 
 ---
 

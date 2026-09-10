@@ -5,7 +5,9 @@ import { mockOperations, getOpenOperations } from '../data/admin/mockOperations'
 import { mockAgents, getOnDutyAgents } from '../data/admin/mockAgents'
 import properties from '../data/properties.json'
 
-const STORAGE_KEY = 'terranova-admin-data'
+// v2: operations gained buyer/seller/documents/timeline/notes and agents gained
+// full HR records — bump the key so returning demos load the enriched dataset.
+const STORAGE_KEY = 'terranova-admin-data-v2'
 const TODAY = '2026-08-27'
 
 // Simulated API delay for realism
@@ -55,7 +57,8 @@ export function useAdminData() {
         properties: data.properties,
         leads: data.leads,
         visits: data.visits,
-        operations: data.operations
+        operations: data.operations,
+        agents: data.agents
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
     } catch (err) {
@@ -287,6 +290,60 @@ export function useAdminData() {
     }
   }, [])
 
+  // Add a brand-new operation (returns the created record)
+  const addOperation = useCallback(async (operation) => {
+    setLoading(true)
+    try {
+      await simulateApiDelay()
+      let created = null
+      setData(prev => {
+        created = { id: nextId(prev.operations, 'OP'), ...operation }
+        return { ...prev, operations: [created, ...prev.operations] }
+      })
+      return created
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Update agent
+  const updateAgent = useCallback(async (id, updates) => {
+    setLoading(true)
+    try {
+      await simulateApiDelay()
+      setData(prev => ({
+        ...prev,
+        agents: prev.agents.map(a =>
+          a.id === id ? { ...a, ...updates } : a
+        )
+      }))
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Add a brand-new agent (returns the created record)
+  const addAgent = useCallback(async (agent) => {
+    setLoading(true)
+    try {
+      await simulateApiDelay()
+      let created = null
+      setData(prev => {
+        created = { id: nextId(prev.agents, 'AG'), ...agent }
+        return { ...prev, agents: [...prev.agents, created] }
+      })
+      return created
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   // Reset to initial data
   const resetData = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY)
@@ -313,6 +370,9 @@ export function useAdminData() {
     updateVisit,
     addVisit,
     updateOperation,
+    addOperation,
+    updateAgent,
+    addAgent,
     resetData
   }
 }

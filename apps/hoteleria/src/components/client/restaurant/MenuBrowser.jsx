@@ -17,11 +17,6 @@ import menuData from '../../../data/menuItems.json'
 import CartDrawer from './CartDrawer'
 import OrderConfirmation from './OrderConfirmation'
 
-const { categories, items: MENU_ITEMS } = menuData
-
-// Every allergen present in the menu (for the "avoid" filter chips).
-const ALL_ALLERGENS = [...new Set(MENU_ITEMS.flatMap((i) => i.allergens))].sort()
-
 // Build a short ETA label (25–40 min from now).
 const buildEta = () => {
   const now = new Date()
@@ -121,7 +116,30 @@ function MenuCard({ item, qty, onInc, onDec }) {
   )
 }
 
-export default function MenuBrowser({ open, onClose, onOrderPlaced, room }) {
+export default function MenuBrowser({
+  open,
+  onClose,
+  onOrderPlaced,
+  room,
+  menu = menuData,
+  venueName = 'Room Service',
+  serviceType = 'room', // 'room' (deliver to room) | 'table' (dine-in)
+  title = 'Restaurant Menu'
+}) {
+  const MENU_ITEMS = useMemo(() => menu.items || [], [menu])
+  const categories = useMemo(() => {
+    if (menu.categories) return menu.categories
+    // Infer category tabs from the items when the data has no explicit list.
+    return [...new Set(MENU_ITEMS.map((i) => i.category))].map((id) => ({
+      id,
+      name: id.charAt(0).toUpperCase() + id.slice(1)
+    }))
+  }, [menu, MENU_ITEMS])
+  const ALL_ALLERGENS = useMemo(
+    () => [...new Set(MENU_ITEMS.flatMap((i) => i.allergens || []))].sort(),
+    [MENU_ITEMS]
+  )
+
   const [cart, setCart] = useState({}) // { [itemId]: qty }
   const [category, setCategory] = useState('all')
   const [search, setSearch] = useState('')
@@ -133,11 +151,22 @@ export default function MenuBrowser({ open, onClose, onOrderPlaced, room }) {
   const [submitting, setSubmitting] = useState(false)
   const [confirmation, setConfirmation] = useState(null)
 
-  // Reset transient UI when the browser is closed.
+  // Reset ALL transient UI when the browser is closed. Clearing the cart here
+  // (rather than right after submit) avoids a storm of nested exit animations —
+  // the cart drawer closing while every line item also animates out — which
+  // could leave the full-screen overlay's AnimatePresence stuck and mounted,
+  // trapping clicks behind an invisible layer.
   useEffect(() => {
     if (!open) {
       setCartOpen(false)
       setConfirmation(null)
+      setCart({})
+      setNotes('')
+      setCategory('all')
+      setSearch('')
+      setAvoid([])
+      setDietOnly([])
+      setShowFilters(false)
     }
   }, [open])
 
@@ -173,10 +202,10 @@ export default function MenuBrowser({ open, onClose, onOrderPlaced, room }) {
       if (dietOnly.includes('vegetarian') && !item.vegetarian) return false
       if (dietOnly.includes('glutenFree') && !item.glutenFree) return false
       if (dietOnly.includes('popular') && !item.popular) return false
-      if (avoid.some((a) => item.allergens.includes(a))) return false
+      if (avoid.some((a) => (item.allergens || []).includes(a))) return false
       return true
     })
-  }, [category, search, dietOnly, avoid])
+  }, [MENU_ITEMS, category, search, dietOnly, avoid])
 
   const lines = useMemo(
     () =>
@@ -186,7 +215,7 @@ export default function MenuBrowser({ open, onClose, onOrderPlaced, room }) {
           return item ? { id, name: item.name, price: item.price, image: item.image, qty } : null
         })
         .filter(Boolean),
-    [cart]
+    [MENU_ITEMS, cart]
   )
 
   const itemCount = lines.reduce((s, l) => s + l.qty, 0)
@@ -202,18 +231,22 @@ export default function MenuBrowser({ open, onClose, onOrderPlaced, room }) {
       total,
       eta: buildEta(),
       room,
+      venue: venueName,
+      serviceType,
       notes: notes.trim()
     }
     onOrderPlaced?.(order)
     setSubmitting(false)
     setCartOpen(false)
     setConfirmation(order)
-    setCart({})
-    setNotes('')
+    // Cart/notes are cleared by the on-close effect — clearing them here while
+    // the drawer animates out triggers the nested-exit freeze.
   }
 
+  // Only drive the outer `open` flag. Confirmation and cart state are reset by
+  // the on-close effect, so nothing with a pending exit animation is torn down
+  // mid-flight (which is what left an invisible overlay trapping clicks).
   const handleCloseAll = () => {
-    setConfirmation(null)
     onClose()
   }
 
@@ -234,8 +267,12 @@ export default function MenuBrowser({ open, onClose, onOrderPlaced, room }) {
                   <QrCode className="w-5 h-5 text-accent" />
                 </div>
                 <div className="min-w-0">
-                  <h1 className="font-bold text-lg leading-tight truncate">Restaurant Menu</h1>
-                  <p className="text-xs text-muted">Order to Room {room} · pay at checkout</p>
+                  <h1 className="font-bold text-lg leading-tight truncate">{title}</h1>
+                  <p className="text-xs text-muted">
+                    {serviceType === 'table'
+                      ? `Dine-in at ${venueName} · charged to your room`
+                      : `Order to Room ${room} · pay at checkout`}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -266,7 +303,7 @@ export default function MenuBrowser({ open, onClose, onOrderPlaced, room }) {
 
           <main className="container mx-auto px-4 py-6">
             {confirmation ? (
-              <OrderConfirmation order={confirmation} onClose={handleCloseAll} />
+              <OrderConfirmation order={confirmation} onClose={handleCloseAll} serviceType={serviceType} />
             ) : (
               <>
                 {/* Search + filter toggle */}

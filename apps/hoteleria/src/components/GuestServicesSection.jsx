@@ -72,13 +72,21 @@ const QUICK_SERVICES = [
   }
 ]
 
-export default function GuestServicesSection() {
+export default function GuestServicesSection({ onOpenPortal }) {
   const [activeModal, setActiveModal] = useState(null) // 'service' | 'excursion' | null
   const [preselectedService, setPreselectedService] = useState(null)
 
+  // On the public landing, excursions are a showcase: booking happens inside the
+  // Guest Portal (after login). If no portal handler is provided we fall back to
+  // the inline booking form so the section still works standalone.
+  const handleExcursions = () => {
+    if (onOpenPortal) onOpenPortal()
+    else setActiveModal('excursion')
+  }
+
   const handleServiceClick = (serviceId) => {
     if (serviceId === 'excursions') {
-      setActiveModal('excursion')
+      handleExcursions()
     } else {
       setPreselectedService(serviceId)
       setActiveModal('service')
@@ -155,7 +163,7 @@ export default function GuestServicesSection() {
               <ArrowRight className="w-4 h-4" />
             </button>
             <button
-              onClick={() => setActiveModal('excursion')}
+              onClick={handleExcursions}
               className="btn-secondary flex items-center gap-2"
             >
               <Compass className="w-4 h-4" />

@@ -11,10 +11,10 @@ Orden sugerido: bugs primero, despues features de alto impacto.
 **Archivos:** rooms.json, GuestPortal.jsx, AdminHeader.jsx, OffersSection.jsx
 
 Hacer todo junto porque son fixes rapidos:
-- [ ] RoomDetailPage galeria: usa `[room.image x4]`. Agregar campo `images[]` a rooms.json con 4 URLs distintas por habitacion. Actualizar RoomDetailPage para usar `room.images || [room.image]`
-- [ ] GuestPortal MOCK_GUEST: fechas hardcodeadas enero 2024. Cambiar a fechas relativas (hoy + 2 dias check-in, hoy + 7 check-out, o similar)
-- [ ] AdminHeader viewTitles: agregar entries para `inbox: "Bandeja IA"`, `pricing: "Precio Dinamico"`, `excursions: "Excursiones"`
-- [ ] OffersSection "Learn More": agregar handler que abra modal con detalles expandidos del paquete, o scroll a booking
+- [x] RoomDetailPage galeria: usa `[room.image x4]`. Agregar campo `images[]` a rooms.json con 4 URLs distintas por habitacion. Actualizar RoomDetailPage para usar `room.images || [room.image]`
+- [x] GuestPortal MOCK_GUEST: fechas hardcodeadas enero 2024. Cambiar a fechas relativas (hoy + 2 dias check-in, hoy + 7 check-out, o similar)
+- [x] AdminHeader viewTitles: agregar entries para `inbox: "Bandeja IA"`, `pricing: "Precio Dinamico"`, `excursions: "Excursiones"`
+- [x] OffersSection "Learn More": agregar handler que abra modal con detalles expandidos del paquete, o scroll a booking
 
 **Criterio de exito:** Los 4 bugs corregidos. Verificar visualmente en port 3001.
 
@@ -467,3 +467,48 @@ Hacer todo junto porque son fixes rapidos:
 - [ ] Aplicar en: AccommodationTiers, BookingForm, OffersSection, ExcursionBookingForm, Guest Portal billing
 
 **Criterio de exito:** Toggle de moneda funcional. Precios se recalculan en toda la app.
+
+---
+
+## H26: Check-in / Check-out de recepcion (front-desk)
+**Esfuerzo:** Medio (1.5-2 hrs)
+**Archivos:** CalendarManagement.jsx, AdminDashboard.jsx, useAdminData.js
+
+Estado actual:
+- [x] Dashboard "Today's Activity": check-in de arribos y check-out de salidas de HOY (ActivityDetailModal)
+- [x] Calendario: botones "Registrar check-in / check-out" en el modal de detalle de reserva (persiste en `hotel-admin-calendar-status`)
+
+Pendiente (unificar y ampliar):
+- [ ] Unificar la fuente de reservas: hoy el Dashboard usa useAdminData y el Calendario usa mockReservations+localStorage por separado (un check-in en uno no se refleja en el otro)
+- [ ] Vista/tab "Recepcion" o lista de reservas con filtros (llegadas, en casa, salidas) y acciones rapidas de check-in/out
+- [ ] Timeline de estado por reserva (confirmed -> checked-in -> checked-out) con timestamps
+
+### Estacion de check-in completa (objetivo real)
+**Motivacion:** agilizar la llegada. Si el huesped completa online (documentos, acompanantes,
+firma, pago) ANTES de presentarse, al llegar a recepcion ya tiene varios pasos hechos y el
+check-in presencial es casi inmediato: recepcion solo valida, asigna habitacion y entrega
+tarjetas. El mismo wizard sirve para arrancar online y terminar en recepcion (estado parcial
+guardado y retomable).
+
+Un unico flujo de check-in, usable por DOS actores:
+- **Huesped (self-service)**: desde el Guest Portal / kiosko / QR — adelanta pasos antes de llegar
+- **Recepcionista**: desde el admin (Calendario o vista Recepcion) — retoma lo que el huesped dejo hecho y finaliza
+
+Pasos del flujo (wizard):
+- [ ] 1. Identificar la reserva (buscar por nombre/numero, o autologin del huesped)
+- [ ] 2. Documentos: subir/adjuntar foto de DNI/pasaporte (upload mock + preview), tipo y numero de documento, nacionalidad, fecha de nacimiento
+- [ ] 3. Datos de contacto y huespedes acompanantes (nombre + documento por persona)
+- [ ] 4. Asignar habitacion: elegir/confirmar numero de habitacion disponible del tipo reservado (integrar con estado de RoomManagement/Calendario)
+- [ ] 5. Metodo de pago / garantia (tarjeta mock, preautorizacion)
+- [ ] 6. Firma digital del huesped (canvas) + aceptacion de politicas
+- [ ] 7. Emitir tarjetas/llaves: cantidad de key cards, "codigo" de llave digital simulada, opcion de llave movil
+- [ ] 8. Confirmacion: resumen + estado pasa a checked-in + genera comprobante
+
+Consideraciones:
+- [ ] Que sirva igual para el huesped (menos campos, mas guiado) y para recepcion (todos los campos, edicion libre)
+- [ ] Persistir todo (documentos como data-url mock) en localStorage
+- [ ] Al terminar, la habitacion queda asignada y ocupada en Calendario/Rooms/KPIs
+
+**Nota:** H16 es la version basica del check-in digital del huesped (3 pasos, sin documentos ni asignacion de habitacion). H26 lo absorbe/expande hacia una estacion completa y compartida con recepcion. Definir si se fusionan.
+
+**Criterio de exito:** Un mismo wizard de check-in permite, tanto al huesped como a recepcion, cargar documentos, asignar habitacion, emitir tarjetas y dejar la reserva en checked-in, reflejado en Dashboard, Calendario y KPIs.

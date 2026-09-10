@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   CalendarDays, ChevronLeft, ChevronRight, X, User, BedDouble,
-  LogIn, LogOut, DoorOpen, Percent, Plus
+  LogIn, LogOut, DoorOpen, Percent, Plus, Mail, Phone, MessageSquare, DollarSign
 } from 'lucide-react'
 import { mockReservations } from '../../../data/admin/mockReservations'
 
@@ -17,8 +17,21 @@ const LABEL_W = 92
 const ROW_H = 40
 const HEADER_H = 48
 const EXTRA_KEY = 'hotel-admin-calendar-extra'
+const STATUS_KEY = 'hotel-admin-calendar-status'
 
 const ROOM_TYPES = ['standard', 'economy', 'deluxe', 'premium', 'suite', 'family', 'presidential']
+
+// Suggested nightly rate (USD) per room type — used to pre-fill the new-reservation form.
+const SUGGESTED_PRICE = {
+  economy: 90,
+  standard: 140,
+  family: 280,
+  deluxe: 240,
+  premium: 320,
+  suite: 450,
+  presidential: 900
+}
+const suggestedPriceFor = (type) => SUGGESTED_PRICE[type] || 150
 
 const STATUS = {
   confirmed: { bar: 'bg-blue-500/85 border-blue-600 hover:bg-blue-500', chip: 'bg-blue-500/10 text-blue-600 dark:text-blue-400', dot: 'bg-blue-500', label: 'Confirmada' },
@@ -61,6 +74,15 @@ function loadExtras() {
   }
 }
 
+function loadStatusOverrides() {
+  try {
+    const raw = localStorage.getItem(STATUS_KEY)
+    return raw ? JSON.parse(raw) : {}
+  } catch {
+    return {}
+  }
+}
+
 function KpiCard({ icon: Icon, label, value, tone }) {
   return (
     <div className="bg-surface rounded-xl border border-border p-3 flex items-center gap-3">
@@ -77,6 +99,7 @@ function KpiCard({ icon: Icon, label, value, tone }) {
 
 export default function CalendarManagement() {
   const [extras, setExtras] = useState(loadExtras)
+  const [statusOverrides, setStatusOverrides] = useState(loadStatusOverrides)
   const [weekOffset, setWeekOffset] = useState(0) // scroll the window by whole weeks
   const [tip, setTip] = useState(null) // { res, x, y }
   const [detail, setDetail] = useState(null) // reservation
@@ -91,7 +114,29 @@ export default function CalendarManagement() {
     }
   }, [extras])
 
-  const reservations = useMemo(() => [...mockReservations, ...extras], [extras])
+  useEffect(() => {
+    try {
+      localStorage.setItem(STATUS_KEY, JSON.stringify(statusOverrides))
+    } catch {
+      // Ignore storage errors.
+    }
+  }, [statusOverrides])
+
+  // Merge base reservations with any manual status changes (check-in/out).
+  const reservations = useMemo(
+    () =>
+      [...mockReservations, ...extras].map((r) =>
+        statusOverrides[r.id] ? { ...r, status: statusOverrides[r.id] } : r
+      ),
+    [extras, statusOverrides]
+  )
+
+  // Change a reservation's status (front-desk check-in / check-out) and keep the
+  // open detail modal in sync.
+  const setReservationStatus = (id, status) => {
+    setStatusOverrides((prev) => ({ ...prev, [id]: status }))
+    setDetail((d) => (d && d.id === id ? { ...d, status } : d))
+  }
 
   // Rolling day window (start shifts by whole weeks via the arrows).
   const days = useMemo(() => {
@@ -157,21 +202,23 @@ export default function CalendarManagement() {
   const handleCreate = (form) => {
     const nights = Math.max(1, parseInt(form.nights, 10) || 1)
     const checkIn = parseDate(form.checkIn)
+    const pricePerNight = Math.max(0, parseInt(form.pricePerNight, 10) || 0)
     const newRes = {
       id: `RES-C-${Date.now()}`,
       guestName: form.guestName.trim() || 'Huésped sin nombre',
-      guestEmail: '',
-      guestPhone: '',
+      guestEmail: form.guestEmail.trim(),
+      guestPhone: form.guestPhone.trim(),
       roomId: 0,
       roomNumber: form.roomNumber,
       roomType: form.roomType,
       checkIn: form.checkIn,
       checkOut: toKey(addDays(checkIn, nights)),
-      guests: 2,
+      guests: Math.max(1, parseInt(form.guests, 10) || 2),
       status: form.status,
       paymentStatus: 'pending',
-      totalAmount: 0,
-      specialRequests: '',
+      totalAmount: pricePerNight * nights,
+      pricePerNight,
+      specialRequests: form.specialRequests.trim(),
       createdAt: todayKey,
       arrivalTime: '14:00'
     }
@@ -367,6 +414,30 @@ export default function CalendarManagement() {
                   </span>
                 </div>
               </div>
+
+              {/* Front-desk check-in / check-out */}
+              {detail.status === 'confirmed' && (
+                <button
+                  onClick={() => setReservationStatus(detail.id, 'checked-in')}
+                  className="w-full mb-4 flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold bg-emerald-500 text-white hover:bg-emerald-600 transition-colors"
+                >
+                  <LogIn className="w-4 h-4" /> Registrar check-in
+                </button>
+              )}
+              {detail.status === 'checked-in' && (
+                <button
+                  onClick={() => setReservationStatus(detail.id, 'checked-out')}
+                  className="w-full mb-4 flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold bg-gray-500 text-white hover:bg-gray-600 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" /> Registrar check-out
+                </button>
+              )}
+              {detail.status === 'checked-out' && (
+                <p className="w-full mb-4 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium bg-gray-400/10 text-muted">
+                  <LogOut className="w-4 h-4" /> Check-out realizado
+                </p>
+              )}
+
               <dl className="space-y-2.5 text-sm">
                 <div className="flex justify-between"><dt className="text-muted">Reserva</dt><dd className="text-text font-medium">{detail.id}</dd></div>
                 <div className="flex justify-between"><dt className="text-muted">Habitación</dt><dd className="text-text font-medium capitalize">{detail.roomNumber} · {detail.roomType}</dd></div>
@@ -384,6 +455,46 @@ export default function CalendarManagement() {
                   </div>
                 )}
               </dl>
+
+              {/* Contact block */}
+              <div className="mt-4 pt-4 border-t border-border">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted mb-2">Contacto del huésped</p>
+                <div className="space-y-1.5 text-sm">
+                  <div className="flex items-center gap-2 text-text">
+                    <Mail className="w-4 h-4 text-muted flex-shrink-0" />
+                    <span className="truncate">{detail.guestEmail || 'Sin email registrado'}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-text">
+                    <Phone className="w-4 h-4 text-muted flex-shrink-0" />
+                    <span>{detail.guestPhone || 'Sin teléfono registrado'}</span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-2 mt-3">
+                  <a
+                    href={detail.guestPhone ? `tel:${detail.guestPhone.replace(/[^+\d]/g, '')}` : undefined}
+                    aria-disabled={!detail.guestPhone}
+                    className={`flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium border transition-colors ${detail.guestPhone ? 'border-border text-text hover:bg-bg' : 'border-border text-muted opacity-50 pointer-events-none'}`}
+                  >
+                    <Phone className="w-4 h-4" /> Llamar
+                  </a>
+                  <a
+                    href={detail.guestEmail ? `mailto:${detail.guestEmail}` : undefined}
+                    aria-disabled={!detail.guestEmail}
+                    className={`flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium border transition-colors ${detail.guestEmail ? 'border-border text-text hover:bg-bg' : 'border-border text-muted opacity-50 pointer-events-none'}`}
+                  >
+                    <Mail className="w-4 h-4" /> Email
+                  </a>
+                  <a
+                    href={detail.guestPhone ? `https://wa.me/${detail.guestPhone.replace(/[^\d]/g, '')}` : undefined}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-disabled={!detail.guestPhone}
+                    className={`flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium transition-opacity ${detail.guestPhone ? 'bg-primary text-primary-contrast hover:opacity-90' : 'bg-primary/40 text-primary-contrast opacity-50 pointer-events-none'}`}
+                  >
+                    <MessageSquare className="w-4 h-4" /> WhatsApp
+                  </a>
+                </div>
+              </div>
             </motion.div>
           </div>
         )}
@@ -406,10 +517,27 @@ export default function CalendarManagement() {
 
 function CreateReservationModal({ target, roomTypes, onClose, onCreate }) {
   const [guestName, setGuestName] = useState('')
+  const [guestEmail, setGuestEmail] = useState('')
+  const [guestPhone, setGuestPhone] = useState('')
   const [nights, setNights] = useState(2)
-  const [roomType, setRoomType] = useState(target.room.type || 'standard')
+  const [guests, setGuests] = useState(2)
+  const initialType = target.room.type || 'standard'
+  const [roomType, setRoomType] = useState(initialType)
+  const [pricePerNight, setPricePerNight] = useState(String(suggestedPriceFor(initialType)))
+  const [priceTouched, setPriceTouched] = useState(false)
   const [status, setStatus] = useState('confirmed')
+  const [specialRequests, setSpecialRequests] = useState('')
   const checkInKey = toKey(target.date)
+  const nightsNum = Math.max(1, parseInt(nights, 10) || 1)
+  const priceNum = Math.max(0, parseInt(pricePerNight, 10) || 0)
+  const estimatedTotal = priceNum * nightsNum
+  const suggested = suggestedPriceFor(roomType)
+
+  // Keep the suggested nightly rate in sync with the room type until the user
+  // overrides it manually.
+  useEffect(() => {
+    if (!priceTouched) setPricePerNight(String(suggested))
+  }, [suggested, priceTouched])
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -427,7 +555,7 @@ function CreateReservationModal({ target, roomTypes, onClose, onCreate }) {
         </h3>
         <p className="text-sm text-muted mb-4">Habitación {target.room.number} · check-in {fmtShort(checkInKey)}</p>
 
-        <div className="space-y-4">
+        <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1 -mr-1">
           <div>
             <label className="text-sm text-muted mb-1.5 block">Huésped</label>
             <input
@@ -440,12 +568,44 @@ function CreateReservationModal({ target, roomTypes, onClose, onCreate }) {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
+              <label className="text-sm text-muted mb-1.5 block">Email</label>
+              <input
+                type="email"
+                value={guestEmail}
+                onChange={(e) => setGuestEmail(e.target.value)}
+                placeholder="huesped@email.com"
+                className="w-full px-3.5 py-2.5 bg-bg rounded-lg border border-border focus:border-primary outline-none text-sm text-text"
+              />
+            </div>
+            <div>
+              <label className="text-sm text-muted mb-1.5 block">Teléfono</label>
+              <input
+                type="tel"
+                value={guestPhone}
+                onChange={(e) => setGuestPhone(e.target.value)}
+                placeholder="+54 9 342 ..."
+                className="w-full px-3.5 py-2.5 bg-bg rounded-lg border border-border focus:border-primary outline-none text-sm text-text"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div>
               <label className="text-sm text-muted mb-1.5 block">Noches</label>
               <input
                 type="number"
                 min={1}
                 value={nights}
                 onChange={(e) => setNights(e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-bg rounded-lg border border-border focus:border-primary outline-none text-sm text-text"
+              />
+            </div>
+            <div>
+              <label className="text-sm text-muted mb-1.5 block">Comensales</label>
+              <input
+                type="number"
+                min={1}
+                value={guests}
+                onChange={(e) => setGuests(e.target.value)}
                 className="w-full px-3.5 py-2.5 bg-bg rounded-lg border border-border focus:border-primary outline-none text-sm text-text"
               />
             </div>
@@ -461,6 +621,33 @@ function CreateReservationModal({ target, roomTypes, onClose, onCreate }) {
             </div>
           </div>
           <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-sm text-muted">Precio por noche (USD)</label>
+              <button
+                type="button"
+                onClick={() => { setPricePerNight(String(suggested)); setPriceTouched(false) }}
+                className="text-xs text-primary hover:underline"
+                title={`Sugerido para ${roomType}`}
+              >
+                Sugerido: ${suggested}
+              </button>
+            </div>
+            <div className="relative">
+              <DollarSign className="w-4 h-4 text-muted absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="number"
+                min={0}
+                value={pricePerNight}
+                onChange={(e) => { setPricePerNight(e.target.value); setPriceTouched(true) }}
+                placeholder="0"
+                className="w-full pl-9 pr-3.5 py-2.5 bg-bg rounded-lg border border-border focus:border-primary outline-none text-sm text-text"
+              />
+            </div>
+            {estimatedTotal > 0 && (
+              <p className="text-xs text-muted mt-1.5">Total estimado: <span className="font-semibold text-text">${estimatedTotal}</span> ({nightsNum} {nightsNum === 1 ? 'noche' : 'noches'})</p>
+            )}
+          </div>
+          <div>
             <label className="text-sm text-muted mb-1.5 block">Estado</label>
             <div className="grid grid-cols-2 gap-2">
               {['confirmed', 'checked-in'].map((s) => (
@@ -474,10 +661,20 @@ function CreateReservationModal({ target, roomTypes, onClose, onCreate }) {
               ))}
             </div>
           </div>
+          <div>
+            <label className="text-sm text-muted mb-1.5 block">Solicitudes especiales</label>
+            <textarea
+              value={specialRequests}
+              onChange={(e) => setSpecialRequests(e.target.value)}
+              placeholder="Piso alto, cuna, aniversario…"
+              rows={2}
+              className="w-full px-3.5 py-2.5 bg-bg rounded-lg border border-border focus:border-primary outline-none text-sm text-text resize-none"
+            />
+          </div>
 
           <button
-            onClick={() => onCreate({ guestName, nights, roomType, status, roomNumber: target.room.number, checkIn: checkInKey })}
-            className="w-full bg-primary text-primary-contrast py-2.5 rounded-lg font-semibold hover:opacity-90 transition-opacity"
+            onClick={() => onCreate({ guestName, guestEmail, guestPhone, nights, guests, roomType, pricePerNight, status, specialRequests, roomNumber: target.room.number, checkIn: checkInKey })}
+            className="w-full bg-primary text-primary-contrast py-2.5 rounded-lg font-semibold hover:opacity-90 transition-opacity sticky bottom-0"
           >
             Crear reserva
           </button>

@@ -149,7 +149,7 @@ export default function App() {
 
         {/* Guest Services */}
         <section id="services">
-          <GuestServicesSection />
+          <GuestServicesSection onOpenPortal={() => setViewMode('guest-portal')} />
         </section>
 
         {/* Hotel Amenities */}

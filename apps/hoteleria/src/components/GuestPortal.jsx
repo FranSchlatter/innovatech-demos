@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import LoginScreen from './LoginScreen'
 import GuestChat from './GuestChat'
-import MenuBrowser from './client/restaurant/MenuBrowser'
+import DiningHub from './client/restaurant/DiningHub'
+import ExcursionBookingForm from '../pages/ExcursionBookingForm'
 import { useLiveChat, peekLiveChat } from '../hooks/useLiveChat'
 import {
   User,
@@ -38,7 +39,10 @@ import {
   Minus,
   Send,
   Headset,
-  ChefHat
+  ChefHat,
+  Compass,
+  BellRing,
+  CalendarCheck
 } from 'lucide-react'
 
 // Mock guest data - In production this would come from authentication/API
@@ -171,7 +175,8 @@ export default function GuestPortal({ onExit }) {
   const [reservationTime, setReservationTime] = useState('')
   const [showSuccessToast, setShowSuccessToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
-  const [showMenu, setShowMenu] = useState(false)
+  const [showDining, setShowDining] = useState(false)
+  const [showExcursions, setShowExcursions] = useState(false)
 
   // Live chat (H5) — shared with the admin inbox via useLiveChat.
   const liveChat = useLiveChat()
@@ -268,10 +273,12 @@ export default function GuestPortal({ onExit }) {
   // Restaurant order (H7) → shows up as an active request in "My Stay".
   const handleOrderPlaced = (order) => {
     const summary = order.items.map((l) => `${l.qty}× ${l.name}`).join(', ')
+    const dineIn = order.serviceType === 'table'
+    const venue = order.venue || 'Room Service'
     const newRequest = {
       id: `ORD-${order.number}`,
       type: 'restaurant',
-      service: `Restaurant Order #${order.number}`,
+      service: dineIn ? `${venue} · Order #${order.number}` : `Room Service · Order #${order.number}`,
       summary,
       notes: order.notes,
       status: 'pending',
@@ -282,7 +289,55 @@ export default function GuestPortal({ onExit }) {
       canCancel: true
     }
     setRequests((prev) => [newRequest, ...prev])
-    showToast(`Order #${order.number} sent to the kitchen!`)
+    showToast(`Order #${order.number} sent to ${dineIn ? venue : 'the kitchen'}!`)
+  }
+
+  // Dine-in table reservation (H7).
+  const handleReserveTable = (booking) => {
+    const newRequest = {
+      id: `DIN-${Date.now()}`,
+      type: 'dining',
+      service: `${booking.venue} · Table for ${booking.party}`,
+      date: booking.date,
+      time: booking.time,
+      notes: booking.requests,
+      status: 'confirmed',
+      canCancel: true
+    }
+    setRequests((prev) => [newRequest, ...prev])
+    showToast(`Table booked at ${booking.venue}!`)
+  }
+
+  // Waiter call (H7) — an immediate, non-cancellable request.
+  const handleCallWaiter = ({ venue }) => {
+    const newRequest = {
+      id: `WTR-${Date.now()}`,
+      type: 'waiter',
+      service: `Waiter requested · ${venue}`,
+      status: 'pending',
+      time: new Date().toLocaleTimeString(),
+      date: new Date().toLocaleDateString(),
+      estimatedTime: 'A few minutes',
+      canCancel: false
+    }
+    setRequests((prev) => [newRequest, ...prev])
+  }
+
+  // Excursion booked from the portal → active request in "My Stay".
+  const handleExcursionBooked = (booking) => {
+    const newRequest = {
+      id: `EXC-${Date.now()}`,
+      type: 'excursion',
+      service: `${booking.name}`,
+      date: booking.date,
+      time: booking.schedule,
+      notes: booking.specialRequests,
+      status: 'confirmed',
+      price: booking.total,
+      guestsCount: booking.numberOfPeople,
+      canCancel: true
+    }
+    setRequests((prev) => [newRequest, ...prev])
   }
 
   const handleAmenityReservation = (amenity) => {
@@ -479,7 +534,7 @@ export default function GuestPortal({ onExit }) {
                   {/* Quick Actions - Compact */}
                   <div className="grid grid-cols-2 gap-2 pt-3 border-t border-border">
                     {[
-                      { icon: UtensilsCrossed, label: 'Order', action: () => setActiveTab('services') },
+                      { icon: UtensilsCrossed, label: 'Dining', action: () => setShowDining(true) },
                       { icon: Sparkles, label: 'Service', action: () => setActiveTab('services') },
                       { icon: Calendar, label: 'Book', action: () => setActiveTab('reservations') },
                       { icon: HelpCircle, label: 'Help', action: () => setActiveTab('help') }
@@ -550,13 +605,18 @@ export default function GuestPortal({ onExit }) {
                           className="flex items-center gap-3 bg-bg rounded-xl p-3"
                         >
                           <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
-                            {request.status === 'pending' ? (
-                              <Clock className="w-4.5 h-4.5 text-accent" />
-                            ) : request.status === 'confirmed' ? (
-                              <CheckCircle className="w-4.5 h-4.5 text-accent" />
-                            ) : (
-                              <AlertCircle className="w-4.5 h-4.5 text-accent" />
-                            )}
+                            {(() => {
+                              const iconByType = {
+                                restaurant: UtensilsCrossed,
+                                dining: CalendarCheck,
+                                waiter: BellRing,
+                                excursion: Compass,
+                                amenity: Calendar
+                              }
+                              const Icon = iconByType[request.type] ||
+                                (request.status === 'pending' ? Clock : request.status === 'confirmed' ? CheckCircle : AlertCircle)
+                              return <Icon className="w-4 h-4 text-accent" />
+                            })()}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
@@ -566,10 +626,11 @@ export default function GuestPortal({ onExit }) {
                               </span>
                             </div>
                             <p className="text-xs text-muted flex items-center gap-1 mt-0.5">
-                              {request.type === 'amenity' ? (
+                              {['amenity', 'dining', 'excursion'].includes(request.type) ? (
                                 <>
                                   <Calendar className="w-3 h-3" />
                                   {request.date} · {request.time}
+                                  {request.guestsCount ? ` · ${request.guestsCount} guests` : ''}
                                 </>
                               ) : (
                                 <>
@@ -585,7 +646,7 @@ export default function GuestPortal({ onExit }) {
                           {request.price > 0 && (
                             <span className="text-sm font-bold text-accent whitespace-nowrap">${request.price}</span>
                           )}
-                          {request.canCancel && (request.status === 'pending' || (request.status === 'confirmed' && request.type === 'amenity')) && (
+                          {request.canCancel && (
                             <button
                               onClick={() => handleCancelRequest(request.id)}
                               className="text-muted hover:text-primary transition flex-shrink-0"
@@ -612,31 +673,31 @@ export default function GuestPortal({ onExit }) {
               exit={{ opacity: 0, y: -20 }}
               className="space-y-8"
             >
-              {/* Restaurant — digital menu & ordering (H7) */}
+              {/* Dining — restaurants, room service, table booking (H7) */}
               <div>
                 <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
                   <ChefHat className="w-5 h-5 text-accent" />
-                  Restaurant
+                  Dining
                 </h2>
                 <div className="relative overflow-hidden rounded-2xl shadow-soft">
                   <img
                     src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&h=500&fit=crop"
-                    alt="Hotel restaurant"
+                    alt="Hotel restaurants"
                     className="w-full h-48 md:h-56 object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
                   <div className="absolute inset-0 p-6 flex flex-col justify-center max-w-md">
-                    <h3 className="text-2xl font-bold text-white mb-1">Order to your room</h3>
+                    <h3 className="text-2xl font-bold text-white mb-1">4 restaurants & room service</h3>
                     <p className="text-white/85 text-sm mb-4">
-                      Browse our full menu — breakfast, dinner, desserts and drinks — and get it
-                      delivered straight to Room {guest.room.number}.
+                      Book a table, order to your room or to your table, and call the waiter —
+                      all from here.
                     </p>
                     <button
-                      onClick={() => setShowMenu(true)}
+                      onClick={() => setShowDining(true)}
                       className="self-start inline-flex items-center gap-2 bg-accent text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-accent/90 transition"
                     >
                       <UtensilsCrossed className="w-5 h-5" />
-                      View menu
+                      Explore dining
                     </button>
                   </div>
                 </div>
@@ -741,6 +802,32 @@ export default function GuestPortal({ onExit }) {
               <div>
                 <h2 className="text-2xl font-bold mb-2">Book Amenities & Activities</h2>
                 <p className="text-muted">Enhance your stay with our premium services</p>
+              </div>
+
+              {/* Excursions & Tours (H3) */}
+              <div className="relative overflow-hidden rounded-2xl shadow-soft">
+                <img
+                  src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1200&h=500&fit=crop"
+                  alt="Excursions & tours"
+                  className="w-full h-44 md:h-52 object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
+                <div className="absolute inset-0 p-6 flex flex-col justify-center max-w-md">
+                  <div className="flex items-center gap-2 text-white/80 text-sm mb-1">
+                    <Compass className="w-4 h-4" /> Excursions & Tours
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Discover the destination</h3>
+                  <p className="text-white/85 text-sm mb-4">
+                    City tours, Everglades airboats, sunset cruises and more — booked to your room.
+                  </p>
+                  <button
+                    onClick={() => setShowExcursions(true)}
+                    className="self-start inline-flex items-center gap-2 bg-accent text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-accent/90 transition"
+                  >
+                    <Compass className="w-5 h-5" />
+                    Browse excursions
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1105,13 +1192,39 @@ export default function GuestPortal({ onExit }) {
         onSend={handleSendChat}
       />
 
-      {/* Restaurant menu & ordering (H7) */}
-      <MenuBrowser
-        open={showMenu}
-        onClose={() => setShowMenu(false)}
-        onOrderPlaced={handleOrderPlaced}
+      {/* Dining — restaurants, room service, table booking, waiter (H7) */}
+      <DiningHub
+        open={showDining}
+        onClose={() => setShowDining(false)}
         room={guest.room.number}
+        guestName={guest.name}
+        guestPhone={guest.phone}
+        onOrderPlaced={handleOrderPlaced}
+        onReserveTable={handleReserveTable}
+        onCallWaiter={handleCallWaiter}
       />
+
+      {/* Excursion booking (H3) — reuses the landing form inside the portal */}
+      <AnimatePresence>
+        {showExcursions && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-start justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto"
+            onClick={(e) => { if (e.target === e.currentTarget) setShowExcursions(false) }}
+          >
+            <div className="w-full max-w-4xl my-8">
+              <ExcursionBookingForm
+                onClose={() => setShowExcursions(false)}
+                onBooked={handleExcursionBooked}
+                guestName={guest.name}
+                roomNumber={guest.room.number}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }

@@ -3,8 +3,10 @@ import { CheckCircle, Clock, Receipt, UtensilsCrossed, ChevronRight } from 'luci
 
 // Success screen shown after a room-service order is placed.
 // `order` is the object built by MenuBrowser (number, items, total, eta, room).
-export default function OrderConfirmation({ order, onClose }) {
+export default function OrderConfirmation({ order, onClose, serviceType = 'room' }) {
   if (!order) return null
+
+  const dineIn = serviceType === 'table'
 
   return (
     <motion.div
@@ -25,7 +27,9 @@ export default function OrderConfirmation({ order, onClose }) {
 
       <h2 className="text-2xl font-bold mb-1">Order confirmed!</h2>
       <p className="text-muted mb-6">
-        Your order is on its way to Room {order.room}. Sit back and relax.
+        {dineIn
+          ? `Your order for ${order.venue} is being prepared. The waiter will bring it to your table shortly.`
+          : `Your order is on its way to Room ${order.room}. Sit back and relax.`}
       </p>
 
       {/* Order meta */}
@@ -41,7 +45,7 @@ export default function OrderConfirmation({ order, onClose }) {
         <div className="flex items-center justify-between py-4 border-b border-border">
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-accent" />
-            <span className="text-sm text-muted">Estimated delivery</span>
+            <span className="text-sm text-muted">{dineIn ? 'Ready by' : 'Estimated delivery'}</span>
           </div>
           <span className="font-bold text-accent">{order.eta}</span>
         </div>

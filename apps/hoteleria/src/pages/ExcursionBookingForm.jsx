@@ -98,15 +98,16 @@ const EXCURSIONS = [
   }
 ]
 
-export default function ExcursionBookingForm({ onClose, guestName = 'Guest', roomNumber = '101' }) {
+export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'Guest', roomNumber = '101' }) {
+  const [firstNamePrefill, ...lastNameParts] = guestName.trim().split(' ')
   const [selectedExcursion, setSelectedExcursion] = useState(null)
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
     date: '',
     schedule: '',
     numberOfPeople: 1,
-    firstName: '',
-    lastName: '',
+    firstName: firstNamePrefill || '',
+    lastName: lastNameParts.join(' '),
     email: '',
     phone: '',
     specialRequests: ''
@@ -176,6 +177,15 @@ export default function ExcursionBookingForm({ onClose, guestName = 'Guest', roo
       setIsSubmitting(false)
       setIsSubmitted(true)
       setBookingNumber(`EX-${Date.now().toString().slice(-6)}`)
+      // Surface the booking to the host (e.g. Guest Portal "My Stay").
+      onBooked?.({
+        name: selectedExcursion.name,
+        date: formData.date,
+        schedule: formData.schedule,
+        numberOfPeople: formData.numberOfPeople,
+        total: calculateTotal(),
+        specialRequests: formData.specialRequests
+      })
     }, 1500)
   }
 

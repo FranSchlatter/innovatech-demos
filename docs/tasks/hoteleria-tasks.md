@@ -52,63 +52,58 @@ Hacer todo junto porque son fixes rapidos:
 
 ---
 
-## H4: Bandeja IA — Agente puede escribir + templates
+## H4: Bandeja IA — Agente puede escribir + templates ✅
 **Esfuerzo:** Alto (2-3 hrs)
 **Archivos:** InboxManagement.jsx, mockConversations.js
 
-- [ ] Agregar input de texto en la columna del thread de mensajes (abajo, tipo WhatsApp)
-- [ ] Boton enviar que agrega el mensaje al thread como "Staff" (right-aligned, accent bg)
-- [ ] Dropdown/boton de mensajes pre-cargados (templates):
-  - "Gracias por su consulta. Le confirmo disponibilidad para las fechas solicitadas."
-  - "Le informo que su solicitud ha sido procesada. Cualquier consulta no dude en contactarnos."
-  - "Bienvenido/a! Su habitacion estara lista a partir de las 15:00hs."
-  - "Le enviamos el detalle de la reserva a su email."
-  - 4-6 templates mas relevantes para hoteleria
-- [ ] Al seleccionar template, se llena el input (editable antes de enviar)
-- [ ] Mensaje enviado aparece con timestamp actual y label "Staff"
-- [ ] Animacion de entrada del nuevo mensaje
-- [ ] Persistir nuevos mensajes en localStorage (key: `hotel-admin-inbox`)
+- [x] Agregar input de texto en la columna del thread de mensajes (abajo, tipo WhatsApp)
+- [x] Boton enviar que agrega el mensaje al thread como "Staff" (right-aligned, accent bg)
+- [x] Dropdown/boton de mensajes pre-cargados (templates): 8 templates de hoteleria
+- [x] Al seleccionar template, se llena el input (editable antes de enviar)
+- [x] Mensaje enviado aparece con timestamp actual y label "Equipo"
+- [x] Animacion de entrada del nuevo mensaje (Framer Motion + AnimatePresence)
+- [x] Persistir nuevos mensajes en localStorage (key: `hotel-admin-inbox`)
 
-**Criterio de exito:** El agente puede escribir mensajes libres y usar templates. Persisten al refrescar.
+**Criterio de exito:** El agente puede escribir mensajes libres y usar templates. Persisten al refrescar. ✅
 
 ---
 
-## H5: Live Chat en Guest Portal = Bandeja IA
+## H5: Live Chat en Guest Portal = Bandeja IA ✅
 **Esfuerzo:** Alto (2-3 hrs)
-**Archivos:** GuestPortal.jsx (tab Help), InboxManagement.jsx, nuevo: useLiveChat.js hook
+**Archivos:** GuestPortal.jsx (tab Help), GuestChat.jsx (nuevo), InboxManagement.jsx, useLiveChat.js (nuevo hook)
 
-- [ ] Reemplazar boton placeholder "Live Chat" en Help con chat funcional
-- [ ] Al abrir, mostrar ventana de chat (tipo WhatsApp Web embebido)
-- [ ] Mensajes del huesped se guardan en localStorage (key: `hotel-live-chat`)
-- [ ] Los mismos mensajes aparecen como conversacion nueva en la Bandeja IA del admin
-- [ ] Crear hook compartido `useLiveChat.js` que lee/escribe del mismo localStorage
-- [ ] En Bandeja IA, la conversacion del portal aparece como canal "Portal" con icono diferenciado
-- [ ] Respuestas del admin (de H4) aparecen en el chat del huesped
-- [ ] Auto-respuesta IA simulada si el admin no responde en 5 seg (mensaje tipo "Un agente le respondera en breve")
+- [x] Reemplazar boton placeholder "Live Chat" en Help con chat funcional (+ launcher flotante con badge)
+- [x] Al abrir, mostrar ventana de chat (widget flotante desktop / drawer full mobile)
+- [x] Mensajes del huesped se guardan en localStorage (key: `hotel-live-chat`)
+- [x] Los mismos mensajes aparecen como conversacion nueva en la Bandeja IA del admin
+- [x] Crear hook compartido `useLiveChat.js` que lee/escribe del mismo localStorage (sync via custom + storage events)
+- [x] En Bandeja IA, la conversacion del portal aparece como canal "Portal" con icono diferenciado (Headset)
+- [x] Respuestas del admin (de H4) aparecen en el chat del huesped
+- [x] Auto-respuesta IA simulada si el admin no responde en 5 seg
 
-**Criterio de exito:** Huesped escribe en Help, mensaje aparece en Bandeja IA. Admin responde, respuesta aparece en portal. Mismo localStorage.
+**Criterio de exito:** Huesped escribe en Help, mensaje aparece en Bandeja IA. Admin responde, respuesta aparece en portal. Mismo localStorage. ✅
 
 ---
 
-## H6: Tape Chart — Calendario visual de ocupacion
+## H6: Tape Chart — Calendario visual de ocupacion ✅
 **Esfuerzo:** Alto (3-4 hrs)
-**Archivos:** Nuevo: admin/calendar/TapeChart.jsx, AdminLayout.jsx, AdminSidebar.jsx
+**Archivos:** Nuevo: admin/calendar/CalendarManagement.jsx, AdminLayout.jsx, AdminSidebar.jsx, AdminHeader.jsx
 
-- [ ] Nuevo modulo admin: "Calendario" (icono Calendar en sidebar)
-- [ ] Vista tipo Gantt horizontal:
-  - Eje Y: habitaciones agrupadas por piso (Room 101, 102... Room 201, 202...)
-  - Eje X: dias (14 dias view por defecto, scroll horizontal)
-  - Barras de color por reserva: azul=confirmed, verde=checked-in, gris=checked-out, rojo=cancelled
-  - Hover en barra: tooltip con nombre huesped, fechas, tipo habitacion
-- [ ] Click en barra abre modal de detalle (reusar ActivityDetailModal si aplica)
-- [ ] Click en celda vacia: crear nueva reserva (formulario rapido)
-- [ ] Rooms sin reserva se ven vacias (disponibles)
-- [ ] Datos de mockReservations.js
-- [ ] Responsive: en mobile, vista simplificada o scroll horizontal
-- [ ] Dark mode con CSS variables
-- [ ] Agregar "Calendario" al viewTitles de AdminHeader
+- [x] Nuevo modulo admin: "Calendario" (icono CalendarRange en sidebar)
+- [x] Vista tipo Gantt horizontal:
+  - Eje Y: habitaciones agrupadas por piso
+  - Eje X: 14 dias, scroll horizontal + navegacion por semana (‹ Hoy ›)
+  - Barras de color por estado: azul=confirmed, verde=checked-in, gris=checked-out, rojo=cancelled
+  - Hover en barra: tooltip que sigue el cursor con huesped, fechas, tipo, estado
+- [x] Click en barra abre modal de detalle completo
+- [x] Click en celda vacia: crear nueva reserva (formulario rapido, persiste en localStorage)
+- [x] Rooms sin reserva se ven vacias (disponibles); celdas clickeables
+- [x] Datos de mockReservations.js (+ reservas creadas)
+- [x] Responsive: scroll horizontal, columnas sticky (habitacion + header de dias)
+- [x] Dark mode con CSS variables + KPIs (ocupacion, disponibles, llegadas, salidas)
+- [x] Agregar "Calendario" al viewTitles de AdminHeader
 
-**Criterio de exito:** Vista de calendario funcional con reservas visibles como barras. Click en barra muestra detalle. Se ve profesional.
+**Criterio de exito:** Vista de calendario funcional con reservas visibles como barras. Click en barra muestra detalle. Se ve profesional. ✅
 
 ---
 

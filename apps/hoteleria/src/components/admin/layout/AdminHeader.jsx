@@ -5,6 +5,7 @@ const viewTitles = {
   dashboard: 'Dashboard',
   inbox: 'Bandeja IA',
   pricing: 'Precio dinámico',
+  calendar: 'Calendario de ocupación',
   rooms: 'Room Management',
   housekeeping: 'Housekeeping',
   inventory: 'Inventory',

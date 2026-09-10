@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import LoginScreen from './LoginScreen'
+import GuestChat from './GuestChat'
+import { useLiveChat, peekLiveChat } from '../hooks/useLiveChat'
 import {
   User,
   Calendar,
@@ -33,7 +35,8 @@ import {
   X,
   Plus,
   Minus,
-  Send
+  Send,
+  Headset
 } from 'lucide-react'
 
 // Mock guest data - In production this would come from authentication/API
@@ -166,6 +169,52 @@ export default function GuestPortal({ onExit }) {
   const [reservationTime, setReservationTime] = useState('')
   const [showSuccessToast, setShowSuccessToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
+
+  // Live chat (H5) — shared with the admin inbox via useLiveChat.
+  const liveChat = useLiveChat()
+  const [showChat, setShowChat] = useState(false)
+  const [chatDraft, setChatDraft] = useState('')
+  const [chatSeenCount, setChatSeenCount] = useState(0)
+  const autoReplyRef = useRef(null)
+
+  const AUTO_REPLY_DELAY = 5000
+  const AUTO_REPLY_TEXT = 'Gracias por tu mensaje. Un agente del hotel se sumará a la conversación en breve. 🛎️'
+
+  // Register the guest identity so the admin inbox can label the conversation.
+  useEffect(() => {
+    liveChat.setGuest({
+      name: guest.name,
+      room: guest.room.number,
+      reservation: guest.reservation.id
+    })
+  }, [guest, liveChat])
+
+  // Track which messages the guest has already seen (to badge the launcher).
+  useEffect(() => {
+    if (showChat) setChatSeenCount(liveChat.messages.length)
+  }, [showChat, liveChat.messages.length])
+
+  // Clean up the pending auto-reply timer on unmount.
+  useEffect(() => () => { if (autoReplyRef.current) clearTimeout(autoReplyRef.current) }, [])
+
+  const chatUnread = showChat
+    ? 0
+    : liveChat.messages.slice(chatSeenCount).filter((m) => m.from !== 'guest').length
+
+  const handleSendChat = () => {
+    const text = chatDraft.trim()
+    if (!text) return
+    liveChat.sendMessage(text, 'guest')
+    setChatDraft('')
+    // Simulated auto-reply if staff doesn't answer within the delay.
+    if (autoReplyRef.current) clearTimeout(autoReplyRef.current)
+    autoReplyRef.current = setTimeout(() => {
+      const msgs = peekLiveChat().messages
+      if (msgs.length && msgs[msgs.length - 1].from === 'guest') {
+        liveChat.sendMessage(AUTO_REPLY_TEXT, 'ai')
+      }
+    }, AUTO_REPLY_DELAY)
+  }
 
   // Persist all portal requests (service requests + amenity reservations)
   useEffect(() => {
@@ -710,7 +759,10 @@ export default function GuestPortal({ onExit }) {
                   <h3 className="font-bold mb-1">Call Front Desk</h3>
                   <p className="text-sm text-muted">Available 24/7</p>
                 </a>
-                <button className="bg-surface p-6 rounded-xl text-center hover:bg-surface/80 transition">
+                <button
+                  onClick={() => setShowChat(true)}
+                  className="bg-surface p-6 rounded-xl text-center hover:bg-surface/80 transition"
+                >
                   <MessageSquare className="w-10 h-10 mx-auto mb-3 text-accent" />
                   <h3 className="font-bold mb-1">Live Chat</h3>
                   <p className="text-sm text-muted">Instant support</p>
@@ -962,6 +1014,40 @@ export default function GuestPortal({ onExit }) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Floating live-chat launcher (H5) */}
+      <AnimatePresence>
+        {!showChat && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            onClick={() => setShowChat(true)}
+            className="fixed bottom-5 right-5 z-40 flex items-center gap-2 bg-accent text-white pl-4 pr-5 py-3 rounded-full shadow-lg hover:bg-accent/90 transition"
+            title="Chatear con recepción"
+          >
+            <span className="relative">
+              <Headset className="w-5 h-5" />
+              {chatUnread > 0 && (
+                <span className="absolute -top-2 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold grid place-items-center">
+                  {chatUnread}
+                </span>
+              )}
+            </span>
+            <span className="text-sm font-semibold hidden sm:inline">Chat en vivo</span>
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      <GuestChat
+        open={showChat}
+        onClose={() => setShowChat(false)}
+        guestName={guest.name}
+        messages={liveChat.messages}
+        draft={chatDraft}
+        setDraft={setChatDraft}
+        onSend={handleSendChat}
+      />
     </motion.div>
   )
 }

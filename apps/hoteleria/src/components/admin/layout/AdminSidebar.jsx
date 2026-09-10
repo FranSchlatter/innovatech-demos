@@ -10,7 +10,8 @@ import {
   Hotel,
   Bot,
   TrendingUp,
-  Compass
+  Compass,
+  CalendarRange
 } from 'lucide-react'
 import { useAdmin } from '../../../context/AdminContext'
 
@@ -18,6 +19,7 @@ const navItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'inbox', label: 'Bandeja IA', icon: Bot },
   { id: 'pricing', label: 'Precio dinámico', icon: TrendingUp },
+  { id: 'calendar', label: 'Calendario', icon: CalendarRange },
   { id: 'rooms', label: 'Room Management', icon: BedDouble },
   { id: 'housekeeping', label: 'Housekeeping', icon: Sparkles },
   { id: 'inventory', label: 'Inventory', icon: Package },

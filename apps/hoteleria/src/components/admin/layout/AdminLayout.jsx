@@ -4,6 +4,7 @@ import AdminHeader from './AdminHeader'
 import AdminDashboard from '../dashboard/AdminDashboard'
 import InboxManagement from '../inbox/InboxManagement'
 import DynamicPricing from '../pricing/DynamicPricing'
+import CalendarManagement from '../calendar/CalendarManagement'
 import RoomManagement from '../rooms/RoomManagement'
 import HousekeepingManagement from '../housekeeping/HousekeepingManagement'
 import InventoryManagement from '../inventory/InventoryManagement'
@@ -22,6 +23,8 @@ function AdminContent({ isDark, toggleTheme, onExit }) {
         return <InboxManagement />
       case 'pricing':
         return <DynamicPricing />
+      case 'calendar':
+        return <CalendarManagement />
       case 'rooms':
         return <RoomManagement />
       case 'housekeeping':

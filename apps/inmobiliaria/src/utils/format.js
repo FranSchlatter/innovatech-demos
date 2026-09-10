@@ -19,7 +19,8 @@ export const STATUS_LABELS = {
   available: 'Disponible',
   reserved: 'Reservada',
   sold: 'Vendida',
-  rented: 'Alquilada'
+  rented: 'Alquilada',
+  paused: 'Pausada'
 }
 
 // Format a price with currency + per-period suffix depending on operation

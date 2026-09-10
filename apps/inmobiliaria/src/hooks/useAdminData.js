@@ -14,6 +14,15 @@ const simulateApiDelay = (min = 300, max = 800) => {
   return new Promise(resolve => setTimeout(resolve, delay))
 }
 
+// Generate the next sequential id for a collection (e.g. PROP-013, LEAD-010)
+const nextId = (items, prefix) => {
+  const max = items.reduce((acc, item) => {
+    const n = parseInt(String(item.id).replace(`${prefix}-`, ''), 10)
+    return Number.isNaN(n) ? acc : Math.max(acc, n)
+  }, 0)
+  return `${prefix}-${String(max + 1).padStart(3, '0')}`
+}
+
 export function useAdminData() {
   const [data, setData] = useState({
     properties,
@@ -129,7 +138,42 @@ export function useAdminData() {
     }
   }, [])
 
-  // Update lead (e.g. move stage in pipeline)
+  // Add a brand-new property (returns the created record)
+  const addProperty = useCallback(async (property) => {
+    setLoading(true)
+    try {
+      await simulateApiDelay()
+      let created = null
+      setData(prev => {
+        created = { id: nextId(prev.properties, 'PROP'), ...property }
+        return { ...prev, properties: [created, ...prev.properties] }
+      })
+      return created
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Delete a property
+  const deleteProperty = useCallback(async (id) => {
+    setLoading(true)
+    try {
+      await simulateApiDelay()
+      setData(prev => ({
+        ...prev,
+        properties: prev.properties.filter(p => p.id !== id)
+      }))
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Update lead (e.g. move stage in pipeline). Bumps lastContact so the
+  // "última interacción" stays fresh on any edit.
   const updateLead = useCallback(async (id, updates) => {
     setLoading(true)
     try {
@@ -139,6 +183,48 @@ export function useAdminData() {
         leads: prev.leads.map(l =>
           l.id === id ? { ...l, ...updates, lastContact: new Date().toISOString() } : l
         )
+      }))
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Add a brand-new lead (returns the created record)
+  const addLead = useCallback(async (lead) => {
+    setLoading(true)
+    try {
+      await simulateApiDelay()
+      let created = null
+      setData(prev => {
+        const now = new Date().toISOString()
+        created = {
+          id: nextId(prev.leads, 'LEAD'),
+          createdAt: now,
+          lastContact: now,
+          noteLog: [],
+          contactLog: [],
+          ...lead
+        }
+        return { ...prev, leads: [created, ...prev.leads] }
+      })
+      return created
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Delete a lead
+  const deleteLead = useCallback(async (id) => {
+    setLoading(true)
+    try {
+      await simulateApiDelay()
+      setData(prev => ({
+        ...prev,
+        leads: prev.leads.filter(l => l.id !== id)
       }))
     } catch (err) {
       setError(err.message)
@@ -158,6 +244,24 @@ export function useAdminData() {
           v.id === id ? { ...v, ...updates } : v
         )
       }))
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Add a brand-new visit (returns the created record)
+  const addVisit = useCallback(async (visit) => {
+    setLoading(true)
+    try {
+      await simulateApiDelay()
+      let created = null
+      setData(prev => {
+        created = { id: nextId(prev.visits, 'VIS'), status: 'scheduled', ...visit }
+        return { ...prev, visits: [created, ...prev.visits] }
+      })
+      return created
     } catch (err) {
       setError(err.message)
     } finally {
@@ -201,8 +305,13 @@ export function useAdminData() {
     error,
     getKPIs,
     updateProperty,
+    addProperty,
+    deleteProperty,
     updateLead,
+    addLead,
+    deleteLead,
     updateVisit,
+    addVisit,
     updateOperation,
     resetData
   }

@@ -52,14 +52,14 @@ Hacer todo junto porque son fixes rapidos:
 
 ---
 
-## I4: Leads CRM — Scroll fix + edicion completa
+## I4: Leads CRM — Scroll fix + edicion completa ✅ HECHO (9 sep 2026)
 **Esfuerzo:** Alto (2-3 hrs)
-**Archivos:** LeadsManagement.jsx (186 lineas), mockLeads.js
+**Archivos:** LeadsManagement.jsx, mockLeads.js, useAdminData.js (+addLead/deleteLead), shared/Modal.jsx, shared/useToast.jsx, shared/formStyles.js
 
 Problemas actuales: no se puede scrollear, no queda claro para que sirve, no se puede editar.
 
-- [ ] **Fix scroll**: verificar overflow del Kanban board. Agregar `overflow-x-auto` horizontal y `overflow-y-auto` vertical en cada columna. Maximo 3-4 cards visibles por columna, el resto con scroll
-- [ ] **Click en lead card**: abrir modal LeadDetailModal con:
+- [x] **Fix scroll**: verificar overflow del Kanban board. Agregar `overflow-x-auto` horizontal y `overflow-y-auto` vertical en cada columna. Maximo 3-4 cards visibles por columna, el resto con scroll
+- [x] **Click en lead card**: abrir modal LeadDetailModal con:
   - Datos del lead: nombre, email, telefono, propiedad de interes, presupuesto
   - Todos los campos EDITABLES (inputs)
   - Score selector (Hot/Warm/Cold) con color visual
@@ -68,59 +68,59 @@ Problemas actuales: no se puede scrollear, no queda claro para que sirve, no se 
   - Seccion "Notas" con textarea + historial de notas anteriores con timestamp
   - Seccion "Historial de contacto": timeline con fecha + accion (Llamada/Email/Visita/WhatsApp)
   - Boton "Agregar nota" y "Registrar contacto"
-- [ ] **Boton "Nuevo Lead"** en header del Kanban:
+- [x] **Boton "Nuevo Lead"** en header del Kanban:
   - Modal con formulario: nombre, email, telefono, propiedad interes (dropdown de properties), presupuesto, fuente, agente asignado
   - Al guardar, aparece en columna "Nuevo"
-- [ ] **Arrastrar leads entre columnas** — ya existe drag con botones flechita, verificar que funciona bien
-- [ ] **Busqueda de leads**: input de busqueda que filtra por nombre o propiedad
-- [ ] Persistir todo en localStorage
+- [x] **Arrastrar leads entre columnas** — ya existe drag con botones flechita, verificar que funciona bien
+- [x] **Busqueda de leads**: input de busqueda que filtra por nombre o propiedad
+- [x] Persistir todo en localStorage
 
 **Criterio de exito:** Kanban scrolleable. Click en lead abre detalle editable completo con notas e historial. Se puede crear lead nuevo.
 
 ---
 
-## I5: Propiedades — CRUD completo
+## I5: Propiedades — CRUD completo ✅ HECHO (9 sep 2026)
 **Esfuerzo:** Alto (3-4 hrs)
-**Archivos:** PropertyManagement.jsx (239 lineas), properties.json, useAdminData.js
+**Archivos:** PropertyManagement.jsx, useAdminData.js (+addProperty/deleteProperty), format.js (+status 'paused')
 
 Actualmente solo se puede cambiar status. Necesita CRUD completo:
 
-- [ ] **Boton "Agregar propiedad"** prominente en header:
+- [x] **Boton "Agregar propiedad"** prominente en header:
   - Modal grande con tabs: Datos basicos / Ubicacion / Caracteristicas / Multimedia
   - Tab Datos basicos: titulo, descripcion, operacion (venta/alquiler/temporario), tipo, precio, moneda, estado
   - Tab Ubicacion: direccion, barrio (dropdown de neighborhoods.json), ciudad, coordenadas (placeholder)
   - Tab Caracteristicas: ambientes, dormitorios, banos, superficie total/cubierta, antiguedad, orientacion, cochera (toggle), amenities (checklist)
   - Tab Multimedia: URLs de imagenes (inputs, maximo 6), URL tour virtual
   - Al guardar: propiedad aparece en la lista
-- [ ] **Editar propiedad** (click en fila o boton edit):
+- [x] **Editar propiedad** (click en fila o boton edit):
   - Mismo modal que agregar pero pre-llenado con datos actuales
   - Todos los campos editables
-- [ ] **Pausar/Despublicar**: nuevo status "pausada" con badge gris. Toggle rapido desde la tabla
-- [ ] **Eliminar**: boton con confirmacion ("Seguro que desea eliminar?")
-- [ ] **Info expandida en tabla**: agregar columnas visibles: barrio, superficie, dormitorios (responsive, ocultar algunas en mobile)
-- [ ] **Vista doble**: toggle tabla/grid (grid muestra cards con imagen)
-- [ ] Persistir todo en localStorage via useAdminData
+- [x] **Pausar/Despublicar**: nuevo status "pausada" con badge gris. Toggle rapido desde la tabla
+- [x] **Eliminar**: boton con confirmacion ("Seguro que desea eliminar?")
+- [x] **Info expandida en tabla**: agregar columnas visibles: barrio, superficie, dormitorios (responsive, ocultar algunas en mobile)
+- [x] **Vista doble**: toggle tabla/grid (grid muestra cards con imagen)
+- [x] Persistir todo en localStorage via useAdminData
 
 **Criterio de exito:** CRUD completo de propiedades. Agregar, editar todos los campos, pausar, eliminar. Vista tabla y grid.
 
 ---
 
-## I6: Visitas — Edicion completa + mensajes
+## I6: Visitas — Edicion completa + mensajes ✅ HECHO (9 sep 2026)
 **Esfuerzo:** Medio-Alto (2 hrs)
-**Archivos:** VisitsScheduler.jsx (211 lineas), mockVisits.js
+**Archivos:** VisitsScheduler.jsx, mockVisits.js (+clientEmail), useAdminData.js (+addVisit)
 
-- [ ] **Boton "Agendar visita"** en header:
+- [x] **Boton "Agendar visita"** en header:
   - Modal: propiedad (dropdown), cliente nombre + email + telefono, fecha (date picker), hora (time select), tipo (presencial/videollamada), agente asignado
-- [ ] **Click en visita card**: expandir detalle con:
+- [x] **Click en visita card**: expandir detalle con:
   - Info completa de la propiedad (titulo, foto mini, direccion, precio)
   - Datos del cliente (nombre, email, telefono)
   - Agente asignado (editable dropdown)
   - Notas de la visita (textarea)
   - Resultado (si completada): Interesado / No interesado / Hara oferta
-- [ ] **Reagendar**: boton que abre mini-modal con nueva fecha + hora
-- [ ] **Enviar mensaje/link al cliente**: boton "Enviar recordatorio" que simula envio (toast "Recordatorio enviado a [email]")
-- [ ] **Enviar link de videollamada**: si tipo=videollamada, boton "Generar link" que muestra URL mock
-- [ ] Persistir cambios en localStorage
+- [x] **Reagendar**: boton que abre mini-modal con nueva fecha + hora
+- [x] **Enviar mensaje/link al cliente**: boton "Enviar recordatorio" que simula envio (toast "Recordatorio enviado a [email]")
+- [x] **Enviar link de videollamada**: si tipo=videollamada, boton "Generar link" que muestra URL mock
+- [x] Persistir cambios en localStorage
 
 **Criterio de exito:** Se puede agendar visita nueva, editar existente, reagendar, enviar recordatorio. Detalle de propiedad visible en cada visita.
 

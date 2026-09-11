@@ -25,6 +25,7 @@ Lista viva de pendientes. Tags: `Q` quick-win · `M` medio · `L` grande. Todo U
 - [x] **`M` Today activity con ver detalle** — filas clickeables → modal de detalle (huésped, contacto, estadía, pago, pedidos especiales) + **check-in/out reales**. *(Dashboard general aún se puede seguir puliendo.)*
 - [x] **`M` Room status & Quick actions** — Room status ahora con **ocupación %** + "rooms need attention"; Quick actions **navegables** (services/housekeeping/inventory) con urgencia.
 - [x] **`M` Room Management + mapa 2.5D** — nuevo view "mapa": **edificio por pisos** con tiles coloreadas por estado + indicador de huésped; click → editar. *(RoomManagement se puede enriquecer más.)*
+- [ ] **`M` Housekeeping — ruta optimizada del personal** *(idea futura, H10)* — generar un **recorrido eficiente** para las camareras/os agrupado por piso (ej: "piso 1 → hab 3, 7, 18 → piso 2 → …"), minimizando desplazamientos. Ordenar por proximidad/piso y mostrar la secuencia sugerida del turno.
 - [x] **`Q` Fix modal de edición de habitación** — era el `-translate-1/2` pisado por el transform de framer → reescrito con overlay flex-center.
 - [x] **`M` Panel de Excursiones (admin)** — nueva sección: KPIs (activas, salidas hoy, ocupación de cupos, ingresos), tarjetas con **horarios + cupos** (barras booked/capacity), toggle activo/inactivo, y modal para gestionar **precio, estado, capacidad por horario y agregar/quitar salidas**. Data en `data/admin/mockExcursions.js`.
 

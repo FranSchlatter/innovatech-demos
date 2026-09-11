@@ -56,6 +56,7 @@ const OFFERS = [
       'Free cancellation up to 7 days before arrival. Within 7 days, the first night is charged.',
     highlight: true,
     bestSeller: true,
+    wide: true,
     image:
       'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=1200&q=80'
   },
@@ -140,6 +141,7 @@ const OFFERS = [
       'Free cancellation up to 5 days before arrival. Spa appointments reschedulable anytime.',
     highlight: false,
     bestSeller: false,
+    wide: true,
     image:
       'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=1200&q=80'
   }
@@ -207,10 +209,10 @@ export default function OffersSection({ onReservePackage }) {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: idx * 0.1 }}
                 className={`rounded-lg overflow-hidden shadow-soft hover:shadow-medium transition-all duration-300 ${
-                  offer.highlight ? 'border-2 border-accent lg:col-span-2' : 'border border-border'
-                }`}
+                  offer.highlight ? 'border-2 border-accent' : 'border border-border'
+                } ${offer.wide ? 'lg:col-span-2' : ''}`}
               >
-                <div className={`grid grid-cols-1 ${offer.highlight ? 'md:grid-cols-2' : ''}`}>
+                <div className={`grid grid-cols-1 ${offer.wide ? 'md:grid-cols-2' : ''}`}>
                   {/* Image */}
                   <div className="relative h-64 md:h-full overflow-hidden">
                     <img

@@ -43,7 +43,16 @@ import {
   Compass,
   BellRing,
   CalendarCheck,
-  Users
+  Users,
+  Music,
+  Leaf,
+  Presentation,
+  Bike,
+  Trophy,
+  Wine,
+  Hash,
+  Tag,
+  StickyNote
 } from 'lucide-react'
 
 // Mock guest data - In production this would come from authentication/API
@@ -97,6 +106,7 @@ const AMENITY_RESERVATIONS = [
   {
     id: 'spa',
     name: 'Spa Treatment',
+    location: 'Wellness Center · Floor 2',
     icon: Sparkles,
     price: 120,
     duration: '60 min',
@@ -107,6 +117,7 @@ const AMENITY_RESERVATIONS = [
   {
     id: 'gym',
     name: 'Personal Training',
+    location: 'Fitness Center · Floor 2',
     icon: Dumbbell,
     price: 80,
     duration: '45 min',
@@ -117,6 +128,7 @@ const AMENITY_RESERVATIONS = [
   {
     id: 'pool',
     name: 'Poolside Cabana',
+    location: 'Rooftop Pool · Floor 8',
     icon: Waves,
     price: 50,
     duration: '4 hours',
@@ -127,6 +139,7 @@ const AMENITY_RESERVATIONS = [
   {
     id: 'restaurant',
     name: 'Restaurant Table',
+    location: 'Main Restaurant · Ground Floor',
     icon: UtensilsCrossed,
     price: 0,
     duration: '2 hours',
@@ -137,12 +150,79 @@ const AMENITY_RESERVATIONS = [
   {
     id: 'transport',
     name: 'Airport Transfer',
+    location: 'Hotel Lobby · Pickup point',
     icon: Car,
     price: 75,
     duration: 'One-way',
     available: ['Any time'],
     image: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&h=600&fit=crop',
     description: 'Luxury vehicle transfer to/from airport. Professional drivers, complimentary water and WiFi.'
+  },
+  {
+    id: 'yoga',
+    name: 'Yoga Session',
+    location: 'Garden Terrace · Floor 3',
+    icon: Leaf,
+    price: 0,
+    duration: '45 min',
+    available: ['07:30', '09:00', '17:30'],
+    image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&h=600&fit=crop',
+    description: 'Guided sunrise or sunset yoga with our in-house instructor. Mats and towels provided.'
+  },
+  {
+    id: 'dance-class',
+    name: 'Dance Class',
+    location: 'Ballroom · Floor 1',
+    icon: Music,
+    price: 0,
+    duration: '60 min',
+    available: ['18:00', '20:00'],
+    image: 'https://images.unsplash.com/photo-1504609773096-104ff2c73ba4?w=800&h=600&fit=crop',
+    description: 'Learn salsa, tango or bachata with our resident dancers. All levels welcome, no partner needed.'
+  },
+  {
+    id: 'meeting-room',
+    name: 'Meeting Room',
+    location: 'Business Center · Floor 1',
+    icon: Presentation,
+    price: 0,
+    duration: '2 hours',
+    available: ['08:00', '10:00', '14:00', '16:00'],
+    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop',
+    description: 'Private meeting room with screen, whiteboard and coffee service. Complimentary for guests.'
+  },
+  {
+    id: 'bikes',
+    name: 'Bike Rental',
+    location: 'Concierge Desk · Lobby',
+    icon: Bike,
+    price: 0,
+    duration: 'Half day',
+    available: ['Any time'],
+    image: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=800&h=600&fit=crop',
+    description: 'Explore the coast on one of our complimentary city bikes. Helmet and map included.'
+  },
+  {
+    id: 'tennis',
+    name: 'Tennis Court',
+    location: 'Sports Area · Ground Floor',
+    icon: Trophy,
+    price: 30,
+    duration: '1 hour',
+    available: ['08:00', '10:00', '16:00', '18:00'],
+    image: 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=800&h=600&fit=crop',
+    description: 'Book our floodlit court. Rackets and balls available at reception at no extra cost.'
+  },
+  {
+    id: 'wine',
+    name: 'Wine Tasting',
+    location: 'Wine Cellar · Basement',
+    icon: Wine,
+    price: 45,
+    duration: '90 min',
+    available: ['18:00', '19:30'],
+    image: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=800&h=600&fit=crop',
+    description: 'Guided tasting of regional wines with our sommelier, paired with artisanal cheeses.'
   }
 ]
 
@@ -185,6 +265,14 @@ const SERVICE_SECTIONS = [
 
 const REQUESTS_STORAGE_KEY = 'hotel-luxury-guest-requests'
 
+// Short cancellation copy shown in the booking & request-detail modals.
+// Paid experiences carry a late-cancellation fee; complimentary ones just ask
+// guests to free up the slot if they can't make it.
+const cancellationCopy = (price) =>
+  price > 0
+    ? 'Free cancellation up to 24h before. Later cancellations or no-shows are charged 50% of the price.'
+    : 'Complimentary — no charge. Please cancel if you can\'t attend so another guest can take the slot.'
+
 export default function GuestPortal({ onExit }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
@@ -199,6 +287,7 @@ export default function GuestPortal({ onExit }) {
   })
   const [showServiceModal, setShowServiceModal] = useState(null)
   const [showReservationModal, setShowReservationModal] = useState(null)
+  const [showRequestDetail, setShowRequestDetail] = useState(null)
   const [serviceQuantity, setServiceQuantity] = useState(1)
   const [serviceNotes, setServiceNotes] = useState('')
   const [reservationDate, setReservationDate] = useState('')
@@ -395,6 +484,7 @@ export default function GuestPortal({ onExit }) {
       status: 'confirmed',
       duration: amenity.duration,
       price: amenity.price,
+      location: amenity.location,
       canCancel: true,
       image: amenity.image
     }
@@ -418,6 +508,21 @@ export default function GuestPortal({ onExit }) {
     const today = new Date()
     const diff = Math.ceil((checkout - today) / (1000 * 60 * 60 * 24))
     return diff > 0 ? diff : 0
+  }
+
+  // Bookable days for amenities: from today through checkout (inclusive).
+  // Powers the custom date chips so we never fall back to the native picker.
+  const getStayDates = () => {
+    const dates = []
+    const cursor = new Date()
+    cursor.setHours(0, 0, 0, 0)
+    const end = new Date(guest.reservation.checkOut)
+    end.setHours(0, 0, 0, 0)
+    while (cursor <= end) {
+      dates.push(new Date(cursor))
+      cursor.setDate(cursor.getDate() + 1)
+    }
+    return dates
   }
 
   if (!isAuthenticated) {
@@ -647,7 +752,11 @@ export default function GuestPortal({ onExit }) {
                           initial={{ opacity: 0, y: 8 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, x: -20 }}
-                          className="flex items-center gap-3 bg-bg rounded-xl p-3"
+                          onClick={() => setShowRequestDetail(request)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => { if (e.key === 'Enter') setShowRequestDetail(request) }}
+                          className="flex items-center gap-3 bg-bg rounded-xl p-3 cursor-pointer border border-transparent hover:border-accent transition"
                         >
                           <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
                             {(() => {
@@ -691,9 +800,10 @@ export default function GuestPortal({ onExit }) {
                           {request.price > 0 && (
                             <span className="text-sm font-bold text-accent whitespace-nowrap">${request.price}</span>
                           )}
+                          <ChevronRight className="w-4 h-4 text-muted flex-shrink-0" />
                           {request.canCancel && (
                             <button
-                              onClick={() => handleCancelRequest(request.id)}
+                              onClick={(e) => { e.stopPropagation(); handleCancelRequest(request.id) }}
                               className="text-muted hover:text-primary transition flex-shrink-0"
                               title="Cancel"
                             >
@@ -959,53 +1069,52 @@ export default function GuestPortal({ onExit }) {
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -12 }}
-                    className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+                    className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
                   >
                     {AMENITY_RESERVATIONS.map((amenity, idx) => {
                       const Icon = amenity.icon
+                      const isFree = amenity.price === 0
                       return (
                         <motion.div
                           key={amenity.id}
-                          initial={{ opacity: 0, y: 20 }}
+                          initial={{ opacity: 0, y: 16 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: idx * 0.08 }}
-                          className="bg-surface rounded-2xl overflow-hidden border border-border shadow-soft hover:shadow-lg transition-all group"
+                          transition={{ delay: idx * 0.04 }}
+                          className="bg-surface rounded-xl overflow-hidden border border-border shadow-soft hover:shadow-lg hover:border-accent transition-all group flex flex-col"
                         >
-                          <div className="relative h-48 overflow-hidden">
+                          <div className="relative h-28 overflow-hidden">
                             <img
                               src={amenity.image}
                               alt={amenity.name}
+                              loading="lazy"
                               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                            <div className="absolute top-4 right-4 w-12 h-12 bg-white/90 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                              <Icon className="w-6 h-6 text-accent" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                            <div className="absolute top-2 left-2 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                              <Icon className="w-4 h-4 text-accent" />
                             </div>
-                            <div className="absolute bottom-4 left-4 right-4">
-                              <h3 className="text-xl font-bold text-white mb-1">{amenity.name}</h3>
-                              <p className="text-white/80 text-sm">{amenity.duration}</p>
-                            </div>
+                            <span className="absolute top-2 right-2 text-[11px] font-bold px-2 py-0.5 rounded-md bg-accent text-white">
+                              {isFree ? 'Free' : `$${amenity.price}`}
+                            </span>
+                            <h3 className="absolute bottom-2 left-2 right-2 text-sm font-bold text-white leading-tight line-clamp-1">
+                              {amenity.name}
+                            </h3>
                           </div>
 
-                          <div className="p-5">
-                            <p className="text-sm text-muted mb-4 line-clamp-2">{amenity.description}</p>
-
-                            <div className="flex items-center justify-between">
-                              <div>
-                                {amenity.price > 0 ? (
-                                  <p className="text-2xl font-bold text-accent">${amenity.price}</p>
-                                ) : (
-                                  <p className="text-lg font-semibold text-accent">Complimentary</p>
-                                )}
-                                <p className="text-xs text-muted">{amenity.available.length} slots available</p>
-                              </div>
-                              <button
-                                onClick={() => setShowReservationModal(amenity)}
-                                className="bg-accent text-white px-5 py-2.5 rounded-xl font-semibold hover:opacity-90 transition hover:scale-105"
-                              >
-                                Book Now
-                              </button>
+                          <div className="p-3 flex flex-col gap-2 flex-1">
+                            <div className="flex items-center justify-between text-[11px] text-muted">
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {amenity.duration}
+                              </span>
+                              <span>{amenity.available.length} slots</span>
                             </div>
+                            <button
+                              onClick={() => setShowReservationModal(amenity)}
+                              className="mt-auto w-full bg-accent text-white py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition"
+                            >
+                              Book
+                            </button>
                           </div>
                         </motion.div>
                       )
@@ -1217,18 +1326,44 @@ export default function GuestPortal({ onExit }) {
                 <X className="w-5 h-5" />
               </button>
 
-              <h3 className="text-xl font-bold mb-4">Book {showReservationModal.name}</h3>
+              <h3 className="text-xl font-bold mb-1 pr-8">Book {showReservationModal.name}</h3>
+              {showReservationModal.location && (
+                <p className="flex items-center gap-1.5 text-sm text-muted mb-3">
+                  <MapPin className="w-4 h-4 text-accent flex-shrink-0" />
+                  {showReservationModal.location}
+                </p>
+              )}
+              {showReservationModal.description && (
+                <p className="text-sm text-muted leading-relaxed mb-5">{showReservationModal.description}</p>
+              )}
 
               <div className="mb-4">
                 <label className="text-sm text-muted mb-2 block">Select Date</label>
-                <input
-                  type="date"
-                  value={reservationDate}
-                  onChange={(e) => setReservationDate(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                  max={guest.reservation.checkOut}
-                  className="w-full px-4 py-3 bg-bg rounded-xl border-2 border-border focus:border-accent outline-none"
-                />
+                <div className="grid grid-cols-4 gap-2">
+                  {getStayDates().map((d) => {
+                    const iso = d.toISOString().split('T')[0]
+                    const selected = reservationDate === iso
+                    return (
+                      <button
+                        key={iso}
+                        onClick={() => setReservationDate(iso)}
+                        className={`flex flex-col items-center py-2.5 rounded-lg border transition ${
+                          selected
+                            ? 'bg-accent text-white border-accent'
+                            : 'bg-bg border-border hover:border-accent'
+                        }`}
+                      >
+                        <span className={`text-[11px] uppercase tracking-wide ${selected ? 'text-white/80' : 'text-muted'}`}>
+                          {d.toLocaleDateString('en-US', { weekday: 'short' })}
+                        </span>
+                        <span className="text-lg font-bold leading-tight">{d.getDate()}</span>
+                        <span className={`text-[11px] ${selected ? 'text-white/80' : 'text-muted'}`}>
+                          {d.toLocaleDateString('en-US', { month: 'short' })}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
 
               <div className="mb-4">
@@ -1262,6 +1397,12 @@ export default function GuestPortal({ onExit }) {
                 </div>
               )}
 
+              {/* Cancellation policy — fee for paid experiences, no-show note for free ones */}
+              <div className="flex items-start gap-2 text-xs text-muted bg-bg rounded-lg p-3 mb-4">
+                <AlertCircle className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
+                <span className="leading-relaxed">{cancellationCopy(showReservationModal.price)}</span>
+              </div>
+
               <button
                 onClick={() => handleAmenityReservation(showReservationModal)}
                 disabled={!reservationDate || !reservationTime}
@@ -1270,6 +1411,157 @@ export default function GuestPortal({ onExit }) {
                 <CheckCircle className="w-5 h-5" />
                 Confirm Reservation
               </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Request Detail Modal — quick expandable view of an active request (H12) */}
+      <AnimatePresence>
+        {showRequestDetail && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowRequestDetail(null)}
+              className="absolute inset-0 bg-black/60"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              role="dialog"
+              aria-modal="true"
+              className="relative bg-surface rounded-2xl w-full max-w-md overflow-hidden max-h-[90vh] overflow-y-auto"
+            >
+              <button
+                onClick={() => setShowRequestDetail(null)}
+                className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {/* Optional hero image (amenity reservations carry one) */}
+              {showRequestDetail.image && (
+                <div className="relative h-40 overflow-hidden">
+                  <img
+                    src={showRequestDetail.image}
+                    alt={showRequestDetail.service}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                  <h3 className="absolute bottom-3 left-4 right-12 text-lg font-bold text-white leading-tight">
+                    {showRequestDetail.service}
+                  </h3>
+                </div>
+              )}
+
+              <div className="p-6">
+                {!showRequestDetail.image && (
+                  <div className="flex items-start gap-3 mb-4 pr-8">
+                    <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0">
+                      {(() => {
+                        const iconByType = {
+                          restaurant: UtensilsCrossed,
+                          dining: CalendarCheck,
+                          waiter: BellRing,
+                          excursion: Compass,
+                          amenity: Calendar
+                        }
+                        const Icon = iconByType[showRequestDetail.type] || Clipboard
+                        return <Icon className="w-5 h-5 text-accent" />
+                      })()}
+                    </div>
+                    <h3 className="text-lg font-bold leading-tight">{showRequestDetail.service}</h3>
+                  </div>
+                )}
+
+                {/* Status + type chips */}
+                <div className="flex flex-wrap items-center gap-2 mb-5">
+                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-accent/20 text-accent capitalize">
+                    {showRequestDetail.status}
+                  </span>
+                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-bg text-muted capitalize">
+                    {showRequestDetail.type}
+                  </span>
+                </div>
+
+                {/* Detail rows (only the fields this request actually carries) */}
+                <div className="space-y-3 text-sm">
+                  {(() => {
+                    const r = showRequestDetail
+                    const rows = [
+                      { icon: Hash, label: 'Request ID', value: r.id },
+                      { icon: MapPin, label: 'Location', value: r.location },
+                      { icon: Calendar, label: 'Date', value: r.date },
+                      { icon: Clock, label: 'Time', value: r.time },
+                      { icon: Clock, label: 'ETA', value: r.estimatedTime },
+                      { icon: Clock, label: 'Duration', value: r.duration },
+                      { icon: Tag, label: 'Quantity', value: r.quantity && r.quantity > 1 ? r.quantity : null },
+                      { icon: Users, label: 'Guests', value: r.guestsCount },
+                      { icon: UtensilsCrossed, label: 'Items', value: r.summary }
+                    ].filter((row) => row.value)
+                    return rows.map((row) => {
+                      const RowIcon = row.icon
+                      return (
+                        <div key={row.label} className="flex items-start gap-3">
+                          <RowIcon className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
+                          <span className="text-muted w-24 flex-shrink-0">{row.label}</span>
+                          <span className="font-medium text-right flex-1 break-words">{row.value}</span>
+                        </div>
+                      )
+                    })
+                  })()}
+
+                  {showRequestDetail.notes && (
+                    <div className="flex items-start gap-3">
+                      <StickyNote className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
+                      <span className="text-muted w-24 flex-shrink-0">Notes</span>
+                      <span className="font-medium text-right flex-1 break-words italic">"{showRequestDetail.notes}"</span>
+                    </div>
+                  )}
+
+                  {showRequestDetail.price > 0 && (
+                    <div className="flex items-center justify-between pt-3 mt-1 border-t border-border">
+                      <span className="text-muted flex items-center gap-2">
+                        <CreditCard className="w-4 h-4 text-accent" />
+                        Total
+                      </span>
+                      <span className="text-lg font-bold text-accent">${showRequestDetail.price}</span>
+                    </div>
+                  )}
+
+                  {/* Cancellation policy — only for cancellable requests */}
+                  {showRequestDetail.canCancel && (
+                    <div className="flex items-start gap-2 text-xs text-muted bg-bg rounded-lg p-3 mt-1">
+                      <AlertCircle className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
+                      <span className="leading-relaxed">{cancellationCopy(showRequestDetail.price)}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="mt-6 flex gap-3">
+                  {showRequestDetail.canCancel && (
+                    <button
+                      onClick={() => {
+                        handleCancelRequest(showRequestDetail.id)
+                        setShowRequestDetail(null)
+                      }}
+                      className="flex-1 py-2.5 rounded-xl font-semibold border border-border text-muted hover:text-primary hover:border-accent transition"
+                    >
+                      Cancel Request
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowRequestDetail(null)}
+                    className="flex-1 bg-accent text-white py-2.5 rounded-xl font-semibold hover:opacity-90 transition"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
             </motion.div>
           </div>
         )}

@@ -643,16 +643,14 @@ Owner dijo "ME GUSTA" pero si se puede mejorar:
 
 ---
 
-## SHARED: DatePicker propio (rollout a inmobiliaria)
-**Esfuerzo:** Bajo (30-45 min)
+## SHARED: DatePicker propio ✅ HECHO (11 sep 2026)
 **Archivos:** ScheduleVisitForm.jsx, admin/visits/VisitsScheduler.jsx (2), admin/operations/OperationsManagement.jsx (4)
 
 Ya existe `packages/shared-ui/components/DatePicker.jsx` (creado y aplicado en hoteleria):
 calendario themeado con tokens del theme (se adapta por-app), controlado por `value`/`onChange(isoString)`,
 con `min`/`max`/`error`. Reemplaza el `input type="date"` nativo (la "poronga blanca" del navegador).
 
-- [ ] Swap de los 7 usos nativos de inmobiliaria por `<DatePicker>` (import `@shared-ui/components/DatePicker`).
-  - Ojo: `onChange` recibe el string ISO directo, NO un evento → cambiar `e.target.value` por el valor.
-- [ ] Verificar dark/light + build OK.
-
-> Pendiente igual en **salud** (2 usos) y **gastronomia** (1 uso). Total original en el monorepo: 19 usos / 11 archivos.
+- [x] Swap de los 7 usos nativos de inmobiliaria por `<DatePicker>` (import `@shared-ui/components/DatePicker`).
+      `onChange` recibe el string ISO directo (no evento) → se inlineó el setter en cada uno.
+- [x] Rollout COMPLETO en todo el monorepo: hoteleria (9), inmobiliaria (7), salud (2), gastronomia (1).
+      Builds OK en las 4 apps. 0 pickers nativos restantes.

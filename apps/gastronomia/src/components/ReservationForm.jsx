@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import DatePicker from '@shared-ui/components/DatePicker'
 import {
   ArrowLeft,
   ArrowRight,
@@ -334,15 +335,11 @@ export default function ReservationForm({ onBack }) {
                       <Calendar className="w-4 h-4 inline mr-2" />
                       Reservation Date *
                     </label>
-                    <input
-                      type="date"
-                      name="date"
+                    <DatePicker
                       value={formData.date}
-                      onChange={handleChange}
+                      onChange={(value) => handleChange({ target: { name: 'date', value } })}
                       min={new Date().toISOString().split('T')[0]}
-                      className={`w-full px-4 py-3 rounded-xl bg-bg border-2 ${
-                        errors.date ? 'border-red-500' : 'border-border'
-                      } focus:border-accent outline-none transition`}
+                      error={!!errors.date}
                     />
                     {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date}</p>}
                   </div>

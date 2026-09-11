@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import DatePicker from '@shared-ui/components/DatePicker'
 import {
   ArrowLeft,
   MapPin,
@@ -216,12 +217,10 @@ export default function ScheduleVisitForm({ property, onBack, onDone }) {
               {/* Date */}
               <div>
                 <label className="block text-sm font-medium text-text mb-1.5">Fecha</label>
-                <input
-                  type="date"
+                <DatePicker
                   value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  required
-                  className="w-full px-3 py-2.5 rounded-lg bg-bg border border-border text-text focus:outline-none focus:ring-2 focus:ring-accent"
+                  onChange={(value) => setDate(value)}
+                  min={new Date().toISOString().split('T')[0]}
                 />
               </div>
 

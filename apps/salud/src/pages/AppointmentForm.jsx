@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import DatePicker from '@shared-ui/components/DatePicker'
 
 export default function AppointmentForm({ doctor, onBook }) {
   const [appointment, setAppointment] = useState({
@@ -58,12 +59,10 @@ export default function AppointmentForm({ doctor, onBook }) {
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <label className="block text-sm font-semibold mb-2">Fecha</label>
-            <input
-              type="date"
+            <DatePicker
               value={appointment.date}
-              onChange={(e) => setAppointment({ ...appointment, date: e.target.value })}
-              required
-              className="w-full px-4 py-3 rounded-lg bg-bg border border-border focus:outline-none focus:border-primary"
+              onChange={(value) => setAppointment({ ...appointment, date: value })}
+              min={new Date().toISOString().split('T')[0]}
             />
           </div>
           <div>

@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import DatePicker from '@shared-ui/components/DatePicker'
 import {
   MapPin, Video, Phone, User, Plus, Mail, CalendarClock, Link2,
   Copy, Check, CalendarDays, Building2, ChevronRight
@@ -315,8 +316,8 @@ function VisitDetailModal({ visit, agents, properties, onClose, updateVisit, sho
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className={labelCls}>Nueva fecha</label>
-                  <input type="date" value={reschedule.date}
-                    onChange={(e) => setReschedule((r) => ({ ...r, date: e.target.value }))} className={fieldCls} />
+                  <DatePicker value={reschedule.date}
+                    onChange={(value) => setReschedule((r) => ({ ...r, date: value }))} />
                 </div>
                 <div>
                   <label className={labelCls}>Nueva hora</label>
@@ -514,7 +515,7 @@ function ScheduleVisitModal({ open, agents, properties, onClose, addVisit, showT
         </div>
         <div>
           <label className={labelCls}>Fecha *</label>
-          <input type="date" value={form.date} onChange={set('date')} className={fieldCls} />
+          <DatePicker value={form.date} onChange={(value) => setForm((prev) => ({ ...prev, date: value }))} />
           {invalid.date && <p className="text-xs text-error mt-1">Elegí una fecha.</p>}
         </div>
         <div>

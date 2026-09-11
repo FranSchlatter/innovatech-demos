@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import DatePicker from '@shared-ui/components/DatePicker'
 import {
   Calendar,
   Clock,
@@ -460,16 +461,13 @@ export default function AppointmentFormNew({ doctor, specialty, onBook }) {
                       <label className="block text-sm font-medium mb-2">
                         Date of Birth <span className="text-red-500">*</span>
                       </label>
-                      <div className={`flex items-center gap-3 px-4 py-3 bg-surface rounded-lg border transition-colors ${errors.dateOfBirth ? 'border-red-500' : 'border-border focus-within:border-accent'}`}>
-                        <Calendar className="w-5 h-5 text-accent flex-shrink-0" />
-                        <input
-                          type="date"
-                          value={formData.dateOfBirth}
-                          onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
-                          max={new Date().toISOString().split('T')[0]}
-                          className="flex-1 bg-transparent focus:outline-none text-sm"
-                        />
-                      </div>
+                      <DatePicker
+                        value={formData.dateOfBirth}
+                        onChange={(value) => setFormData({ ...formData, dateOfBirth: value })}
+                        max={new Date().toISOString().split('T')[0]}
+                        error={!!errors.dateOfBirth}
+                        placeholder="Fecha de nacimiento"
+                      />
                       {errors.dateOfBirth && <p className="text-red-500 text-xs mt-1">{errors.dateOfBirth}</p>}
                     </div>
 

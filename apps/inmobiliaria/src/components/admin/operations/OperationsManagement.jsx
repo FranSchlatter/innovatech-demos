@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
+import DatePicker from '@shared-ui/components/DatePicker'
 import {
   ArrowRight, ArrowLeft, Calendar, TrendingUp, Plus, FileCheck2, Clock,
   StickyNote, Handshake, Building2, MapPin, CheckCircle2, Circle, Timer, Percent,
@@ -491,11 +492,11 @@ function OperationDetailModal({ operation, property, agents, stageOrder, onClose
           </div>
           <div>
             <label className={labelCls}>Fecha de inicio</label>
-            <input type="date" value={form.startDate || ''} onChange={set('startDate')} className={fieldCls} />
+            <DatePicker value={form.startDate || ''} onChange={(value) => setForm((prev) => ({ ...prev, startDate: value }))} />
           </div>
           <div>
             <label className={labelCls}>Fecha estimada de cierre</label>
-            <input type="date" value={form.closeDate || ''} onChange={set('closeDate')} className={fieldCls} />
+            <DatePicker value={form.closeDate || ''} onChange={(value) => setForm((prev) => ({ ...prev, closeDate: value }))} />
           </div>
           <div className="sm:col-span-2">
             <label className={labelCls}>Agente asignado</label>
@@ -806,11 +807,11 @@ function NewOperationModal({ open, onClose, agents, properties, addOperation, sh
           </div>
           <div>
             <label className={labelCls}>Fecha de inicio</label>
-            <input type="date" value={form.startDate} onChange={set('startDate')} className={fieldCls} />
+            <DatePicker value={form.startDate} onChange={(value) => setForm((prev) => ({ ...prev, startDate: value }))} />
           </div>
           <div>
             <label className={labelCls}>Fecha estimada de cierre</label>
-            <input type="date" value={form.closeDate} onChange={set('closeDate')} className={fieldCls} />
+            <DatePicker value={form.closeDate} onChange={(value) => setForm((prev) => ({ ...prev, closeDate: value }))} />
           </div>
         </div>
 

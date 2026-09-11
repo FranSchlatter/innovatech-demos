@@ -8,7 +8,7 @@ const operationStyles = {
   temporary: 'bg-gold text-primary'
 }
 
-export default function PropertyCard({ property, isFavorite, onToggleFavorite, onSelect }) {
+export default function PropertyCard({ property, isFavorite, onToggleFavorite, onSelect, footer }) {
   const p = property
   const unavailable = p.status !== 'available'
 
@@ -93,21 +93,23 @@ export default function PropertyCard({ property, isFavorite, onToggleFavorite, o
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2">
-          <button
-            onClick={() => onSelect?.(p, 'details')}
-            className="flex-1 px-4 py-2.5 bg-primary text-primary-contrast text-xs font-semibold uppercase tracking-widest hover:bg-accent transition-colors"
-          >
-            Ver detalle
-          </button>
-          <button
-            onClick={() => onSelect?.(p, 'schedule')}
-            disabled={unavailable}
-            className="flex-1 px-4 py-2.5 border border-primary text-primary text-xs font-semibold uppercase tracking-widest hover:bg-primary hover:text-primary-contrast transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            Agendar
-          </button>
-        </div>
+        {footer ?? (
+          <div className="flex gap-2">
+            <button
+              onClick={() => onSelect?.(p, 'details')}
+              className="flex-1 px-4 py-2.5 bg-primary text-primary-contrast text-xs font-semibold uppercase tracking-widest hover:bg-accent transition-colors"
+            >
+              Ver detalle
+            </button>
+            <button
+              onClick={() => onSelect?.(p, 'schedule')}
+              disabled={unavailable}
+              className="flex-1 px-4 py-2.5 border border-primary text-primary text-xs font-semibold uppercase tracking-widest hover:bg-primary hover:text-primary-contrast transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Agendar
+            </button>
+          </div>
+        )}
       </div>
     </motion.article>
   )

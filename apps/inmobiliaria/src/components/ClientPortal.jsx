@@ -395,6 +395,7 @@ export default function ClientPortal({ onExit, favorites, onSelectProperty, isDa
                   alerts={alerts}
                   toggleAlert={toggleAlert}
                   openAlertForm={() => setAlertFormOpen(true)}
+                  showToast={showToast}
                 />
               )}
               {userRole === 'tenant' && (
@@ -451,6 +452,14 @@ export default function ClientPortal({ onExit, favorites, onSelectProperty, isDa
 // LOGIN
 // ============================================================
 function LoginScreen({ selectedRole, setSelectedRole, submitting, onSubmit, onExit }) {
+  // Pre-fill credentials for a frictionless demo; email follows the selected role.
+  const [email, setEmail] = useState(ROLES[selectedRole].user.email)
+  const [password, setPassword] = useState('demo1234')
+
+  useEffect(() => {
+    setEmail(ROLES[selectedRole].user.email)
+  }, [selectedRole])
+
   return (
     <div className="min-h-screen bg-bg text-text flex items-center justify-center px-4 py-10">
       <motion.div
@@ -483,6 +492,8 @@ function LoginScreen({ selectedRole, setSelectedRole, submitting, onSubmit, onEx
                 <input
                   type="email"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@email.com"
                   className="w-full pl-10 pr-3 py-2.5 rounded-lg bg-surface-alt border border-border text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
                 />
@@ -495,6 +506,8 @@ function LoginScreen({ selectedRole, setSelectedRole, submitting, onSubmit, onEx
                 <input
                   type="password"
                   required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   className="w-full pl-10 pr-3 py-2.5 rounded-lg bg-surface-alt border border-border text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
                 />
@@ -579,27 +592,94 @@ function LoginScreen({ selectedRole, setSelectedRole, submitting, onSubmit, onEx
 // ============================================================
 // BUYER SECTIONS (interesado) — unchanged behaviour
 // ============================================================
-function BuyerSections({ section, favorites, onSelectProperty, visitNotes, noteVisit, alerts, toggleAlert, openAlertForm }) {
+function BuyerSections({ section, favorites, onSelectProperty, visitNotes, noteVisit, alerts, toggleAlert, openAlertForm, showToast }) {
+  const [favFilter, setFavFilter] = useState('all')
   const favProps = properties.filter((p) => favorites.favorites.includes(p.id))
 
   if (section === 'favorites') {
+    // Group by operation so a renter sees their rentals distinctly from purchases.
+    const saleFavs = favProps.filter((p) => p.operation === 'sale')
+    const rentFavs = favProps.filter((p) => p.operation !== 'sale')
+    const filters = [
+      { id: 'all', label: 'Todas', count: favProps.length },
+      { id: 'sale', label: 'Venta', count: saleFavs.length },
+      { id: 'rent', label: 'Alquiler', count: rentFavs.length }
+    ]
+    const shown = favFilter === 'sale' ? saleFavs : favFilter === 'rent' ? rentFavs : favProps
+
     return (
       <>
         <SectionHeading title="Favoritos" subtitle="Las propiedades que guardaste para revisar más tarde." />
         {favProps.length === 0 ? (
           <EmptyState icon={Heart} title="Todavía no guardaste propiedades" text="Explorá el catálogo y tocá el corazón para guardarlas." />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {favProps.map((p) => (
-              <PropertyCard
-                key={p.id}
-                property={p}
-                isFavorite={favorites.isFavorite(p.id)}
-                onToggleFavorite={favorites.toggleFavorite}
-                onSelect={onSelectProperty}
-              />
-            ))}
-          </div>
+          <>
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+              <span className="text-sm text-muted">
+                <span className="font-semibold text-text">{favProps.length}</span>{' '}
+                {favProps.length === 1 ? 'propiedad guardada' : 'propiedades guardadas'}
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {filters.map((f) => {
+                  const active = favFilter === f.id
+                  return (
+                    <button
+                      key={f.id}
+                      onClick={() => setFavFilter(f.id)}
+                      aria-pressed={active}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                        active ? 'bg-primary text-primary-contrast' : 'bg-surface-alt text-text hover:text-accent'
+                      }`}
+                    >
+                      {f.label}
+                      <span className={`text-xs ${active ? 'text-primary-contrast/80' : 'text-muted'}`}>{f.count}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {shown.length === 0 ? (
+              <EmptyState icon={Heart} title="Sin favoritos en esta categoría" text="Cambiá el filtro para ver el resto de tus propiedades guardadas." />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {shown.map((p) => {
+                  const isRent = p.operation !== 'sale'
+                  return (
+                    <PropertyCard
+                      key={p.id}
+                      property={p}
+                      isFavorite={favorites.isFavorite(p.id)}
+                      onToggleFavorite={favorites.toggleFavorite}
+                      onSelect={onSelectProperty}
+                      footer={
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => onSelectProperty?.(p, 'schedule')}
+                            className="flex-1 px-4 py-2.5 border border-primary text-primary text-xs font-semibold uppercase tracking-widest hover:bg-primary hover:text-primary-contrast transition-colors"
+                          >
+                            Agendar visita
+                          </button>
+                          <button
+                            onClick={() =>
+                              showToast?.(
+                                isRent
+                                  ? 'Enviamos tu consulta de alquiler. Te contactamos a la brevedad.'
+                                  : 'Recibimos tu interés. Un asesor te contactará para tu oferta.'
+                              )
+                            }
+                            className="flex-1 px-4 py-2.5 bg-gold text-primary text-xs font-semibold uppercase tracking-widest hover:opacity-90 transition-opacity"
+                          >
+                            {isRent ? 'Consultar alquiler' : 'Hacer oferta'}
+                          </button>
+                        </div>
+                      }
+                    />
+                  )
+                })}
+              </div>
+            )}
+          </>
         )}
       </>
     )
@@ -939,7 +1019,8 @@ function TenantAdjustment({ showToast }) {
   const a = TENANT_ADJUSTMENT
   const diff = a.estimatedRent - a.currentRent
   const pct = ((diff / a.currentRent) * 100).toFixed(1)
-  const max = Math.max(...TENANT_RENT_HISTORY.map((h) => h.amount))
+  // Headroom so the tallest bar leaves room for its value label above it.
+  const max = Math.max(...TENANT_RENT_HISTORY.map((h) => h.amount)) * 1.15
 
   return (
     <>
@@ -968,19 +1049,24 @@ function TenantAdjustment({ showToast }) {
 
       <div className="bg-surface border border-border rounded-2xl p-5">
         <h4 className="font-semibold text-primary mb-4">Evolución del alquiler</h4>
-        <div className="flex items-end gap-2 sm:gap-3 h-48">
-          {TENANT_RENT_HISTORY.map((h, i) => (
-            <div key={h.period} className="flex-1 flex flex-col items-center gap-2 min-w-0">
-              <span className="text-[10px] sm:text-xs font-medium text-text">{(h.amount / 1000).toFixed(0)}k</span>
-              <motion.div
-                initial={{ height: 0 }}
-                animate={{ height: `${(h.amount / max) * 100}%` }}
-                transition={{ duration: 0.6, delay: i * 0.06, ease: 'easeOut' }}
-                className={`w-full rounded-t-md ${i === TENANT_RENT_HISTORY.length - 1 ? 'bg-accent' : 'bg-primary/40'}`}
-              />
-              <span className="text-[10px] sm:text-xs text-muted truncate w-full text-center">{h.period}</span>
-            </div>
-          ))}
+        <div className="flex items-end gap-2 sm:gap-3 h-56">
+          {TENANT_RENT_HISTORY.map((h, i) => {
+            const last = i === TENANT_RENT_HISTORY.length - 1
+            return (
+              <div key={h.period} className="flex-1 h-full flex flex-col items-center min-w-0">
+                <div className="flex-1 w-full flex flex-col justify-end items-center gap-1.5">
+                  <span className="text-[10px] sm:text-xs font-medium text-text">{(h.amount / 1000).toFixed(0)}k</span>
+                  <motion.div
+                    initial={{ height: 0 }}
+                    animate={{ height: `${(h.amount / max) * 100}%` }}
+                    transition={{ duration: 0.6, delay: i * 0.06, ease: 'easeOut' }}
+                    className={`w-full rounded-t-md min-h-[4px] ${last ? 'bg-accent' : 'bg-primary/40'}`}
+                  />
+                </div>
+                <span className="mt-2 text-[10px] sm:text-xs text-muted truncate w-full text-center">{h.period}</span>
+              </div>
+            )
+          })}
         </div>
         <div className="mt-5 flex justify-end">
           <button
@@ -1244,18 +1330,20 @@ function OwnerCollection({ propById }) {
 
       <div className="bg-surface border border-border rounded-2xl p-5">
         <h4 className="font-semibold text-primary mb-4">Cobros · últimos 6 meses</h4>
-        <div className="flex items-end gap-2 sm:gap-3 h-40">
+        <div className="flex items-end gap-2 sm:gap-3 h-44">
           {OWNER_COLLECTION_HISTORY.map((h, i) => {
             const full = h.collected >= h.expected
             return (
-              <div key={h.period} className="flex-1 flex flex-col items-center gap-2 min-w-0">
-                <motion.div
-                  initial={{ height: 0 }}
-                  animate={{ height: `${(h.collected / max) * 100}%` }}
-                  transition={{ duration: 0.6, delay: i * 0.06, ease: 'easeOut' }}
-                  className={`w-full rounded-t-md ${full ? 'bg-success' : 'bg-warning'}`}
-                />
-                <span className="text-xs text-muted">{h.period}</span>
+              <div key={h.period} className="flex-1 h-full flex flex-col items-center min-w-0">
+                <div className="flex-1 w-full flex flex-col justify-end">
+                  <motion.div
+                    initial={{ height: 0 }}
+                    animate={{ height: `${(h.collected / max) * 100}%` }}
+                    transition={{ duration: 0.6, delay: i * 0.06, ease: 'easeOut' }}
+                    className={`w-full rounded-t-md min-h-[4px] ${full ? 'bg-success' : 'bg-warning'}`}
+                  />
+                </div>
+                <span className="mt-2 text-xs text-muted">{h.period}</span>
               </div>
             )
           })}

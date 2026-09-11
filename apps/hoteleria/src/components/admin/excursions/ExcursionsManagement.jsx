@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import DatePicker from '@shared-ui/components/DatePicker'
 import {
   Compass,
   Clock,
@@ -318,12 +319,10 @@ function ManageModal({ excursion, onClose, onSave }) {
                 <div className="mt-3 flex flex-wrap items-end gap-2 p-3 bg-bg rounded-lg">
                   <div className="flex-1 min-w-[120px]">
                     <label className="block text-xs text-muted mb-1">Date</label>
-                    <input
-                      type="date"
+                    <DatePicker
                       value={newDep.date}
                       min={new Date().toISOString().split('T')[0]}
-                      onChange={(e) => setNewDep((n) => ({ ...n, date: e.target.value }))}
-                      className="w-full px-2 py-1.5 bg-surface border border-border rounded-md text-sm text-text focus:outline-none focus:border-primary"
+                      onChange={(date) => setNewDep((n) => ({ ...n, date }))}
                     />
                   </div>
                   <div className="w-24">

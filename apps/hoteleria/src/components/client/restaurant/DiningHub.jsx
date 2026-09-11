@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import DatePicker from '@shared-ui/components/DatePicker'
 import {
   X,
   ArrowLeft,
@@ -464,12 +465,10 @@ function TableReservationModal({ restaurant, room, guestName, guestPhone, onClos
           {/* Date */}
           <div>
             <label className="text-sm text-muted mb-1.5 block">Date</label>
-            <input
-              type="date"
+            <DatePicker
               value={date}
               min={today}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full px-4 py-2.5 bg-bg rounded-xl border-2 border-border focus:border-accent outline-none text-sm"
+              onChange={(value) => setDate(value)}
             />
           </div>
 

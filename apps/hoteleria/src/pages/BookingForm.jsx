@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import DatePicker from '@shared-ui/components/DatePicker'
 import {
   Calendar,
   Users,
@@ -406,16 +407,12 @@ export default function BookingForm({ room, onBook }) {
                         <label className="block text-sm font-medium mb-2">
                           Check-In Date <span className="text-red-500">*</span>
                         </label>
-                        <div className={`flex items-center gap-3 px-4 py-3 bg-surface rounded-lg border transition-colors ${errors.checkIn ? 'border-red-500' : 'border-border focus-within:border-accent'}`}>
-                          <Calendar className="w-5 h-5 text-accent flex-shrink-0" />
-                          <input
-                            type="date"
-                            value={booking.checkIn}
-                            onChange={(e) => setBooking({ ...booking, checkIn: e.target.value })}
-                            min={new Date().toISOString().split('T')[0]}
-                            className="flex-1 bg-transparent focus:outline-none text-sm"
-                          />
-                        </div>
+                        <DatePicker
+                          value={booking.checkIn}
+                          onChange={(checkIn) => setBooking({ ...booking, checkIn })}
+                          min={new Date().toISOString().split('T')[0]}
+                          error={!!errors.checkIn}
+                        />
                         {errors.checkIn && <p className="text-red-500 text-xs mt-1">{errors.checkIn}</p>}
                       </div>
 
@@ -423,16 +420,12 @@ export default function BookingForm({ room, onBook }) {
                         <label className="block text-sm font-medium mb-2">
                           Check-Out Date <span className="text-red-500">*</span>
                         </label>
-                        <div className={`flex items-center gap-3 px-4 py-3 bg-surface rounded-lg border transition-colors ${errors.checkOut ? 'border-red-500' : 'border-border focus-within:border-accent'}`}>
-                          <Calendar className="w-5 h-5 text-accent flex-shrink-0" />
-                          <input
-                            type="date"
-                            value={booking.checkOut}
-                            onChange={(e) => setBooking({ ...booking, checkOut: e.target.value })}
-                            min={booking.checkIn || new Date().toISOString().split('T')[0]}
-                            className="flex-1 bg-transparent focus:outline-none text-sm"
-                          />
-                        </div>
+                        <DatePicker
+                          value={booking.checkOut}
+                          onChange={(checkOut) => setBooking({ ...booking, checkOut })}
+                          min={booking.checkIn || new Date().toISOString().split('T')[0]}
+                          error={!!errors.checkOut}
+                        />
                         {errors.checkOut && <p className="text-red-500 text-xs mt-1">{errors.checkOut}</p>}
                       </div>
                     </div>

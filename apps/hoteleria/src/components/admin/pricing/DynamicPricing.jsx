@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import DatePicker from '@shared-ui/components/DatePicker'
 import {
   TrendingUp,
   TrendingDown,
@@ -169,21 +170,17 @@ function OfferModal({ open, onClose, onSave }) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-text mb-2">Start date</label>
-                  <input
-                    type="date"
+                  <DatePicker
                     value={draft.startDate}
-                    onChange={(e) => setDraft((d) => ({ ...d, startDate: e.target.value }))}
-                    className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    onChange={(startDate) => setDraft((d) => ({ ...d, startDate }))}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-text mb-2">End date</label>
-                  <input
-                    type="date"
+                  <DatePicker
                     value={draft.endDate}
                     min={draft.startDate}
-                    onChange={(e) => setDraft((d) => ({ ...d, endDate: e.target.value }))}
-                    className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    onChange={(endDate) => setDraft((d) => ({ ...d, endDate }))}
                   />
                 </div>
               </div>
@@ -270,21 +267,17 @@ function SeasonModal({ open, onClose, onSave }) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-text mb-2">Start date</label>
-                  <input
-                    type="date"
+                  <DatePicker
                     value={draft.startDate}
-                    onChange={(e) => setDraft((d) => ({ ...d, startDate: e.target.value }))}
-                    className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    onChange={(startDate) => setDraft((d) => ({ ...d, startDate }))}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-text mb-2">End date</label>
-                  <input
-                    type="date"
+                  <DatePicker
                     value={draft.endDate}
                     min={draft.startDate}
-                    onChange={(e) => setDraft((d) => ({ ...d, endDate: e.target.value }))}
-                    className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    onChange={(endDate) => setDraft((d) => ({ ...d, endDate }))}
                   />
                 </div>
               </div>

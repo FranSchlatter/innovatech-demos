@@ -182,30 +182,32 @@ Owner dijo "SUPER POBRE". Ahora es panel de gestion real:
 
 ---
 
-## I10: Publicacion en Plataformas
+## I10: Publicacion en Plataformas ✅ HECHO (11 sep 2026)
 **Esfuerzo:** Medio-Alto (2-3 hrs)
-**Archivos:** Nuevo: admin/platforms/PlatformPublishing.jsx, AdminLayout.jsx, AdminSidebar.jsx
+**Archivos:** Nuevo: data/admin/mockPlatforms.js, hooks/usePlatforms.js, admin/platforms/PlatformPublishing.jsx. Editado: AdminLayout.jsx, AdminSidebar.jsx, AdminHeader.jsx
 
-- [ ] Nuevo modulo admin: "Plataformas" (icono Share2 o Globe en sidebar)
-- [ ] Lista de propiedades con estado de publicacion por plataforma:
+- [x] Nuevo modulo admin: "Plataformas" (icono Share2 en sidebar, entre Propiedades y Leads)
+- [x] Lista de propiedades con estado de publicacion por plataforma:
   - Columnas: Propiedad | ZonaProp | ArgenProp | MercadoLibre | Instagram
-  - Cada celda: badge verde (publicada) / gris (no publicada) / amarillo (pausada)
-  - Toggle rapido para publicar/despublicar en cada plataforma
-- [ ] Al publicar: animacion de "Publicando..." con delay 1s, luego badge verde con fecha publicacion
-- [ ] **Stats por propiedad** (expandir fila o click):
-  - Visitas desde cada plataforma (mock: numeros aleatorios realistas)
+  - Cada celda: pill verde (publicada) / gris (no publicada) / amarillo (pausada), tonos del theme (success/warning/muted)
+  - Popover por celda para publicar/pausar/despublicar (toggle rapido con estado actual marcado)
+- [x] Al publicar: animacion de "Publicando..." (spinner Loader2) con delay 1s, luego badge verde + toast "Publicada en X"
+- [x] **Stats por propiedad** (expandir fila con chevron / boton "Ver estadisticas" en mobile):
+  - Visitas desde cada plataforma (mock determinista, seed por propId:platId — estable entre reloads)
   - Consultas recibidas por plataforma
-  - Dias publicada
-  - Chart mini: visitas/dia por plataforma (barras CSS)
-- [ ] **Acciones masivas**: checkbox en cada propiedad, boton "Publicar seleccionadas en..." dropdown de plataformas
-- [ ] **Resumen general** (header):
-  - Total propiedades publicadas / total
+  - Dias publicada (calculado desde publishedAt vs TODAY) + fecha de publicacion
+  - Chart mini: visitas/dia (7 dias) por plataforma (barras CSS animadas, empty-state si recien publicada)
+- [x] **Acciones masivas**: checkbox por propiedad + "seleccionar todas", barra flotante con accion (Publicar/Pausar/Despublicar) + dropdown de plataforma + Aplicar (publicar masivo con animacion escalonada)
+- [x] **Resumen general** (header, 4 cards):
+  - Total propiedades publicadas / total (con al menos un portal activo)
   - Plataforma con mas consultas
   - Propiedad mas vista
-- [ ] Agregar "Plataformas" al viewTitles de AdminHeader
-- [ ] Persistir estados en localStorage
+  - Visitas totales + consultas totales
+- [x] Agregar "Plataformas" al viewTitles de AdminHeader
+- [x] Persistir estados en localStorage (key `terranova-platforms-v1`, merge schema-safe) + boton Restaurar
+- [x] Filtro extra: busqueda por titulo/barrio/direccion + filtro por estado. Responsive (tabla lg → cards mobile con grilla 2x2). Dark/light via tokens.
 
-**Criterio de exito:** Modulo nuevo funcional. Publicar/despublicar propiedades en 4 plataformas. Stats simulados por plataforma.
+**Criterio de exito:** Modulo nuevo funcional. Publicar/despublicar propiedades en 4 plataformas. Stats simulados por plataforma. Build OK (1901 modulos, sin errores).
 
 ---
 
@@ -213,52 +215,50 @@ Owner dijo "SUPER POBRE". Ahora es panel de gestion real:
 **Esfuerzo:** Alto (3-4 hrs)
 **Archivos:** Nuevo: admin/users/UserManagement.jsx, data/mockUsers.js
 
-- [ ] mockUsers.js: 8-10 usuarios con: id, name, email, role (admin/agente-senior/agente-junior/asistente/tasador), avatar, status (active/inactive), lastLogin, permissions[]
-- [ ] UserManagement.jsx:
-  - Tabla de usuarios: avatar, nombre, email, rol (badge color), estado, ultimo login
-  - Boton "Agregar usuario": modal con nombre, email, rol (dropdown), permisos (checklist)
-  - Click en usuario: modal detalle con edicion de rol y permisos
-  - Toggle activar/desactivar usuario
-  - Filtro por rol
-- [ ] **Vista por rol** (tab o seccion informativa): "Que ve cada rol"
-  - Admin: ve todo
-  - Agente senior: Dashboard, Propiedades (sus asignadas), Leads (suyos), Visitas (suyas), Operaciones (suyas)
-  - Agente junior: Dashboard limitado, Propiedades (solo ver), Leads (suyos), Visitas (suyas)
-  - Asistente: Dashboard basico, Visitas (agenda), Leads (solo ver)
-  - Tasador: Propiedades (ver + editar valuacion), nada mas
-- [ ] Panel informativo con cards por rol mostrando los modulos accesibles
-- [ ] Agregar a sidebar con icono Users
-- [ ] Persistir en localStorage
+- [x] mockUsers.js: 9 usuarios con id, name, email, role (admin/agente-senior/agente-junior/asistente/tasador), avatar, status (active/inactive), lastLogin, permissions[]. Incluye catálogo de permisos agrupados, presets por rol y modelo de accesos por rol (ROLE_ACCESS + niveles)
+- [x] UserManagement.jsx:
+  - Tabla de usuarios (desktop) + cards (mobile): avatar, nombre, email, rol (badge color + icono), permisos, estado, último login (relativo)
+  - Botón "Agregar usuario": modal con nombre, email (validación formato + duplicado), rol (dropdown que auto-aplica preset), permisos (checklist agrupado), delay 600ms + loading
+  - Click en usuario: modal detalle con edición de rol y permisos + botón "Aplicar preset del rol" + panel "Qué ve este rol"
+  - Toggle activar/desactivar usuario (inline en tabla/cards y dentro del modal), con toast y avatar en gris si inactivo
+  - Filtro por rol (con conteos) + búsqueda por nombre/email/rol
+- [x] **Vista por rol** (tab "Accesos por rol"): "Qué ve cada rol"
+  - Admin: ve todo · Agente senior: Dashboard + Propiedades/Leads/Visitas/Operaciones (asignadas)
+  - Agente junior: Dashboard limitado, Propiedades (solo ver), Leads/Visitas (suyos)
+  - Asistente: Dashboard básico, Visitas (agenda), Leads (solo ver) · Tasador: Propiedades (ver + valuar), nada más
+- [x] Panel informativo con cards por rol: icono, conteo de usuarios, módulos accesibles con nivel (badge) y módulos sin acceso
+- [x] Agregado a sidebar (icono ShieldCheck, distinto de Users que ya usa Leads) + viewTitles del header
+- [x] Persistir en localStorage (hook useUsers, key `terranova-users-v1`, normalize schema-safe + botón Restaurar)
+- [x] KPIs: usuarios activos, administradores, roles en uso, último ingreso
 
-**Criterio de exito:** CRUD de usuarios funcional. Vista clara de permisos por rol. Se entiende que ve cada tipo de usuario.
+**Criterio de exito:** CRUD de usuarios funcional. Vista clara de permisos por rol. Se entiende que ve cada tipo de usuario. Build OK (1904 módulos, sin errores).
 
 ---
 
-## I12: Portal Login multi-rol
+## I12: Portal Login multi-rol ✅ HECHO (11 sep 2026)
 **Esfuerzo:** Medio-Alto (2-3 hrs)
-**Archivos:** ClientPortal.jsx (488 lineas)
+**Archivos:** ClientPortal.jsx (reescrito, ~1000 lineas). Nuevo: data/mockTenantData.js, data/mockOwnerData.js
 
 Transformar el login existente para soportar 3 roles:
 
-- [ ] **Redisenar pantalla de login**:
-  - Formulario email + password (igual, cualquier credencial funciona)
-  - NUEVO: selector de rol debajo del formulario: 3 cards grandes
-    - "Interesado en comprar/alquilar" (icono Search) — redirige a portal interesado actual
-    - "Soy inquilino" (icono Home) — redirige a portal locatario (nuevo)
-    - "Soy propietario" (icono Building) — redirige a portal locador (nuevo)
-  - Al seleccionar rol + click login: delay 500ms + loading, luego portal con tabs especificos del rol
-- [ ] **Persistir rol en estado**: agregar `userRole` al state del portal
-- [ ] **Sidebar del portal cambia segun rol**:
-  - Interesado: Favoritos, Visitas, Ofertas, Documentos, Alertas (actual)
-  - Inquilino: Mi contrato, Pagos, Proximo ajuste, Documentos, Reparaciones
-  - Propietario: Mis propiedades, Liquidaciones, Documentos, Estado de cobro
-- [ ] **Header del portal**: mostrar rol actual con badge, boton "Cambiar perfil" que vuelve al login
-- [ ] **Mock data diferente por rol**: MOCK_TENANT (inquilino), MOCK_OWNER (propietario) — crear datos hardcodeados coherentes
-- [ ] Estructura placeholder para cada vista de rol (contenido basico con mensaje "Seccion X"):
-  - Los tabs de Interesado ya existen y funcionan
-  - Los tabs de Inquilino y Propietario se completan en I17 e I18
+- [x] **Redisenar pantalla de login** (`LoginScreen`): email + password (cualquier credencial), form en grid 2col en sm+, y selector de rol con 3 cards grandes seleccionables (ring-accent + tilde al elegir):
+  - "Interesado en comprar/alquilar" (icono Search) → portal interesado actual
+  - "Soy inquilino" (icono Home) → portal locatario (nuevo)
+  - "Soy propietario" (icono Building2) → portal locador (nuevo)
+  - Boton dinamico "Ingresar como {rol}", delay 500ms + loading; al entrar setea `userRole` + primer tab del rol
+- [x] **Persistir rol en estado**: `userRole` + `selectedRole` en el state del portal. Seccion activa se resetea al primer nav del rol al ingresar
+- [x] **Sidebar del portal cambia segun rol** (config centralizada en `ROLES`):
+  - Interesado: Favoritos, Visitas, Ofertas, Documentos, Alertas (comportamiento intacto, extraido a `BuyerSections`)
+  - Inquilino: Mi contrato, Pagos, Proximo ajuste, Documentos, Reparaciones (`TenantSections`)
+  - Propietario: Mis propiedades, Liquidaciones, Documentos, Estado de cobro (`OwnerSections`)
+- [x] **Header del portal**: badge con rol actual (icono + label, bg-accent/15), avatar+nombre del rol, boton "Cambiar perfil" (icono Repeat) que vuelve al login manteniendo la seleccion
+- [x] **Mock data por rol**: `mockTenantData.js` (contrato, pagos 6 meses, evolucion de alquiler, ajuste ICL, documentos, reparaciones) y `mockOwnerData.js` (3 propiedades con historial de inquilinos, liquidaciones, estado de cobro, historial de cobros, documentos). Coherentes con properties.json (resuelven propertyId → imagen/direccion)
+- [x] **Vistas por rol completas** (no placeholders "Seccion X"): Inquilino → contrato con barra de progreso 36 meses + clausulas, pagos con resumen al-dia/mora + pago simulado MercadoPago, ajuste con grafico de evolucion + alerta proximo ajuste, docs, reparaciones con timeline + modal funcional `RepairRequestModal` (persiste). Propietario → cards de propiedades con neto + historial (details), liquidaciones con KPIs + descarga PDF (toast), estado de cobro con progreso + grafico 6 meses + morosidad en rojo, docs agrupados por propiedad
+- [x] Pagos + reparaciones del inquilino persisten en localStorage (`inmob-portal-tenant-v1`). Dark/light via tokens, responsive, animaciones Framer Motion (barras/progreso). Build OK (1906 modulos), Vite transform OK
 
-**Criterio de exito:** Login con selector de 3 roles. Cada rol ve sidebar diferente. Estructura lista para llenar contenido en tareas siguientes.
+**Criterio de exito:** Login con selector de 3 roles. Cada rol ve sidebar y contenido diferente. Estructura (y buena parte del contenido read-only) lista; I17/I18 completan la interactividad profunda.
+
+**Nota para I17/I18:** los data files ya existen con la forma base — expandir ahi (no recrear). El id de seccion "documents" se comparte entre roles pero el render ramifica por `userRole` primero, sin colision.
 
 ---
 

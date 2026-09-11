@@ -1,71 +1,172 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
-import { Sparkles, Heart, Utensils, MapPin, ArrowRight, Check, X } from 'lucide-react'
+import {
+  Heart,
+  Utensils,
+  MapPin,
+  ArrowRight,
+  Check,
+  X,
+  Star,
+  Wine,
+  Sparkles,
+  Flower2,
+  Clock,
+  Waves,
+  ChefHat,
+  Flame,
+  Leaf,
+  GlassWater,
+  Landmark,
+  Ticket,
+  Car,
+  Music,
+  Dumbbell,
+  Moon,
+  ShieldCheck,
+  CalendarRange
+} from 'lucide-react'
 
-export default function OffersSection() {
+// Curated experience packages. Each package is a stay (nightly rate) that bundles
+// a set of perks. `priceValue` feeds the BookingForm math; `details` carry a
+// per-item icon so the list reads richer than a flat bullet list.
+const OFFERS = [
+  {
+    id: 1,
+    title: 'Romantic Escape',
+    tagline: 'For couples chasing an unforgettable getaway',
+    description:
+      'The ultimate romantic retreat, curated for couples seeking intimate moments and lasting memories.',
+    longDescription:
+      'From the moment you arrive, every detail is arranged for two. Settle into a spacious suite with a private terrace, unwind with a couples spa ritual, and end each evening with a candlelit dinner prepared by our Michelin-starred kitchen. This package blends privacy, indulgence and effortless service into a getaway you will not want to end.',
+    details: [
+      { icon: Wine, text: 'Complimentary champagne & chocolates on arrival' },
+      { icon: Sparkles, text: 'Couples spa ritual with 60-minute massage' },
+      { icon: Utensils, text: 'Candlelit dinner for two at our Michelin restaurant' },
+      { icon: Flower2, text: 'Fresh flower arrangement in your suite' },
+      { icon: Clock, text: 'Guaranteed late checkout until 2:00 PM' },
+      { icon: Waves, text: 'Private beach cabana access' }
+    ],
+    icon: Heart,
+    price: 'From $520',
+    priceValue: 520,
+    priceNote: 'per night · perks included',
+    validity: 'Valid Jan 6 – Dec 20, 2026',
+    cancellation:
+      'Free cancellation up to 7 days before arrival. Within 7 days, the first night is charged.',
+    highlight: true,
+    bestSeller: true,
+    image:
+      'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=1200&q=80'
+  },
+  {
+    id: 2,
+    title: 'Culinary Journey',
+    tagline: 'A gastronomic adventure for food lovers',
+    description:
+      'A gastronomic adventure with access to our world-class restaurants and cellar-curated wine pairings.',
+    longDescription:
+      'Designed for the truly curious palate, the Culinary Journey opens every door in our kitchens. Sit down to multi-course tasting menus, pair each plate with wines chosen by our head sommelier, roll up your sleeves for a hands-on class with the executive chef, and finish with a private mixology session. It is a full immersion into the craft behind great dining.',
+    details: [
+      { icon: Utensils, text: 'Multi-course tasting menu at every restaurant' },
+      { icon: Wine, text: 'Premium wine pairings from our award-winning cellar' },
+      { icon: ChefHat, text: 'Private consultation with the executive chef' },
+      { icon: Flame, text: 'Hands-on cooking class for two' },
+      { icon: Leaf, text: 'Farm-to-table dining experience' },
+      { icon: GlassWater, text: 'Exclusive craft mixology session' }
+    ],
+    icon: Utensils,
+    price: 'From $460',
+    priceValue: 460,
+    priceNote: 'per night · dining included',
+    validity: 'Valid year-round, subject to restaurant availability',
+    cancellation:
+      'Free cancellation up to 48 hours before arrival. No-shows are charged the first night.',
+    highlight: false,
+    bestSeller: false,
+    image:
+      'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=1200&q=80'
+  },
+  {
+    id: 3,
+    title: 'City Explorer',
+    tagline: 'Culture, guides and hidden local gems',
+    description:
+      'Discover the hidden gems and cultural treasures of our city with guided tours and exclusive access.',
+    longDescription:
+      'Step beyond the guidebook. Our concierge team pairs you with local experts who reveal the neighbourhoods, markets and cultural venues most visitors never find. Private museum tours, curated food walks and evening entertainment are arranged around your pace, with transport handled end to end so you can simply enjoy the city.',
+    details: [
+      { icon: MapPin, text: 'Guided city tours with local experts' },
+      { icon: Landmark, text: 'Exclusive access to cultural venues' },
+      { icon: Ticket, text: 'Private museum & gallery tours' },
+      { icon: Utensils, text: 'Local market and street-food tour' },
+      { icon: Car, text: 'Private transportation throughout your stay' },
+      { icon: Music, text: 'Evening entertainment reservations' }
+    ],
+    icon: MapPin,
+    price: 'From $390',
+    priceValue: 390,
+    priceNote: 'per night · tours included',
+    validity: 'Valid Mar 1 – Nov 30, 2026 (weather permitting)',
+    cancellation:
+      'Free cancellation up to 72 hours before arrival. Tours can be rescheduled at no cost.',
+    highlight: false,
+    bestSeller: false,
+    image:
+      'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200&q=80'
+  },
+  {
+    id: 4,
+    title: 'Wellness Retreat',
+    tagline: 'Reset your body and mind',
+    description:
+      'A restorative escape blending spa, movement and nourishing cuisine to leave you completely renewed.',
+    longDescription:
+      'Slow down and reconnect. The Wellness Retreat pairs daily yoga and meditation with generous spa credit, a personalised training session and a nourishing detox menu crafted by our wellness chef. Between treatments, unwind in the thermal pool and sauna, and drift off with our signature aromatherapy turndown. You will leave lighter than you arrived.',
+    details: [
+      { icon: Leaf, text: 'Daily yoga & guided meditation sessions' },
+      { icon: Sparkles, text: 'Full-body spa & massage credit' },
+      { icon: Utensils, text: 'Detox & wellness cuisine menu' },
+      { icon: Dumbbell, text: 'Private personal-training session' },
+      { icon: Waves, text: 'Unlimited thermal pool & sauna access' },
+      { icon: Moon, text: 'Aromatherapy turndown service' }
+    ],
+    icon: Flower2,
+    price: 'From $540',
+    priceValue: 540,
+    priceNote: 'per night · spa included',
+    validity: 'Valid year-round',
+    cancellation:
+      'Free cancellation up to 5 days before arrival. Spa appointments reschedulable anytime.',
+    highlight: false,
+    bestSeller: false,
+    image:
+      'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=1200&q=80'
+  }
+]
+
+export default function OffersSection({ onReservePackage }) {
   const [selectedOffer, setSelectedOffer] = useState(null)
 
-  const offers = [
-    {
-      id: 1,
-      title: 'Romantic Escape',
-      description: 'Experience the ultimate romantic getaway with our specially curated package designed for couples seeking intimate moments and unforgettable memories.',
-      details: [
-        'Complimentary champagne upon arrival',
-        'Spa credit for couples treatments',
-        'Candlelit dinner for two at our Michelin restaurant',
-        'Fresh flower arrangement in your suite',
-        'Late checkout (until 2 PM)',
-        'Private beach access'
-      ],
-      icon: Heart,
-      price: 'Included',
-      highlight: true,
-      image: 'https://cdn.pixabay.com/photo/2016/11/18/22/21/bride-1837148_1280.jpg?w=800&q=80'
-    },
-    {
-      id: 2,
-      title: 'Culinary Journey',
-      description: 'Embark on a gastronomic adventure with access to our world-class restaurants and wine pairings curated by our expert sommeliers.',
-      details: [
-        'Multi-course tasting menu at all restaurants',
-        'Premium wine pairings from our award-winning cellar',
-        'Private chef consultation',
-        'Cooking class with our executive chef',
-        'Farm-to-table dining experience',
-        'Exclusive mixology session'
-      ],
-      icon: Utensils,
-      price: 'Premium',
-      highlight: false,
-      image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80'
-    },
-    {
-      id: 3,
-      title: 'City Explorer',
-      description: 'Discover the hidden gems and cultural treasures of our vibrant city with guided tours and exclusive access to local experiences.',
-      details: [
-        'Guided city tours with local experts',
-        'Exclusive cultural venue access',
-        'Private museum and gallery tours',
-        'Local market and food tours',
-        'Transportation included',
-        'Evening entertainment reservations'
-      ],
-      icon: MapPin,
-      price: 'Included',
-      highlight: false,
-      image: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&q=80'
-    }
-  ]
-
-  // Scroll the user to the booking area; fall back to the accommodation grid,
-  // which is always present on the landing page.
-  const scrollToBooking = () => {
+  // Hand the package off to the booking flow (App builds a room-like object from it).
+  // Falls back to scrolling toward the booking/accommodation area if no handler is wired.
+  const reservePackage = (offer) => {
     setSelectedOffer(null)
+    if (onReservePackage) {
+      onReservePackage(offer)
+      return
+    }
     const target =
       document.getElementById('booking-section') ||
       document.getElementById('accommodation')
+    target?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  // "Build your own" — send the guest to browse rooms rather than a fixed package.
+  const scrollToBrowse = () => {
+    const target =
+      document.getElementById('accommodation') ||
+      document.getElementById('booking-section')
     target?.scrollIntoView({ behavior: 'smooth' })
   }
 
@@ -95,8 +196,8 @@ export default function OffersSection() {
         </motion.div>
 
         {/* Offers Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
-          {offers.map((offer, idx) => {
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 mb-12">
+          {OFFERS.map((offer, idx) => {
             const Icon = offer.icon
             return (
               <motion.div
@@ -111,12 +212,19 @@ export default function OffersSection() {
               >
                 <div className={`grid grid-cols-1 ${offer.highlight ? 'md:grid-cols-2' : ''}`}>
                   {/* Image */}
-                  <div className="h-64 md:h-full overflow-hidden">
+                  <div className="relative h-64 md:h-full overflow-hidden">
                     <img
                       src={offer.image}
                       alt={offer.title}
+                      loading="lazy"
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                     />
+                    {offer.bestSeller && (
+                      <span className="absolute top-4 left-4 inline-flex items-center gap-1.5 text-xs font-bold text-primary px-3 py-1.5 bg-gold rounded-full shadow-medium">
+                        <Star className="w-3.5 h-3.5 fill-current" />
+                        Más vendido
+                      </span>
+                    )}
                   </div>
 
                   {/* Content */}
@@ -124,18 +232,15 @@ export default function OffersSection() {
                     <div>
                       {/* Header */}
                       <div className="flex items-start gap-4 mb-6">
-                        <div className={`p-3 rounded-lg flex-shrink-0 ${
-                          offer.highlight ? 'bg-accent/20' : 'bg-bg'
-                        }`}>
-                          <Icon className={`w-6 h-6 ${
-                            offer.highlight ? 'text-accent' : 'text-primary'
-                          }`} />
+                        <div className="p-3 rounded-lg flex-shrink-0 bg-bg">
+                          <Icon className="w-6 h-6 text-accent" />
                         </div>
                         <div>
                           <h3 className="heading-sm text-primary mb-2">{offer.title}</h3>
                           {offer.highlight && (
-                            <span className="inline-block text-xs font-semibold text-accent px-2 py-1 bg-accent/10 rounded">
-                              ⭐ Featured Offer
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-bg px-2 py-1 bg-accent rounded">
+                              <Sparkles className="w-3 h-3" />
+                              Featured Offer
                             </span>
                           )}
                         </div>
@@ -150,41 +255,47 @@ export default function OffersSection() {
                       <div className="space-y-2 mb-6">
                         <h4 className="text-sm font-semibold text-primary mb-3">What's Included:</h4>
                         <ul className="space-y-2">
-                          {offer.details.map((detail, i) => (
-                            <li key={i} className="flex items-start gap-2 text-sm text-muted">
-                              <Check className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
-                              <span>{detail}</span>
-                            </li>
-                          ))}
+                          {offer.details.map((detail, i) => {
+                            const DetailIcon = detail.icon
+                            return (
+                              <li key={i} className="flex items-start gap-2 text-sm text-muted">
+                                <DetailIcon className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
+                                <span>{detail.text}</span>
+                              </li>
+                            )
+                          })}
                         </ul>
                       </div>
                     </div>
 
                     {/* Price and CTA */}
                     <div>
-                      <div className="mb-4 pb-4 border-t border-border">
+                      <div className="mb-4 pt-4 border-t border-border">
                         <div className="text-sm text-muted mb-1">Package Price</div>
-                        <div className="text-xl font-bold text-accent">{offer.price}</div>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-xl font-bold text-accent">{offer.price}</span>
+                          <span className="text-xs text-muted">{offer.priceNote}</span>
+                        </div>
                       </div>
 
                       <div className="flex gap-3">
                         <button
                           onClick={() => setSelectedOffer(offer)}
-                          className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${
+                          className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2 ${
                             offer.highlight
-                              ? 'bg-accent text-bg hover:bg-accent/90'
-                              : 'bg-surface border border-accent text-accent hover:bg-accent/5'
+                              ? 'bg-accent text-bg'
+                              : 'bg-bg border border-accent text-accent'
                           }`}
                         >
                           Learn More
                           <ArrowRight className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={scrollToBooking}
-                          className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all ${
+                          onClick={() => reservePackage(offer)}
+                          className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all hover:opacity-90 ${
                             offer.highlight
-                              ? 'bg-surface border border-accent text-accent hover:bg-accent/5'
-                              : 'bg-accent text-bg hover:bg-accent/90'
+                              ? 'bg-bg border border-accent text-accent'
+                              : 'bg-accent text-bg'
                           }`}
                         >
                           Reserve
@@ -206,7 +317,7 @@ export default function OffersSection() {
           className="text-center"
         >
           <p className="text-muted mb-6 text-lg">Can't find your perfect experience?</p>
-          <button onClick={scrollToBooking} className="btn-secondary">
+          <button onClick={scrollToBrowse} className="btn-secondary">
             Customize Your Package
           </button>
         </motion.div>
@@ -234,13 +345,13 @@ export default function OffersSection() {
               className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-surface shadow-medium"
             >
               {/* Hero image */}
-              <div className="relative h-56 md:h-64 overflow-hidden rounded-t-2xl">
+              <div className="relative h-56 md:h-72 overflow-hidden rounded-t-2xl">
                 <img
                   src={selectedOffer.image}
                   alt={selectedOffer.title}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                 <button
                   onClick={() => setSelectedOffer(null)}
                   aria-label="Close"
@@ -249,39 +360,75 @@ export default function OffersSection() {
                   <X className="w-5 h-5" />
                 </button>
                 <div className="absolute bottom-4 left-6 right-6">
-                  {selectedOffer.highlight && (
-                    <span className="inline-block text-xs font-semibold text-white px-2 py-1 bg-accent/80 rounded mb-2">
-                      ⭐ Featured Offer
-                    </span>
-                  )}
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    {selectedOffer.bestSeller && (
+                      <span className="inline-flex items-center gap-1 text-xs font-bold text-primary px-2.5 py-1 bg-gold rounded-full">
+                        <Star className="w-3 h-3 fill-current" />
+                        Más vendido
+                      </span>
+                    )}
+                    {selectedOffer.highlight && (
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-bg px-2.5 py-1 bg-accent rounded-full">
+                        <Sparkles className="w-3 h-3" />
+                        Featured
+                      </span>
+                    )}
+                  </div>
                   <h3 className="text-2xl md:text-3xl font-bold text-white">{selectedOffer.title}</h3>
+                  <p className="text-sm text-white/85 mt-1">{selectedOffer.tagline}</p>
                 </div>
               </div>
 
               {/* Body */}
               <div className="p-6 md:p-8">
-                <p className="text-muted leading-relaxed mb-6">{selectedOffer.description}</p>
+                <p className="text-muted leading-relaxed mb-6">{selectedOffer.longDescription}</p>
 
+                {/* Inclusions */}
                 <h4 className="text-sm font-semibold text-primary mb-4">Everything included in this package:</h4>
                 <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
-                  {selectedOffer.details.map((detail, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-muted">
-                      <Check className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
-                      <span>{detail}</span>
-                    </li>
-                  ))}
+                  {selectedOffer.details.map((detail, i) => {
+                    const DetailIcon = detail.icon
+                    return (
+                      <li key={i} className="flex items-start gap-3 p-3 rounded-lg bg-bg">
+                        <DetailIcon className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                        <span className="text-sm text-text">{detail.text}</span>
+                      </li>
+                    )
+                  })}
                 </ul>
 
+                {/* Validity + Cancellation */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                  <div className="flex items-start gap-3 p-4 rounded-lg bg-bg border border-border">
+                    <CalendarRange className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                    <div>
+                      <div className="text-sm font-semibold text-primary mb-1">Validity</div>
+                      <p className="text-xs text-muted leading-relaxed">{selectedOffer.validity}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-4 rounded-lg bg-bg border border-border">
+                    <ShieldCheck className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                    <div>
+                      <div className="text-sm font-semibold text-primary mb-1">Cancellation policy</div>
+                      <p className="text-xs text-muted leading-relaxed">{selectedOffer.cancellation}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Price + CTA */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-6 border-t border-border">
                   <div>
                     <div className="text-sm text-muted mb-1">Package Price</div>
-                    <div className="text-2xl font-bold text-accent">{selectedOffer.price}</div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl font-bold text-accent">{selectedOffer.price}</span>
+                      <span className="text-xs text-muted">{selectedOffer.priceNote}</span>
+                    </div>
                   </div>
                   <button
-                    onClick={scrollToBooking}
-                    className="btn-gold flex items-center justify-center gap-2"
+                    onClick={() => reservePackage(selectedOffer)}
+                    className="btn-gold flex items-center justify-center gap-2 hover:opacity-90"
                   >
-                    Reserve This Package
+                    Reservar este paquete
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>

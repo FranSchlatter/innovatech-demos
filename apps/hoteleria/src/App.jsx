@@ -84,6 +84,24 @@ export default function App() {
     }, 100)
   }
 
+  // Build a room-like object from a curated package so the existing BookingForm
+  // can drive the reservation, while flagging it as a package for tailored copy.
+  const handleReservePackage = (pkg) => {
+    setSelectedRoom({
+      name: pkg.title,
+      image: pkg.image,
+      description: pkg.longDescription || pkg.description,
+      price: pkg.priceValue,
+      isPackage: true,
+      packageDetails: pkg.details.map((d) => d.text),
+      cancellationPolicy: pkg.cancellation
+    })
+    setViewMode('booking')
+    setTimeout(() => {
+      document.getElementById('booking-section')?.scrollIntoView({ behavior: 'smooth' })
+    }, 100)
+  }
+
   const handleBackToMain = () => {
     setViewMode('main')
     setSelectedRoom(null)
@@ -159,7 +177,7 @@ export default function App() {
 
         {/* Offers */}
         <section id="offers">
-          <OffersSection />
+          <OffersSection onReservePackage={handleReservePackage} />
         </section>
 
         {/* Reviews */}

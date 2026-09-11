@@ -10,7 +10,9 @@ import {
   X,
   Bot,
   Calculator,
-  Wallet
+  Wallet,
+  Share2,
+  ShieldCheck
 } from 'lucide-react'
 import { useAdmin } from '../../../context/AdminContext'
 
@@ -18,12 +20,14 @@ const navItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'inbox', label: 'Bandeja IA', icon: Bot },
   { id: 'properties', label: 'Propiedades', icon: Building2 },
+  { id: 'platforms', label: 'Plataformas', icon: Share2 },
   { id: 'leads', label: 'Leads / CRM', icon: Users },
   { id: 'visits', label: 'Visitas', icon: CalendarDays },
   { id: 'operations', label: 'Operaciones', icon: Handshake },
   { id: 'contracts', label: 'Ajustes', icon: Calculator },
   { id: 'liquidations', label: 'Liquidaciones', icon: Wallet },
-  { id: 'agents', label: 'Equipo', icon: UserCog }
+  { id: 'agents', label: 'Equipo', icon: UserCog },
+  { id: 'users', label: 'Usuarios', icon: ShieldCheck }
 ]
 
 export default function AdminSidebar({ onExit }) {

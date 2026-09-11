@@ -193,7 +193,7 @@ export default function BookingForm({ room, onBook }) {
             </h3>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted">Room:</span>
+                <span className="text-muted">{room.isPackage ? 'Package:' : 'Room:'}</span>
                 <span className="font-medium">{room.name}</span>
               </div>
               <div className="flex justify-between">
@@ -311,10 +311,28 @@ export default function BookingForm({ room, onBook }) {
                 </div>
               </div>
 
+              {/* Package inclusions, shown only when booking a curated experience */}
+              {room.isPackage && room.packageDetails?.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="text-sm font-semibold text-primary mb-3 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-accent" />
+                    This package includes
+                  </h4>
+                  <ul className="space-y-2">
+                    {room.packageDetails.map((detail, i) => (
+                      <li key={i} className="flex items-start gap-2 text-xs text-muted">
+                        <Check className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
+                        <span>{detail}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               <div className="space-y-2 text-xs text-muted">
-                <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-accent" />
-                  <span>Free cancellation up to 48 hours</span>
+                <div className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
+                  <span>{room.cancellationPolicy || 'Free cancellation up to 48 hours'}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-4 h-4 text-accent" />

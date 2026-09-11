@@ -4,10 +4,12 @@ import { useAdmin } from '../../../context/AdminContext'
 const VIEW_TITLES = {
   dashboard: 'Panel general',
   properties: 'Propiedades',
+  platforms: 'Publicación en plataformas',
   leads: 'Leads / CRM',
   visits: 'Agenda de visitas',
   operations: 'Operaciones',
-  agents: 'Equipo'
+  agents: 'Equipo',
+  users: 'Usuarios y Roles'
 }
 
 export default function AdminHeader({ isDark, toggleTheme }) {

@@ -22,8 +22,9 @@ import {
   X
 } from 'lucide-react'
 
-// Sample excursion data
-const EXCURSIONS = [
+// Sample excursion data — exported so the Guest Portal can render preview cards
+// that deep-link into this form with an excursion preselected.
+export const EXCURSIONS = [
   {
     id: 'city-tour',
     name: 'Miami City Tour',
@@ -98,10 +99,11 @@ const EXCURSIONS = [
   }
 ]
 
-export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'Guest', roomNumber = '101' }) {
+export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'Guest', roomNumber = '101', initialExcursionId = null }) {
   const [firstNamePrefill, ...lastNameParts] = guestName.trim().split(' ')
-  const [selectedExcursion, setSelectedExcursion] = useState(null)
-  const [step, setStep] = useState(1)
+  const preselected = initialExcursionId ? EXCURSIONS.find((e) => e.id === initialExcursionId) : null
+  const [selectedExcursion, setSelectedExcursion] = useState(preselected || null)
+  const [step, setStep] = useState(preselected ? 2 : 1)
   const [formData, setFormData] = useState({
     date: '',
     schedule: '',

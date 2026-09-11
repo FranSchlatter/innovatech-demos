@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import LoginScreen from './LoginScreen'
 import GuestChat from './GuestChat'
 import DiningHub from './client/restaurant/DiningHub'
-import ExcursionBookingForm from '../pages/ExcursionBookingForm'
+import ExcursionBookingForm, { EXCURSIONS } from '../pages/ExcursionBookingForm'
 import { useLiveChat, peekLiveChat } from '../hooks/useLiveChat'
 import {
   User,
@@ -42,7 +42,8 @@ import {
   ChefHat,
   Compass,
   BellRing,
-  CalendarCheck
+  CalendarCheck,
+  Users
 } from 'lucide-react'
 
 // Mock guest data - In production this would come from authentication/API
@@ -145,12 +146,41 @@ const AMENITY_RESERVATIONS = [
   }
 ]
 
-// Tabs for the portal
+// Tabs for the portal. Excursions & amenity reservations were merged into the
+// "Services" tab (see SERVICE_SECTIONS) so everything bookable lives in one place.
 const PORTAL_TABS = [
   { id: 'overview', name: 'My Stay', icon: Home },
   { id: 'services', name: 'Services', icon: Bell },
-  { id: 'reservations', name: 'Reservations', icon: Calendar },
   { id: 'help', name: 'Help', icon: HelpCircle }
+]
+
+// Internal sub-navigation for the Services tab (H12). Four clear categories,
+// each with an icon and a short description shown above its content.
+const SERVICE_SECTIONS = [
+  {
+    id: 'room-service',
+    name: 'Room Service',
+    icon: BellRing,
+    description: 'Food, housekeeping and maintenance delivered straight to your room.'
+  },
+  {
+    id: 'restaurant',
+    name: 'Restaurant',
+    icon: ChefHat,
+    description: 'Book a table, order in, or call the waiter across our 4 venues.'
+  },
+  {
+    id: 'excursions',
+    name: 'Excursions',
+    icon: Compass,
+    description: 'Guided tours and adventures around the destination, booked to your room.'
+  },
+  {
+    id: 'amenities',
+    name: 'Amenities',
+    icon: Sparkles,
+    description: 'Reserve the spa, pool cabanas, personal training and transfers.'
+  }
 ]
 
 const REQUESTS_STORAGE_KEY = 'hotel-luxury-guest-requests'
@@ -177,6 +207,8 @@ export default function GuestPortal({ onExit }) {
   const [toastMessage, setToastMessage] = useState('')
   const [showDining, setShowDining] = useState(false)
   const [showExcursions, setShowExcursions] = useState(false)
+  const [excursionPreselect, setExcursionPreselect] = useState(null)
+  const [servicesSection, setServicesSection] = useState('room-service')
 
   // Live chat (H5) — shared with the admin inbox via useLiveChat.
   const liveChat = useLiveChat()
@@ -242,6 +274,19 @@ export default function GuestPortal({ onExit }) {
     setToastMessage(message)
     setShowSuccessToast(true)
     setTimeout(() => setShowSuccessToast(false), 3000)
+  }
+
+  // Jump to the Services tab and open a specific sub-section (used by the
+  // overview quick actions and the "My Stay" shortcuts).
+  const goToServices = (section = 'room-service') => {
+    setServicesSection(section)
+    setActiveTab('services')
+  }
+
+  // Open the excursion booking flow, optionally preselecting one excursion.
+  const openExcursion = (id = null) => {
+    setExcursionPreselect(id)
+    setShowExcursions(true)
   }
 
   const handleServiceRequest = (service, type) => {
@@ -535,9 +580,9 @@ export default function GuestPortal({ onExit }) {
                   <div className="grid grid-cols-2 gap-2 pt-3 border-t border-border">
                     {[
                       { icon: UtensilsCrossed, label: 'Dining', action: () => setShowDining(true) },
-                      { icon: Sparkles, label: 'Service', action: () => setActiveTab('services') },
-                      { icon: Calendar, label: 'Book', action: () => setActiveTab('reservations') },
-                      { icon: HelpCircle, label: 'Help', action: () => setActiveTab('help') }
+                      { icon: Bell, label: 'Room Service', action: () => goToServices('room-service') },
+                      { icon: Compass, label: 'Excursions', action: () => goToServices('excursions') },
+                      { icon: Sparkles, label: 'Amenities', action: () => goToServices('amenities') }
                     ].map((item, index) => {
                       const Icon = item.icon
                       return (
@@ -664,223 +709,310 @@ export default function GuestPortal({ onExit }) {
             </motion.div>
           )}
 
-          {/* Services Tab */}
+          {/* Services Tab — 4 clear categories via internal sub-navigation (H12) */}
           {activeTab === 'services' && (
             <motion.div
               key="services"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="space-y-8"
-            >
-              {/* Dining — restaurants, room service, table booking (H7) */}
-              <div>
-                <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                  <ChefHat className="w-5 h-5 text-accent" />
-                  Dining
-                </h2>
-                <div className="relative overflow-hidden rounded-2xl shadow-soft">
-                  <img
-                    src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&h=500&fit=crop"
-                    alt="Hotel restaurants"
-                    className="w-full h-48 md:h-56 object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
-                  <div className="absolute inset-0 p-6 flex flex-col justify-center max-w-md">
-                    <h3 className="text-2xl font-bold text-white mb-1">4 restaurants & room service</h3>
-                    <p className="text-white/85 text-sm mb-4">
-                      Book a table, order to your room or to your table, and call the waiter —
-                      all from here.
-                    </p>
-                    <button
-                      onClick={() => setShowDining(true)}
-                      className="self-start inline-flex items-center gap-2 bg-accent text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-accent/90 transition"
-                    >
-                      <UtensilsCrossed className="w-5 h-5" />
-                      Explore dining
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Room Service */}
-              <div>
-                <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                  <UtensilsCrossed className="w-5 h-5 text-accent" />
-                  Room Service
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {ROOM_SERVICES.map((service) => {
-                    const Icon = service.icon
-                    return (
-                      <button
-                        key={service.id}
-                        onClick={() => setShowServiceModal({ ...service, type: 'room-service' })}
-                        className="bg-surface p-4 rounded-xl flex items-center gap-4 hover:bg-surface/80 transition text-left"
-                      >
-                        <div className="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center">
-                          <Icon className="w-6 h-6 text-accent" />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-semibold">{service.name}</h3>
-                          <p className="text-sm text-muted">{service.time}</p>
-                        </div>
-                        <div className="text-right">
-                          {service.price > 0 ? (
-                            <p className="font-bold text-accent">${service.price}</p>
-                          ) : (
-                            <p className="text-accent font-semibold">Free</p>
-                          )}
-                          <ChevronRight className="w-5 h-5 text-muted" />
-                        </div>
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-
-              {/* Housekeeping */}
-              <div>
-                <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-accent" />
-                  Housekeeping
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {HOUSEKEEPING_SERVICES.map((service) => {
-                    const Icon = service.icon
-                    return (
-                      <button
-                        key={service.id}
-                        onClick={() => setShowServiceModal({ ...service, type: 'housekeeping' })}
-                        className="bg-surface p-4 rounded-xl flex items-center gap-4 hover:bg-surface/80 transition text-left"
-                      >
-                        <div className="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center">
-                          <Icon className="w-6 h-6 text-accent" />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-semibold">{service.name}</h3>
-                          <p className="text-sm text-muted">{service.time}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-accent font-semibold">Included</p>
-                          <ChevronRight className="w-5 h-5 text-muted" />
-                        </div>
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-
-              {/* Maintenance */}
-              <div className="bg-surface rounded-2xl p-6">
-                <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                  <Wrench className="w-5 h-5 text-accent" />
-                  Report an Issue
-                </h2>
-                <p className="text-muted mb-4">
-                  Something not working? Let us know and we'll fix it right away.
-                </p>
-                <button
-                  onClick={() => setShowServiceModal({ id: 'maintenance', name: 'Maintenance Request', icon: Wrench, price: 0, time: 'ASAP', type: 'maintenance' })}
-                  className="bg-accent text-white px-6 py-3 rounded-xl font-semibold hover:bg-accent/90 transition"
-                >
-                  Report Issue
-                </button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Reservations Tab */}
-          {activeTab === 'reservations' && (
-            <motion.div
-              key="reservations"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
-              <div>
-                <h2 className="text-2xl font-bold mb-2">Book Amenities & Activities</h2>
-                <p className="text-muted">Enhance your stay with our premium services</p>
-              </div>
-
-              {/* Excursions & Tours (H3) */}
-              <div className="relative overflow-hidden rounded-2xl shadow-soft">
-                <img
-                  src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1200&h=500&fit=crop"
-                  alt="Excursions & tours"
-                  className="w-full h-44 md:h-52 object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
-                <div className="absolute inset-0 p-6 flex flex-col justify-center max-w-md">
-                  <div className="flex items-center gap-2 text-white/80 text-sm mb-1">
-                    <Compass className="w-4 h-4" /> Excursions & Tours
-                  </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Discover the destination</h3>
-                  <p className="text-white/85 text-sm mb-4">
-                    City tours, Everglades airboats, sunset cruises and more — booked to your room.
-                  </p>
-                  <button
-                    onClick={() => setShowExcursions(true)}
-                    className="self-start inline-flex items-center gap-2 bg-accent text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-accent/90 transition"
-                  >
-                    <Compass className="w-5 h-5" />
-                    Browse excursions
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {AMENITY_RESERVATIONS.map((amenity, idx) => {
-                  const Icon = amenity.icon
+              {/* Section switcher */}
+              <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+                {SERVICE_SECTIONS.map((section) => {
+                  const Icon = section.icon
+                  const active = servicesSection === section.id
                   return (
-                    <motion.div
-                      key={amenity.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.1 }}
-                      className="bg-surface rounded-2xl overflow-hidden shadow-soft hover:shadow-lg transition-all group"
+                    <button
+                      key={section.id}
+                      onClick={() => setServicesSection(section.id)}
+                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl whitespace-nowrap text-sm font-semibold border transition ${
+                        active
+                          ? 'bg-accent text-white border-accent shadow-soft'
+                          : 'bg-surface text-muted border-border hover:text-primary hover:border-accent'
+                      }`}
                     >
-                      <div className="relative h-48 overflow-hidden">
-                        <img
-                          src={amenity.image}
-                          alt={amenity.name}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                        <div className="absolute top-4 right-4 w-12 h-12 bg-white/90 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                          <Icon className="w-6 h-6 text-accent" />
-                        </div>
-                        <div className="absolute bottom-4 left-4 right-4">
-                          <h3 className="text-xl font-bold text-white mb-1">{amenity.name}</h3>
-                          <p className="text-white/80 text-sm">{amenity.duration}</p>
-                        </div>
-                      </div>
-
-                      <div className="p-5">
-                        <p className="text-sm text-muted mb-4 line-clamp-2">{amenity.description}</p>
-
-                        <div className="flex items-center justify-between">
-                          <div>
-                            {amenity.price > 0 ? (
-                              <p className="text-2xl font-bold text-accent">${amenity.price}</p>
-                            ) : (
-                              <p className="text-lg font-semibold text-accent">Complimentary</p>
-                            )}
-                            <p className="text-xs text-muted">{amenity.available.length} slots available</p>
-                          </div>
-                          <button
-                            onClick={() => setShowReservationModal(amenity)}
-                            className="bg-accent text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-accent/90 transition hover:scale-105"
-                          >
-                            Book Now
-                          </button>
-                        </div>
-                      </div>
-                    </motion.div>
+                      <Icon className="w-4 h-4" />
+                      {section.name}
+                    </button>
                   )
                 })}
               </div>
+
+              {/* Active section header (icon + description) */}
+              {(() => {
+                const current = SERVICE_SECTIONS.find((s) => s.id === servicesSection)
+                if (!current) return null
+                const Icon = current.icon
+                return (
+                  <div className="flex items-start gap-3">
+                    <div className="w-11 h-11 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
+                      <Icon className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold leading-tight">{current.name}</h2>
+                      <p className="text-sm text-muted">{current.description}</p>
+                    </div>
+                  </div>
+                )
+              })()}
+
+              <AnimatePresence mode="wait">
+                {/* 1. Room Service — food, housekeeping & maintenance to your room */}
+                {servicesSection === 'room-service' && (
+                  <motion.div
+                    key="svc-room-service"
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -12 }}
+                    className="space-y-8"
+                  >
+                    {/* In-room dining */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <UtensilsCrossed className="w-5 h-5 text-accent" />
+                        In-Room Dining
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {ROOM_SERVICES.map((service) => {
+                          const Icon = service.icon
+                          return (
+                            <button
+                              key={service.id}
+                              onClick={() => setShowServiceModal({ ...service, type: 'room-service' })}
+                              className="bg-surface p-4 rounded-xl flex items-center gap-4 border border-border hover:border-accent transition text-left"
+                            >
+                              <div className="w-12 h-12 bg-bg rounded-xl flex items-center justify-center flex-shrink-0">
+                                <Icon className="w-6 h-6 text-accent" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-semibold truncate">{service.name}</h4>
+                                <p className="text-sm text-muted">{service.time}</p>
+                              </div>
+                              <div className="text-right flex-shrink-0">
+                                {service.price > 0 ? (
+                                  <p className="font-bold text-accent">${service.price}</p>
+                                ) : (
+                                  <p className="text-accent font-semibold">Free</p>
+                                )}
+                                <ChevronRight className="w-5 h-5 text-muted ml-auto" />
+                              </div>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Housekeeping */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <Sparkles className="w-5 h-5 text-accent" />
+                        Housekeeping
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {HOUSEKEEPING_SERVICES.map((service) => {
+                          const Icon = service.icon
+                          return (
+                            <button
+                              key={service.id}
+                              onClick={() => setShowServiceModal({ ...service, type: 'housekeeping' })}
+                              className="bg-surface p-4 rounded-xl flex items-center gap-4 border border-border hover:border-accent transition text-left"
+                            >
+                              <div className="w-12 h-12 bg-bg rounded-xl flex items-center justify-center flex-shrink-0">
+                                <Icon className="w-6 h-6 text-accent" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-semibold truncate">{service.name}</h4>
+                                <p className="text-sm text-muted">{service.time}</p>
+                              </div>
+                              <div className="text-right flex-shrink-0">
+                                <p className="text-accent font-semibold">Included</p>
+                                <ChevronRight className="w-5 h-5 text-muted ml-auto" />
+                              </div>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Maintenance */}
+                    <div className="bg-surface border border-border rounded-2xl p-6">
+                      <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                        <Wrench className="w-5 h-5 text-accent" />
+                        Report an Issue
+                      </h3>
+                      <p className="text-muted mb-4">
+                        Something not working? Let us know and we'll fix it right away.
+                      </p>
+                      <button
+                        onClick={() => setShowServiceModal({ id: 'maintenance', name: 'Maintenance Request', icon: Wrench, price: 0, time: 'ASAP', type: 'maintenance' })}
+                        className="bg-accent text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition"
+                      >
+                        Report Issue
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* 2. Restaurant — DiningHub from H7 */}
+                {servicesSection === 'restaurant' && (
+                  <motion.div
+                    key="svc-restaurant"
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -12 }}
+                    className="relative overflow-hidden rounded-2xl shadow-soft"
+                  >
+                    <img
+                      src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&h=500&fit=crop"
+                      alt="Hotel restaurants"
+                      className="w-full h-56 md:h-64 object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
+                    <div className="absolute inset-0 p-6 flex flex-col justify-center max-w-md">
+                      <h3 className="text-2xl font-bold text-white mb-1">4 restaurants & room service</h3>
+                      <p className="text-white/85 text-sm mb-4">
+                        Book a table, order to your room or to your table, and call the waiter —
+                        all from here.
+                      </p>
+                      <button
+                        onClick={() => setShowDining(true)}
+                        className="self-start inline-flex items-center gap-2 bg-accent text-white px-5 py-2.5 rounded-xl font-semibold hover:opacity-90 transition"
+                      >
+                        <UtensilsCrossed className="w-5 h-5" />
+                        Explore dining
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* 3. Excursions — preview cards that deep-link into the booking form */}
+                {servicesSection === 'excursions' && (
+                  <motion.div
+                    key="svc-excursions"
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -12 }}
+                    className="space-y-5"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                      {EXCURSIONS.map((excursion, idx) => {
+                        const Icon = excursion.icon
+                        return (
+                          <motion.button
+                            key={excursion.id}
+                            type="button"
+                            initial={{ opacity: 0, y: 16 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: idx * 0.06 }}
+                            whileHover={{ y: -4 }}
+                            onClick={() => openExcursion(excursion.id)}
+                            className="text-left bg-surface rounded-2xl overflow-hidden border border-border hover:border-accent shadow-soft hover:shadow-lg transition-all group"
+                          >
+                            <div className="relative h-40 overflow-hidden">
+                              <img
+                                src={excursion.image}
+                                alt={excursion.name}
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                              <span className="absolute top-3 right-3 bg-accent text-white text-sm font-bold px-3 py-1 rounded-lg">
+                                ${excursion.price}
+                              </span>
+                              <div className="absolute bottom-3 left-3 w-10 h-10 bg-surface rounded-xl flex items-center justify-center">
+                                <Icon className="w-5 h-5 text-accent" />
+                              </div>
+                            </div>
+                            <div className="p-4">
+                              <h4 className="font-semibold group-hover:text-accent transition-colors">{excursion.name}</h4>
+                              <p className="text-xs text-muted line-clamp-2 mt-1 mb-3">{excursion.description}</p>
+                              <div className="flex items-center gap-3 text-xs text-muted">
+                                <span className="flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
+                                  {excursion.duration}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Users className="w-3 h-3" />
+                                  Max {excursion.maxCapacity}
+                                </span>
+                              </div>
+                            </div>
+                          </motion.button>
+                        )
+                      })}
+                    </div>
+                    <button
+                      onClick={() => openExcursion(null)}
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-accent text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition"
+                    >
+                      <Compass className="w-5 h-5" />
+                      Browse all excursions
+                    </button>
+                  </motion.div>
+                )}
+
+                {/* 4. Amenities — reservable facilities (spa, pool, gym, transfers) */}
+                {servicesSection === 'amenities' && (
+                  <motion.div
+                    key="svc-amenities"
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -12 }}
+                    className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+                  >
+                    {AMENITY_RESERVATIONS.map((amenity, idx) => {
+                      const Icon = amenity.icon
+                      return (
+                        <motion.div
+                          key={amenity.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: idx * 0.08 }}
+                          className="bg-surface rounded-2xl overflow-hidden border border-border shadow-soft hover:shadow-lg transition-all group"
+                        >
+                          <div className="relative h-48 overflow-hidden">
+                            <img
+                              src={amenity.image}
+                              alt={amenity.name}
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                            <div className="absolute top-4 right-4 w-12 h-12 bg-white/90 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                              <Icon className="w-6 h-6 text-accent" />
+                            </div>
+                            <div className="absolute bottom-4 left-4 right-4">
+                              <h3 className="text-xl font-bold text-white mb-1">{amenity.name}</h3>
+                              <p className="text-white/80 text-sm">{amenity.duration}</p>
+                            </div>
+                          </div>
+
+                          <div className="p-5">
+                            <p className="text-sm text-muted mb-4 line-clamp-2">{amenity.description}</p>
+
+                            <div className="flex items-center justify-between">
+                              <div>
+                                {amenity.price > 0 ? (
+                                  <p className="text-2xl font-bold text-accent">${amenity.price}</p>
+                                ) : (
+                                  <p className="text-lg font-semibold text-accent">Complimentary</p>
+                                )}
+                                <p className="text-xs text-muted">{amenity.available.length} slots available</p>
+                              </div>
+                              <button
+                                onClick={() => setShowReservationModal(amenity)}
+                                className="bg-accent text-white px-5 py-2.5 rounded-xl font-semibold hover:opacity-90 transition hover:scale-105"
+                              >
+                                Book Now
+                              </button>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )
+                    })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           )}
 
@@ -1212,14 +1344,15 @@ export default function GuestPortal({ onExit }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-start justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto"
-            onClick={(e) => { if (e.target === e.currentTarget) setShowExcursions(false) }}
+            onClick={(e) => { if (e.target === e.currentTarget) { setShowExcursions(false); setExcursionPreselect(null) } }}
           >
             <div className="w-full max-w-4xl my-8">
               <ExcursionBookingForm
-                onClose={() => setShowExcursions(false)}
+                onClose={() => { setShowExcursions(false); setExcursionPreselect(null) }}
                 onBooked={handleExcursionBooked}
                 guestName={guest.name}
                 roomNumber={guest.room.number}
+                initialExcursionId={excursionPreselect}
               />
             </div>
           </motion.div>

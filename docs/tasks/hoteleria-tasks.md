@@ -167,60 +167,81 @@ Hacer todo junto porque son fixes rapidos:
 
 ---
 
-## H10: Housekeeping — Metricas por trabajador + panel de personal
+## H10: Housekeeping — Metricas por trabajador + panel de personal ✅
 **Esfuerzo:** Alto (2-3 hrs)
 **Archivos:** HousekeepingManagement.jsx, mockHousekeeping.js
 
-- [ ] Nueva seccion/tab: "Metricas del equipo"
+- [x] Nueva seccion/tab: "Team Metrics" (tab switcher Tasks / Team Metrics)
   - Card por trabajador con:
-    - Foto/avatar, nombre, turno actual
+    - Avatar (iniciales), nombre, turno actual, estado
     - Tareas completadas hoy / esta semana / este mes
-    - Tiempo promedio por tarea (calculado de mock data)
-    - Rating de calidad (mockeable, 1-5 estrellas)
-    - Barra de productividad (tareas/hora comparado con promedio equipo)
-  - Ranking del equipo (mejor → peor por productividad)
-  - Grafico de barras: tareas completadas por dia de la semana (ultimos 7 dias)
-- [ ] En el StaffOverview existente, agregar click para expandir detalle del trabajador
-- [ ] En cada TaskCard, agregar "Tiempo transcurrido" desde que se inicio la tarea
-- [ ] Nuevo filtro: por trabajador asignado
+    - Tiempo promedio por tarea (calculado de 30 dias de historial + tareas live)
+    - Rating de calidad (1-5 estrellas, perfil por trabajador)
+    - Barra de productividad (tareas/hora con marcador de promedio del equipo)
+  - Ranking del equipo (mejor → peor por productividad, con medallas top 3)
+  - Grafico de barras: tareas completadas por dia (ultimos 7 dias, hoy resaltado)
+- [x] En el StaffOverview existente, click para expandir detalle del trabajador (métricas mini)
+- [x] En cada TaskCard, "Elapsed" en tareas in-progress (live, tick cada 30s)
+- [x] Nuevo filtro: por trabajador asignado (+ Unassigned)
 
-**Criterio de exito:** Hay una vista de metricas con rendimiento individual. Se siente como un panel de gestion de personal real.
+**Detalle técnico:** historial de tareas generado con PRNG semillado (determinístico, estable
+entre renders/reloads) en `mockHousekeeping.js` — 563 tareas / 30 días / 3 perfiles distintos.
+Helpers `getStaffMetrics` y `getWeeklyCompletion`. Métricas mezclan historial + tareas
+completadas en vivo. Gotcha evitado: los colores del theme (`var()`) NO soportan alpha en
+Tailwind (`bg-primary/50` es no-op), se usaron fills sólidos.
+
+**Criterio de exito:** Hay una vista de metricas con rendimiento individual. Se siente como un panel de gestion de personal real. ✅
 
 ---
 
-## H11: Curated Experiences (OffersSection) funcional
+## H11: Curated Experiences (OffersSection) funcional ✅
 **Esfuerzo:** Medio (1.5-2 hrs)
-**Archivos:** OffersSection.jsx
+**Archivos:** OffersSection.jsx, App.jsx, BookingForm.jsx
 
-- [ ] "Learn More" abre modal con:
-  - Imagen grande del paquete
-  - Descripcion extendida (agregar texto a los datos)
-  - Lista completa de inclusiones con iconos
-  - Politica de cancelacion
-  - Fechas de validez
+- [x] "Learn More" abre modal con:
+  - Imagen grande del paquete (hero con gradiente + badges)
+  - Descripcion extendida (`longDescription` + `tagline` por paquete)
+  - Lista completa de inclusiones con iconos (cada inclusion tiene su propio icono lucide)
+  - Politica de cancelacion (card dedicada, ShieldCheck)
+  - Fechas de validez (card dedicada, CalendarRange)
   - Boton "Reservar este paquete" que lleva a BookingForm con el paquete preseleccionado
-- [ ] "Reserve Now" debe funcionar: lleva a BookingForm con datos del paquete
-- [ ] Agregar 1-2 paquetes mas (4th offer "Wellness Retreat" esta comentado en el codigo, activarlo)
-- [ ] Agregar tag "Mas vendido" al paquete Romantic Escape
+- [x] "Reserve Now" debe funcionar: lleva a BookingForm con datos del paquete
+- [x] Agregar 1-2 paquetes mas → 4to paquete "Wellness Retreat" agregado (total 4)
+- [x] Agregar tag "Mas vendido" al paquete Romantic Escape (badge gold + Star)
 
-**Criterio de exito:** Ambos botones funcionan. Modal de detalle completo. 4 paquetes disponibles.
+**Detalle técnico:** cada paquete tiene `priceValue` numerico para que el BookingForm calcule
+noches × precio. App.jsx mapea el paquete a un objeto tipo-room (`isPackage`, `packageDetails`,
+`cancellationPolicy`) y reusa el BookingForm existente, que ahora muestra las inclusiones del
+paquete y la politica de cancelacion en el resumen, y usa label "Package:" en la confirmacion.
+Gotcha respetado: sin alpha sobre colores del theme (`bg-accent/10` es no-op) → fills solidos +
+`hover:opacity-90` para el feedback.
+
+**Criterio de exito:** Ambos botones funcionan. Modal de detalle completo. 4 paquetes disponibles. ✅
 
 ---
 
-## H12: Services portal — Restaurante + excursiones + amenities expandido
+## H12: Services portal — Restaurante + excursiones + amenities expandido ✅
 **Esfuerzo:** Alto (2-3 hrs)
-**Archivos:** GuestPortal.jsx (tab Services)
+**Archivos:** GuestPortal.jsx (tab Services), ExcursionBookingForm.jsx
 
-- [ ] Reorganizar tab Services en 4 secciones claras con tabs internos o acordeon:
-  1. **Room Service** (existente, mantener)
-  2. **Restaurante** — link a MenuBrowser de H7, o version compacta embebida
-  3. **Excursiones** — cards de excursiones disponibles (de tours.json), click lleva a ExcursionBookingForm
-  4. **Amenities** — cards de amenities reservables (pool, spa, gym, beach), click abre reservation modal
-- [ ] Cada seccion con icono y descripcion breve
-- [ ] Las reservaciones hechas aparecen en "My Stay" (de H3)
-- [ ] Si H7 no esta hecho aun, al menos mostrar menu estatico con CTA "Pronto: pedidos online"
+- [x] Reorganizar tab Services en 4 secciones claras con sub-navegacion segmentada (pills):
+  1. **Room Service** (existente, mantener) — agrupa In-Room Dining + Housekeeping + Report an Issue
+  2. **Restaurante** — banner que abre el DiningHub de H7 (menu, room service, mesa, mozo)
+  3. **Excursiones** — grid de cards (de EXCURSIONS), click preselecciona y salta al paso 2 del ExcursionBookingForm
+  4. **Amenities** — cards de amenities reservables (spa, gym, pool, restaurant, transfer), click abre reservation modal
+- [x] Cada seccion con icono y descripcion breve (header con chip de icono + texto)
+- [x] Las reservaciones hechas aparecen en "My Stay" (de H3) — handlers ya conectados
+- [x] H7 esta hecho → se integra el DiningHub real (no menu estatico)
 
-**Criterio de exito:** Tab Services tiene 4 categorias claras y navegables. El huesped puede explorar y reservar desde cada una.
+**Detalle técnico:** se eliminó el tab "Reservations" (duplicaba excursiones+amenities); todo lo
+reservable vive ahora en Services con sub-navegacion interna (`SERVICE_SECTIONS` + estado
+`servicesSection`). `EXCURSIONS` se exporta desde ExcursionBookingForm y el form acepta
+`initialExcursionId` para preseleccion. Quick actions del overview actualizadas (Dining /
+Room Service / Excursions / Amenities) con helpers `goToServices(section)` y `openExcursion(id)`.
+Gotcha respetado: sin alpha sobre colores del theme (`bg-accent/10`, `hover:bg-accent/90` son
+no-op) → fills sólidos (`bg-bg`, `bg-surface`) + borders + `hover:opacity-90`.
+
+**Criterio de exito:** Tab Services tiene 4 categorias claras y navegables. El huesped puede explorar y reservar desde cada una. ✅
 
 ---
 

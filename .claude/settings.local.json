@@ -10,7 +10,8 @@
       "Bash(perl -e:*)",
       "Bash(curl:*)",
       "Bash(xargs wc -l)",
-      "Skill(impeccable)"
+      "Skill(impeccable)",
+      "Bash(xargs grep -l \"PlatformPublishing\")"
     ]
   },
   "hooks": {

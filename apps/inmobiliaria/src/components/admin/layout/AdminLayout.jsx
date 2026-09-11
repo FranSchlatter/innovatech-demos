@@ -6,10 +6,12 @@ import InboxManagement from '../inbox/InboxManagement'
 import AdjustmentSimulator from '../contracts/AdjustmentSimulator'
 import OwnerLiquidations from '../liquidations/OwnerLiquidations'
 import PropertyManagement from '../properties/PropertyManagement'
+import PlatformPublishing from '../platforms/PlatformPublishing'
 import LeadsManagement from '../leads/LeadsManagement'
 import VisitsScheduler from '../visits/VisitsScheduler'
 import OperationsManagement from '../operations/OperationsManagement'
 import AgentsManagement from '../agents/AgentsManagement'
+import UserManagement from '../users/UserManagement'
 
 function AdminContent({ onExit, isDark, toggleTheme }) {
   const { currentView } = useAdmin()
@@ -22,6 +24,8 @@ function AdminContent({ onExit, isDark, toggleTheme }) {
         return <InboxManagement />
       case 'properties':
         return <PropertyManagement />
+      case 'platforms':
+        return <PlatformPublishing />
       case 'leads':
         return <LeadsManagement />
       case 'visits':
@@ -34,6 +38,8 @@ function AdminContent({ onExit, isDark, toggleTheme }) {
         return <OwnerLiquidations />
       case 'agents':
         return <AgentsManagement />
+      case 'users':
+        return <UserManagement />
       default:
         return <AdminDashboard />
     }

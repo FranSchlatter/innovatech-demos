@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import LoginScreen from './LoginScreen'
 import GuestChat from './GuestChat'
+import CheckInFlow from './client/CheckInFlow'
 import DiningHub from './client/restaurant/DiningHub'
 import ExcursionBookingForm, { EXCURSIONS } from '../pages/ExcursionBookingForm'
 import { useLiveChat, peekLiveChat } from '../hooks/useLiveChat'
@@ -52,7 +53,10 @@ import {
   Wine,
   Hash,
   Tag,
-  StickyNote
+  StickyNote,
+  KeyRound,
+  Smartphone,
+  ShieldCheck
 } from 'lucide-react'
 
 // Mock guest data - In production this would come from authentication/API
@@ -69,6 +73,10 @@ const MOCK_GUEST = {
   name: 'Carlos Rodriguez',
   email: 'carlos.rodriguez@email.com',
   phone: '+1 555-123-4567',
+  // Pre-filled identity for the online check-in flow (H16)
+  documentType: 'passport',
+  documentNumber: 'AA-4521887',
+  nationality: 'Argentina',
   room: {
     number: '507',
     type: 'Deluxe Ocean View Suite',
@@ -77,15 +85,18 @@ const MOCK_GUEST = {
   },
   reservation: {
     id: 'RES-2024-5678',
-    checkIn: toISODate(-2),   // checked in 2 days ago
-    checkOut: toISODate(3),   // checks out in 3 days -> 5-night stay, currently staying
-    nights: 5,
+    checkIn: toISODate(0),    // arriving today -> online check-in available (H16)
+    checkOut: toISODate(4),   // 4-night stay
+    nights: 4,
     guests: 2,
-    status: 'checked-in',
+    status: 'confirmed',      // not checked-in yet; the guest can check in online
     totalAmount: 1750.00,
     amountPaid: 875.00
   }
 }
+
+// H16 — persisted online check-in state (survives refresh)
+const CHECKIN_STORAGE_KEY = 'hotel-luxury-guest-checkin'
 
 // Available services for guests
 const ROOM_SERVICES = [
@@ -285,6 +296,16 @@ export default function GuestPortal({ onExit }) {
       return []
     }
   })
+  // Online check-in (H16) — persisted so the checked-in state survives refresh
+  const [checkInData, setCheckInData] = useState(() => {
+    try {
+      const stored = localStorage.getItem(CHECKIN_STORAGE_KEY)
+      return stored ? JSON.parse(stored) : null
+    } catch {
+      return null
+    }
+  })
+  const [showCheckIn, setShowCheckIn] = useState(false)
   const [showServiceModal, setShowServiceModal] = useState(null)
   const [showReservationModal, setShowReservationModal] = useState(null)
   const [showRequestDetail, setShowRequestDetail] = useState(null)
@@ -353,6 +374,26 @@ export default function GuestPortal({ onExit }) {
       // Ignore storage errors (e.g. private mode)
     }
   }, [requests])
+
+  // Persist online check-in state (H16)
+  useEffect(() => {
+    try {
+      if (checkInData) localStorage.setItem(CHECKIN_STORAGE_KEY, JSON.stringify(checkInData))
+      else localStorage.removeItem(CHECKIN_STORAGE_KEY)
+    } catch {
+      // Ignore storage errors (e.g. private mode)
+    }
+  }, [checkInData])
+
+  // Effective reservation status: once the guest checks in online, the stay is
+  // "checked-in" regardless of the mock's original status.
+  const isCheckedIn = !!checkInData || guest.reservation.status === 'checked-in'
+  const canCheckIn = guest.reservation.status === 'confirmed' && !checkInData
+
+  const handleCheckInComplete = (data) => {
+    setCheckInData(data)
+    showToast('Check-in completed! Your digital key is ready.')
+  }
 
   const handleLogout = () => {
     setIsAuthenticated(false)
@@ -510,6 +551,23 @@ export default function GuestPortal({ onExit }) {
     return diff > 0 ? diff : 0
   }
 
+  // Days until check-in — drives the stay badge before the guest arrives (H16).
+  const getDaysUntilCheckIn = () => {
+    const checkIn = new Date(guest.reservation.checkIn)
+    checkIn.setHours(0, 0, 0, 0)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    return Math.round((checkIn - today) / (1000 * 60 * 60 * 24))
+  }
+
+  const stayBadgeLabel = () => {
+    if (isCheckedIn) return 'Checked in'
+    const days = getDaysUntilCheckIn()
+    if (days <= 0) return 'Arriving today'
+    if (days === 1) return 'Arriving tomorrow'
+    return `Arriving in ${days} days`
+  }
+
   // Bookable days for amenities: from today through checkout (inclusive).
   // Powers the custom date chips so we never fall back to the native picker.
   const getStayDates = () => {
@@ -606,6 +664,34 @@ export default function GuestPortal({ onExit }) {
               exit={{ opacity: 0, y: -20 }}
               className="max-w-4xl mx-auto"
             >
+              {/* Online check-in CTA (H16) — shown while the stay is confirmed
+                  but not yet checked in */}
+              {canCheckIn && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-4 bg-surface rounded-2xl p-5 shadow-soft border border-accent flex flex-col sm:flex-row sm:items-center gap-4"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
+                    <KeyRound className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-lg leading-tight">Check in online</h3>
+                    <p className="text-sm text-muted">
+                      Complete your details now, skip the front desk and get a digital room key
+                      ready for arrival.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowCheckIn(true)}
+                    className="w-full sm:w-auto bg-accent text-white px-6 py-3 rounded-xl font-bold hover:opacity-90 transition flex items-center justify-center gap-2 flex-shrink-0"
+                  >
+                    <Smartphone className="w-5 h-5" />
+                    Check-in Online
+                  </button>
+                </motion.div>
+              )}
+
               {/* Main Stay Card */}
               <div className="bg-surface rounded-3xl overflow-hidden shadow-soft">
                 {/* Image Header */}
@@ -617,8 +703,9 @@ export default function GuestPortal({ onExit }) {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                   <div className="absolute top-4 left-4">
-                    <span className="bg-white/20 backdrop-blur-md text-white text-xs font-medium px-3 py-1 rounded-full border border-white/30">
-                      Active Stay
+                    <span className="flex items-center gap-1.5 bg-white/20 backdrop-blur-md text-white text-xs font-medium px-3 py-1 rounded-full border border-white/30">
+                      {isCheckedIn && <CheckCircle className="w-3.5 h-3.5" />}
+                      {stayBadgeLabel()}
                     </span>
                   </div>
                   <div className="absolute bottom-4 left-4 right-4">
@@ -705,6 +792,46 @@ export default function GuestPortal({ onExit }) {
                   </div>
                 </div>
               </div>
+
+              {/* Digital Room Key (H16) — persistent card shown after check-in */}
+              {isCheckedIn && checkInData && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-4 bg-surface rounded-2xl p-5 shadow-soft"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold flex items-center gap-2">
+                      <Smartphone className="w-4 h-4 text-accent" />
+                      Digital Room Key
+                    </h3>
+                    <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                      Active
+                    </span>
+                  </div>
+                  <div className="bg-primary text-primary-contrast rounded-2xl p-5 flex items-center gap-4 sm:gap-5">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-accent flex items-center justify-center flex-shrink-0">
+                      <KeyRound className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[11px] uppercase tracking-widest opacity-70">Room</span>
+                      <p className="text-3xl font-bold leading-none">{guest.room.number}</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[11px] uppercase tracking-widest opacity-70">Key code</span>
+                      <p className="font-mono font-bold text-accent tracking-wider break-all">{checkInData.digitalKey}</p>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex items-start gap-2 text-xs text-muted">
+                    <ShieldCheck className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
+                    <span className="leading-relaxed">
+                      Present this code at the front desk on arrival, or tap your phone at the door.
+                      {checkInData.arrival ? ` Estimated arrival: ${checkInData.arrival}.` : ''}
+                    </span>
+                  </div>
+                </motion.div>
+              )}
 
               {/* Billing Details */}
               <div className="mt-4 bg-surface rounded-2xl p-5 shadow-soft">
@@ -1614,6 +1741,14 @@ export default function GuestPortal({ onExit }) {
         draft={chatDraft}
         setDraft={setChatDraft}
         onSend={handleSendChat}
+      />
+
+      {/* Online check-in wizard (H16) */}
+      <CheckInFlow
+        open={showCheckIn}
+        onClose={() => setShowCheckIn(false)}
+        guest={guest}
+        onComplete={handleCheckInComplete}
       />
 
       {/* Dining — restaurants, room service, table booking, waiter (H7) */}

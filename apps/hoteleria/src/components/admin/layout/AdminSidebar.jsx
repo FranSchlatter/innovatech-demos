@@ -11,7 +11,9 @@ import {
   Bot,
   TrendingUp,
   Compass,
-  CalendarRange
+  CalendarRange,
+  CalendarDays,
+  Megaphone
 } from 'lucide-react'
 import { useAdmin } from '../../../context/AdminContext'
 
@@ -24,7 +26,9 @@ const navItems = [
   { id: 'housekeeping', label: 'Housekeeping', icon: Sparkles },
   { id: 'inventory', label: 'Inventory', icon: Package },
   { id: 'services', label: 'Service Requests', icon: Bell },
-  { id: 'excursions', label: 'Excursiones', icon: Compass }
+  { id: 'excursions', label: 'Excursiones', icon: Compass },
+  { id: 'events', label: 'Actividades', icon: CalendarDays },
+  { id: 'news', label: 'Noticias y avisos', icon: Megaphone }
 ]
 
 export default function AdminSidebar({ onExit, isDark }) {

@@ -136,3 +136,125 @@ export const mockExcursions = [
 ]
 
 export const isToday = (dateStr) => dateStr === fmt(today)
+
+export const DIFFICULTIES = ['Easy', 'Moderate', 'Challenging']
+
+// --- Booking history (metrics) ---------------------------------------------
+// The live `departures` above only cover the next few days. For the metrics
+// view we need realised sales spanning several weeks, so we synthesise 28 days
+// of past departures per excursion. A seeded PRNG keeps every number stable
+// between renders/reloads (same pattern as mockHousekeeping) — no flicker, no
+// hydration drift, and each excursion keeps a distinct demand profile.
+function mulberry32(seed) {
+  return function () {
+    seed |= 0
+    seed = (seed + 0x6d2b79f5) | 0
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+// Base demand (avg occupancy) + how many days a week the tour actually runs.
+const DEMAND = {
+  'city-tour': { demand: 0.72, runsPerWeek: 6, seed: 101 },
+  everglades: { demand: 0.84, runsPerWeek: 4, seed: 202 },
+  'beach-day': { demand: 0.66, runsPerWeek: 6, seed: 303 },
+  'sunset-cruise': { demand: 0.9, runsPerWeek: 5, seed: 404 },
+  'food-tour': { demand: 0.58, runsPerWeek: 4, seed: 505 },
+  'photo-tour': { demand: 0.42, runsPerWeek: 3, seed: 606 }
+}
+
+const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+function buildBookingHistory() {
+  const map = {}
+  mockExcursions.forEach((exc, idx) => {
+    const profile = DEMAND[exc.id] || { demand: 0.5, runsPerWeek: 4, seed: 700 + idx }
+    const rand = mulberry32(profile.seed)
+    const cap = exc.departures[0]?.capacity || 12
+    const runChance = profile.runsPerWeek / 7
+    const entries = []
+    // back = 28 (oldest) → 1 (yesterday); today's live departures stay separate
+    for (let back = 28; back >= 1; back--) {
+      if (rand() >= runChance) continue // tour didn't depart that day
+      const date = addDays(today, -back)
+      // occupancy oscillates around the demand baseline; weekends run hotter
+      const weekday = date.getDay()
+      const weekendBoost = weekday === 0 || weekday === 5 || weekday === 6 ? 0.12 : 0
+      const occ = Math.min(1, Math.max(0.15, profile.demand + weekendBoost + (rand() - 0.5) * 0.32))
+      entries.push({ date: fmt(date), back, weekday, capacity: cap, booked: Math.round(cap * occ) })
+    }
+    map[exc.id] = entries
+  })
+  return map
+}
+
+// Generated once per session (stable — dates are relative to `today`).
+export const bookingHistory = buildBookingHistory()
+
+// Aggregate realised history + live departures into everything the metrics
+// view renders. Pure + parametrised so runtime-created excursions (which have
+// no history) are handled gracefully (they simply contribute their live seats).
+export function getExcursionMetrics(excursions, history = bookingHistory) {
+  const perExcursion = excursions.map((e) => {
+    const past = history[e.id] || []
+    const bookings = past.reduce((s, d) => s + d.booked, 0)
+    return {
+      id: e.id,
+      name: e.name,
+      category: e.category,
+      image: e.image,
+      price: e.price,
+      status: e.status,
+      bookings,
+      revenue: bookings * e.price
+    }
+  })
+
+  const revenueByExcursion = [...perExcursion].sort((a, b) => b.revenue - a.revenue)
+  const topPopular = [...perExcursion]
+    .filter((e) => e.bookings > 0)
+    .sort((a, b) => b.bookings - a.bookings)
+    .slice(0, 3)
+
+  // Average seat occupancy grouped by day of week (across all excursions).
+  const occupancyByWeekday = WEEKDAY_LABELS.map((label, weekday) => {
+    let occSum = 0
+    let n = 0
+    excursions.forEach((e) => {
+      ;(history[e.id] || []).forEach((d) => {
+        if (d.weekday === weekday && d.capacity) {
+          occSum += d.booked / d.capacity
+          n += 1
+        }
+      })
+    })
+    return { label, occ: n ? Math.round((occSum / n) * 100) : 0 }
+  })
+
+  // Bookings per week for the last 4 weeks (bucket 0 = this week … 3 = oldest).
+  const weekBuckets = [0, 0, 0, 0]
+  excursions.forEach((e) => {
+    ;(history[e.id] || []).forEach((d) => {
+      const bucket = Math.floor((d.back - 1) / 7)
+      if (bucket >= 0 && bucket < 4) weekBuckets[bucket] += d.booked
+    })
+  })
+  const weeklyTrend = [3, 2, 1, 0].map((bucket) => ({
+    label: bucket === 0 ? 'This wk' : `${bucket + 1}w ago`,
+    bookings: weekBuckets[bucket]
+  }))
+
+  const totalRevenue = perExcursion.reduce((s, e) => s + e.revenue, 0)
+  const totalBookings = perExcursion.reduce((s, e) => s + e.bookings, 0)
+
+  return {
+    revenueByExcursion,
+    topPopular,
+    occupancyByWeekday,
+    weeklyTrend,
+    totalRevenue,
+    totalBookings
+  }
+}

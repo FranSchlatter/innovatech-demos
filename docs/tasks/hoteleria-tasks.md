@@ -245,106 +245,126 @@ no-op) → fills sólidos (`bg-bg`, `bg-surface`) + borders + `hover:opacity-90`
 
 ---
 
-## H13: Noticias / Avisos (admin → front)
+## H13: Noticias / Avisos (admin → front) ✅
 **Esfuerzo:** Medio (2 hrs)
-**Archivos:** Nuevo: admin/news/NewsManagement.jsx, components/NewsBar.jsx, data/mockNews.js
+**Archivos:** Nuevo: admin/news/NewsManagement.jsx, components/NewsBar.jsx, data/mockNews.js, hooks/useNews.js
 
-- [ ] mockNews.js: 3-4 avisos mock con: id, title, message, type (info/warning/event), startDate, endDate, active
-- [ ] Admin: NewsManagement.jsx
-  - Lista de avisos existentes con estado (activo/programado/expirado)
-  - Boton "Crear aviso": modal con titulo, mensaje, tipo, fecha inicio, fecha fin
-  - Toggle activar/desactivar
-  - Preview de como se vera en el front
-  - Agregar a sidebar con icono Megaphone
-- [ ] Front: NewsBar.jsx
-  - Barra/banner en la landing que muestra avisos activos (fecha actual entre startDate y endDate)
+- [x] mockNews.js: 4 avisos mock con: id, title, message, type (info/warning/event), startDate, endDate, enabled. Helpers `newsStatus` (active/scheduled/expired/paused) e `isLive`. Config `NEWS_TYPES` (color + icono por tipo). Fechas relativas a hoy (no se vencen)
+- [x] Admin: NewsManagement.jsx
+  - Lista de avisos ordenada por estado (activo → programado → pausado → expirado) con badge de tipo + estado
+  - Boton "Crear aviso": modal con tipo (pills), titulo, mensaje (contador 180), fecha inicio/fin (DatePicker compartido)
+  - Toggle activar/pausar + editar + eliminar
+  - Vista previa en vivo de como se vera la barra en el front (dentro del modal)
+  - Agregado a sidebar con icono Megaphone + viewTitle en AdminHeader
+- [x] Front: NewsBar.jsx
+  - Barra fija arriba en la landing que muestra avisos activos (hoy entre startDate y endDate)
   - Estilo segun tipo: info (azul), warning (amber), event (verde)
-  - Dismissable por el usuario
-  - Animacion slide-down al aparecer
+  - Rotacion automatica (6s) con dots + flechas cuando hay varios; crossfade entre avisos
+  - Dismissable por el usuario (persistido por-id)
+  - Animacion slide-down al aparecer; empuja el navbar hacia abajo (prop `topOffset`)
   - Si no hay avisos activos, no se muestra
-- [ ] Persistencia localStorage
+- [x] Persistencia localStorage (`hotel-news` + `hotel-news-dismissed`) con sync entre admin y front via custom + storage events (hook `useNews`)
 
-**Criterio de exito:** Admin crea aviso con fechas. Aviso aparece automaticamente en la landing. Desaparece cuando pasa la fecha.
+**Detalle técnico:** admin y front comparten estado por el hook `useNews` (mismo patrón que
+`useLiveChat` de H5): ambos leen/escriben `hotel-news` en localStorage y se sincronizan con un
+evento custom (misma pestaña) + `storage` (otras pestañas), así un aviso creado en el admin
+aparece en la landing sin recargar. Los dismissals viven en su propia key para no mutar el
+contenido del admin. La barra es `fixed top-0` y el navbar compartido recibe un prop nuevo
+`topOffset` (default 0, no-breaking) para no solaparse. Gotcha respetado: los tints usan colores
+de la paleta estándar de Tailwind (blue/amber/emerald con /alpha), NO los tokens del theme
+(`bg-primary/10` es no-op silencioso).
+
+**Criterio de exito:** Admin crea aviso con fechas. Aviso aparece automaticamente en la landing. Desaparece cuando pasa la fecha. ✅
 
 ---
 
-## H14: Panel de Actividades / Eventos
+## H14: Panel de Actividades / Eventos ✅
 **Esfuerzo:** Medio-Alto (2-3 hrs)
-**Archivos:** Nuevo: admin/events/EventsManagement.jsx, components/EventsCalendar.jsx, data/mockEvents.js
+**Archivos:** Nuevo: admin/events/EventsManagement.jsx, components/EventsCalendar.jsx, data/mockEvents.js, hooks/useEvents.js
 
-- [ ] mockEvents.js: 5-6 eventos mock: id, name, description, date, startTime, endTime, location, image, capacity, registered, category (social/wellness/culinary/entertainment), recurring (boolean)
-- [ ] Admin: EventsManagement.jsx
-  - Lista de eventos con imagen thumbnail, nombre, fecha, ubicacion, registrados/capacidad
-  - Boton "Crear evento": modal con todos los campos + upload imagen (placeholder)
-  - Editar/cancelar evento existente
-  - Vista calendario mensual con eventos marcados
-  - Agregar a sidebar con icono CalendarDays
-- [ ] Front: EventsCalendar.jsx
-  - Seccion en la landing o en el Guest Portal: "Actividades del hotel"
-  - Cards de eventos proximos con imagen, nombre, fecha, hora, lugar, "X lugares disponibles"
-  - Boton "Me interesa" / "Registrarme" con confirmacion
-  - Filtro por categoria
+- [x] mockEvents.js: 6 eventos mock (id, name, description, date, startTime, endTime, location, image, capacity, registered, category, recurring, cancelled). `EVENT_CATEGORIES` (icono + color por categoría social/wellness/culinary/entertainment). Helpers `eventStatus` (today/upcoming/past/cancelled), `spotsLeft`, `isFull`, `isUpcoming`, `formatEventDate`, `formatTimeRange`. Fechas relativas a hoy (uno hoy, uno pasado para mostrar estado)
+- [x] Admin: EventsManagement.jsx
+  - KPIs (totales, próximos, inscriptos, ocupación) + tabs Lista/Calendario
+  - Lista de cards con thumbnail, badges de categoría/estado, barra de progreso registrados/capacidad, acciones (editar / cancelar-reactivar / eliminar con confirm)
+  - Boton "Crear evento": modal con todos los campos (categoría pills, nombre, descripción, ubicación, fecha con DatePicker compartido, inicio/fin, cupos, toggle recurrente) + campo imagen URL con preview + placeholder de upload
+  - Editar/cancelar (toggle `cancelled`) evento existente
+  - Vista calendario mensual con eventos marcados como chips por día (color por categoría), navegación de mes + "Hoy", click en chip abre editar, leyenda
+  - Filtro por categoría + orden por estado
+  - Agregado a sidebar con icono CalendarDays + viewTitle en AdminHeader
+- [x] Front: EventsCalendar.jsx
+  - Sección en la landing "Actividades del hotel" (id `activities`, entre Amenities y Offers) + link en Navbar
+  - Cards de eventos próximos con imagen, nombre, descripción, fecha, hora, lugar, "X lugares disponibles" (con estados "¡Últimos N!" y "Sin cupos")
+  - Boton "Registrarme" con modal de confirmación; estado "Estás registrado · Cancelar" para revertir
+  - Filtro por categoría (solo muestra categorías con eventos próximos)
 
-**Criterio de exito:** Admin crea eventos. Eventos aparecen en front con info completa. Huesped puede registrarse.
+**Detalle técnico:** admin y front comparten estado por el hook `useEvents` (mismo patrón que
+`useNews` de H13): ambos leen/escriben `hotel-events` en localStorage y se sincronizan con evento
+custom (misma pestaña) + `storage` (otras pestañas), así un evento creado en el admin aparece en
+la landing sin recargar y una inscripción del huésped incrementa el contador que ve el admin. Las
+inscripciones del visitante viven en su propia key (`hotel-events-registered`) para saber a cuáles
+se anotó sin mutar la lista del admin; registrar bumpea el contador compartido y reserva el cupo.
+Gotcha respetado: los colores de categoría usan la paleta estándar de Tailwind (indigo/emerald/
+amber/fuchsia con /alpha), NO los tokens del theme (`bg-primary/10` es no-op). Correctitud: `iso()`
+y `todayISO` usan fecha **local** (no `toISOString()` UTC) para que las celdas del calendario y el
+DatePicker no desfasen un día cerca de medianoche en UTC-3.
 
----
-
-## H15: GuidedTour funcional
-**Esfuerzo:** Medio (1.5 hrs)
-**Archivos:** App.jsx (TOUR_STEPS ya existe, revisar si funciona)
-
-- [ ] Verificar que GuidedTour de shared-ui esta importado y funciona
-- [ ] Definir 6-8 pasos del tour con targets correctos:
-  1. Hero: "Bienvenido a la demo del hotel"
-  2. Accommodation: "Explora las habitaciones con tour 360"
-  3. Services: "Servicios directos sin fricciones"
-  4. Amenities: "Todas las comodidades del hotel"
-  5. Offers: "Paquetes y experiencias curadas"
-  6. Contact: "Contacto y reservas"
-  7. Portal badge: "Portal del huesped - todo el self-service"
-  8. Admin badge: "Panel de gestion - el backend que controla todo"
-- [ ] Verificar que el spotlight cutout funciona en cada seccion
-- [ ] Boton "Recorrido" en navbar funcional
-- [ ] Al terminar el tour, CTA: "Explora el admin panel" o "Proba el portal"
-
-**Criterio de exito:** Tour guiado completo de 6-8 pasos, funcional, con spotlight.
+**Criterio de exito:** Admin crea eventos. Eventos aparecen en front con info completa. Huesped puede registrarse. ✅
 
 ---
 
-## H16: Check-in digital (Guest Portal)
+## H16: Check-in digital (Guest Portal) ✅
 **Esfuerzo:** Alto (2-3 hrs)
 **Archivos:** Nuevo: components/client/CheckInFlow.jsx, GuestPortal.jsx
 
-- [ ] En "My Stay" del portal, si la reserva esta en estado "confirmed" (no checked-in aun):
-  - Boton prominente "Check-in Online"
-  - Abre flujo de 3 pasos:
-    1. Datos personales: nombre, documento (tipo + numero), nacionalidad, telefono (pre-llenado de mock)
-    2. Preferencias: piso (alto/bajo), tipo almohada, hora estimada llegada, requests especiales
-    3. Confirmacion: resumen de datos + "Confirmar check-in"
-  - Al confirmar: delay 1s, estado cambia a "checked-in", muestra key digital simulada (icono de celular con numero de habitacion)
-  - Banner de exito: "Check-in completado! Presenta este codigo al llegar"
-- [ ] Despues del check-in, el boton desaparece y "My Stay" muestra timeline normal
-- [ ] Persistir estado en localStorage
+- [x] En "My Stay" del portal, si la reserva esta en estado "confirmed" (no checked-in aun):
+  - Banner CTA prominente "Check-in Online" (icono KeyRound + Smartphone) arriba del stay card
+  - Abre flujo de 3 pasos (wizard overlay, patrón del ExcursionBookingForm: step indicator + AnimatePresence):
+    1. Datos personales: nombre, documento (tipo dropdown + numero), nacionalidad, telefono, email (todo pre-llenado del mock) + validación
+    2. Preferencias: piso (alto/bajo/sin preferencia), tipo almohada (soft/medium/firm/hypoallergenic), ventana estimada de llegada, requests especiales
+    3. Confirmacion: resumen completo de reserva + datos + preferencias, botón "Confirmar check-in"
+  - Al confirmar: delay 1s + spinner, estado cambia a "checked-in", pantalla de éxito con **key digital simulada** (tarjeta tipo celular con nº de habitación, código de llave y pulse animado)
+  - Banner de exito: "¡Check-in completado! Presenta este codigo al llegar"
+- [x] Despues del check-in, el CTA desaparece; "My Stay" muestra tarjeta persistente de **Digital Room Key** + badge "Checked in" y timeline normal
+- [x] Persistir estado en localStorage (`hotel-luxury-guest-checkin`); sobrevive refresh
 
-**Criterio de exito:** Flujo de check-in online completo de 3 pasos. Cambia el estado de la reserva. Key digital simulada.
+**Detalle técnico:** `MOCK_GUEST` se cambió a `status: 'confirmed'` llegando **hoy** (checkIn=today,
+checkOut=+4) para que el flujo sea demostrable, y se le agregaron `documentType/documentNumber/
+nationality` para el prefill. El estado de check-in vive en su propia key localStorage; `isCheckedIn`
+y `canCheckIn` derivan de ella + del status del mock. Badge de estadía dinámico ("Arriving today" →
+"Checked in"). Gotcha respetado: sin alpha sobre colores del theme — la llave digital usa
+`bg-primary text-primary-contrast` (se invierte solo en ambos modos) con acentos sólidos, y el
+divisor usa `bg-primary-contrast opacity-20` (opacidad de elemento, no alpha de color) en vez de
+`border-*/20`. Los tints de éxito usan la paleta estándar Tailwind (emerald), que sí soporta alpha.
+
+**Criterio de exito:** Flujo de check-in online completo de 3 pasos. Cambia el estado de la reserva. Key digital simulada. ✅
 
 ---
 
-## H17: Excursions — Agregar nueva + metricas
+## H17: Excursions — Agregar nueva + metricas ✅
 **Esfuerzo:** Medio (1.5-2 hrs)
 **Archivos:** ExcursionsManagement.jsx, mockExcursions.js
 
-- [ ] Boton "Agregar excursion" en la parte superior
-  - Modal: nombre, descripcion, precio, duracion, dificultad, categoria, imagen (URL), guia tipo, capacidad default
-  - Al guardar, aparece como nueva excursion en la lista
-- [ ] Nueva seccion: "Metricas" (toggle o tab)
-  - Revenue total por excursion (bar chart CSS, sin libreria)
-  - Top 3 excursiones mas populares (por bookings)
-  - Ocupacion promedio por dia de la semana
-  - Tendencia de bookings ultimas 4 semanas (linea simple)
-- [ ] Persistir nuevas excursiones en localStorage
+- [x] Boton "Agregar excursion" en la parte superior (header, junto al titulo)
+  - Modal: nombre, descripcion, precio, duracion, dificultad, categoria, imagen (URL con preview), guia, capacidad default, location, meeting point + validación (nombre/precio/duración/capacidad)
+  - Al guardar (delay 600ms), aparece como nueva excursion al tope de la lista con 2 departures auto (hoy + mañana)
+- [x] Nueva seccion: "Metricas" (tab switcher Catalogue / Metrics)
+  - Revenue total por excursion (bar chart horizontal CSS/Framer, sin libreria)
+  - Top 3 excursiones mas populares (por bookings, con medallas oro/plata/bronce)
+  - Ocupacion promedio por dia de la semana (bar chart vertical)
+  - Tendencia de bookings ultimas 4 semanas (linea SVG con area + pathLength animado)
+  - KPIs: revenue 28d, seats sold 28d, avg ticket
+- [x] Persistir nuevas excursiones + edits + toggles en localStorage (key `hotel-excursions`)
 
-**Criterio de exito:** Se puede crear excursion nueva. Metricas visibles con datos calculados del mock.
+**Detalle técnico:** las métricas se calculan de un historial sintético de 28 días generado con PRNG
+semillado (`mulberry32`, mismo patrón que mockHousekeeping) en `mockExcursions.js` — determinístico
+entre renders/reloads, con perfiles de demanda por excursión (`DEMAND`) y boost de fin de semana.
+Helper puro `getExcursionMetrics(excursions, history)` parametrizado para que las excursiones creadas
+en runtime (sin historial) se manejen sin romper (contribuyen 0). Gotcha respetado: charts con
+`flex-1` + `h-full` para que el `height:%` resuelva; fills sólidos `bg-primary` (nada de alpha sobre
+tokens del theme); la línea SVG usa `text-primary` + `stroke="currentColor"`. Validado: build OK,
+dev transform OK, test de lógica (revenue positivo, top3, weekday 0-100%, determinismo) PASS.
+
+**Criterio de exito:** Se puede crear excursion nueva. Metricas visibles con datos calculados del mock. ✅
 
 ---
 
@@ -533,3 +553,27 @@ Consideraciones:
 **Nota:** H16 es la version basica del check-in digital del huesped (3 pasos, sin documentos ni asignacion de habitacion). H26 lo absorbe/expande hacia una estacion completa y compartida con recepcion. Definir si se fusionan.
 
 **Criterio de exito:** Un mismo wizard de check-in permite, tanto al huesped como a recepcion, cargar documentos, asignar habitacion, emitir tarjetas y dejar la reserva en checked-in, reflejado en Dashboard, Calendario y KPIs.
+
+---
+
+## GuidedTour funcional — LO ÚLTIMO DE LO ÚLTIMO (sin número, prioridad más baja)
+**Esfuerzo:** Medio (1.5 hrs)
+**Archivos:** App.jsx (TOUR_STEPS ya existe, revisar si funciona)
+
+> Nota: movido al final a pedido del owner. Es lo último que se hace, después de todo lo demás.
+
+- [ ] Verificar que GuidedTour de shared-ui esta importado y funciona
+- [ ] Definir 6-8 pasos del tour con targets correctos:
+  1. Hero: "Bienvenido a la demo del hotel"
+  2. Accommodation: "Explora las habitaciones con tour 360"
+  3. Services: "Servicios directos sin fricciones"
+  4. Amenities: "Todas las comodidades del hotel"
+  5. Offers: "Paquetes y experiencias curadas"
+  6. Contact: "Contacto y reservas"
+  7. Portal badge: "Portal del huesped - todo el self-service"
+  8. Admin badge: "Panel de gestion - el backend que controla todo"
+- [ ] Verificar que el spotlight cutout funciona en cada seccion
+- [ ] Boton "Recorrido" en navbar funcional
+- [ ] Al terminar el tour, CTA: "Explora el admin panel" o "Proba el portal"
+
+**Criterio de exito:** Tour guiado completo de 6-8 pasos, funcional, con spotlight.

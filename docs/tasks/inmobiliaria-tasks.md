@@ -262,159 +262,136 @@ Transformar el login existente para soportar 3 roles:
 
 ---
 
-## I13: Portal Interesado — Mis Visitas expandido
+## I13: Portal Interesado — Mis Visitas expandido ✅ HECHO (12 sep 2026)
 **Esfuerzo:** Medio (1.5-2 hrs)
 **Archivos:** ClientPortal.jsx (seccion visitas dentro del portal)
 
-- [ ] Cada visita card expandida con:
-  - Foto mini de la propiedad (thumbnail de properties.json)
+- [x] Cada visita card expandida con:
+  - Foto mini de la propiedad (thumbnail real vía `propById`/properties.json) + badge de operación
   - Titulo y direccion de la propiedad
-  - Precio y tipo operacion
-  - Fecha, hora, tipo visita (presencial/videollamada)
+  - Precio (formatPrice por operación) y tipo de propiedad
+  - Fecha, hora, tipo visita (presencial/videollamada) + marca "Reprogramada"
   - Status badge (Agendada/Confirmada/Realizada/Cancelada)
-  - **Agente asignado**: nombre, foto mini, telefono clickeable, email clickeable
-  - **Boton "Enviar mensaje al agente"**: abre modal mini-chat o textarea + enviar (simula envio, toast)
-- [ ] **Resultado de visita** (si realizada): seccion con feedback del interesado
-  - Rating 1-5 estrellas de la propiedad
+  - **Agente asignado** (`agentById`/mockAgents): nombre, foto mini, teléfono clickeable (`tel:`), email clickeable (`mailto:`)
+  - **Boton "Enviar mensaje al agente"**: abre `MessageAgentModal` (textarea + mensajes rápidos, simula envío con toast)
+- [x] **Resultado de visita** (si realizada): `VisitFeedback` inline editable
+  - Rating 1-5 estrellas (`StarRating`)
   - Toggle: "Me interesa" / "No me interesa"
-  - Nota opcional
-- [ ] **Botones mejorados**: "Reprogramar" abre modal con nueva fecha/hora. "Cancelar" pide confirmacion + motivo
-- [ ] Ordenar: proximas primero, pasadas despues (separador visual)
+  - Nota opcional · resumen read-only con botón Editar si ya hay feedback
+- [x] **Botones mejorados**: "Reprogramar" → `RescheduleVisitModal` (DatePicker compartido + horario, vuelve a "Agendada"). "Cancelar" → `CancelVisitModal` (confirmación + motivo, incluye "Otro motivo" libre)
+- [x] Ordenar: próximas primero (asc) con separador "Próximas", pasadas después (desc) con "Anteriores" + badge "N sin calificar". EmptyState si no hay visitas
+- [x] Estado + persistencia en localStorage (`inmob-portal-visits-v1`). Build OK (1907 módulos)
 
 **Criterio de exito:** Visitas muestran info completa de propiedad + agente. Se puede interactuar con cada visita. Feedback post-visita.
 
 ---
 
-## I14: Portal Interesado — Mis Ofertas expandido
+## I14: Portal Interesado — Mis Ofertas expandido ✅
 **Esfuerzo:** Medio (1.5-2 hrs)
 **Archivos:** ClientPortal.jsx (seccion ofertas)
 
 Actualmente es tabla read-only. Necesita ser interactiva:
 
-- [ ] **Click en oferta**: expandir detalle con:
-  - Propiedad: foto, titulo, direccion, precio publicado
-  - Mi oferta: monto ofertado, fecha, condiciones (contado/financiado/permuta)
-  - Status: Enviada → En revision → Contra-oferta → Aceptada/Rechazada
-  - Si contra-oferta: mostrar monto de contra-oferta del vendedor + boton "Aceptar" / "Rechazar" / "Contra-ofertar"
-- [ ] **Historial de contra-ofertas**: timeline visual
-  - "Oferta original: USD 95,000" → "Contra-oferta vendedor: USD 100,000" → "Mi contra-oferta: USD 97,500" → etc.
-- [ ] **Boton "Nueva oferta"**: formulario con:
-  - Propiedad (dropdown de favoritos o todas)
-  - Monto ofertado (input numerico + moneda)
-  - Condicion de pago (select: contado/financiado/permuta)
-  - Mensaje al propietario (textarea)
-  - Validez de la oferta (dias)
-  - Submit con delay + confirmacion
-- [ ] **Badge count** en tab "Mis Ofertas" mostrando ofertas pendientes de respuesta
-- [ ] Persistir en localStorage
+- [x] **Click en oferta**: card expandible (`OfferCard`) con detalle:
+  - Propiedad: foto, titulo, direccion, precio publicado (linkeado a properties.json real)
+  - Mi oferta: monto ofertado, condicion (contado/financiado/permuta con icono), validez, fechas
+  - Status stepper (`OfferStepper`): Enviada → En revision → Contraoferta → Resolucion (Aceptada/Rechazada)
+  - Si contraoferta: panel destacado con monto del vendedor + botones "Aceptar" / "Contraofertar" / "Rechazar"
+- [x] **Historial de contra-ofertas**: timeline visual (`OfferTimeline`) reconstruido desde `history[]`
+  - Cada evento con actor (comprador/propietario), monto, fecha, nota; dots por color (gold/accent/success/error)
+- [x] **Boton "Nueva oferta"** → `NewOfferModal`:
+  - Propiedad (dropdown con optgroup Favoritos + Todas)
+  - Monto ofertado (input numerico) + moneda (USD/ARS, default segun propiedad)
+  - Condicion de pago (contado/financiado/permuta), mensaje, validez (dias)
+  - Submit con delay (700ms) + toast de confirmacion
+- [x] **Contraoferta** (`CounterOfferModal`) y **Aceptar/Rechazar** (`OfferDecisionModal`) con confirmacion
+- [x] **Badge count** rojo en tab "Mis ofertas" = contraofertas pendientes de respuesta (status `counter`)
+- [x] Persistir en localStorage (`inmob-portal-offers-v1`). Build OK (1907 modulos)
+
+**Nota tecnica:** el gotcha de alpha sobre colores del theme (`bg-accent/10`, `border-accent/40` no renderizan) tambien aplica a inmobiliaria → los paneles de enfasis usan fills solidos (`bg-surface-alt` + `border-accent`).
 
 **Criterio de exito:** Ofertas interactivas con detalle de propiedad. Sistema de contra-ofertas con timeline. Crear oferta nueva funcional.
 
 ---
 
-## I15: Portal Interesado — Documentos con upload
+## I15: Portal Interesado — Documentos con upload ✅ HECHO (12 sep 2026)
 **Esfuerzo:** Medio (1.5-2 hrs)
-**Archivos:** ClientPortal.jsx (seccion documentos)
+**Archivos:** ClientPortal.jsx (seccion documentos, reescrita). Nuevo: data/mockBuyerDocuments.js
 
-- [ ] **Organizar por propiedad/operacion**:
-  - Agrupacion: "Documentos para [Propiedad X]" — collapsible sections
-  - Si no hay propiedad asignada: seccion "Documentos generales"
-- [ ] **Cada documento card expandida**:
-  - Icono de tipo (PDF/IMG/DOC)
-  - Nombre del archivo
-  - Tipo de documento: DNI, Recibo sueldo, Garantia, CUIT, Certificado dominio, etc. (badge)
-  - Estado: Pendiente / Subido / Verificado / Rechazado (badge color)
-  - Fecha de subida
-  - Boton "Descargar" (simulado)
-  - Si rechazado: motivo del rechazo
-- [ ] **Upload funcional (simulado)**:
-  - Drag-drop zone mejorada con texto "Arrastra tus documentos aqui"
-  - Boton "Seleccionar archivo" (simula seleccion con delay)
-  - Al "subir": animacion de progreso (barra 0→100% con delay), luego aparece en la lista como "Pendiente de verificacion"
-  - Selector de tipo de documento al subir
-  - Selector de propiedad asociada
-- [ ] **Checklist de requisitos**: lista de documentos requeridos con tick verde si subido, rojo si falta
-  - Para compra: DNI, CUIT, Recibos sueldo x3, Certificado BCRA
-  - Para alquiler: DNI, Recibos sueldo x3, Garantia propietaria, CUIT garante
-- [ ] Persistir en localStorage
+- [x] **Organizar por propiedad/operacion**:
+  - Agrupacion `DocGroup` collapsible: "Documentos para [Propiedad X]" (subtitulo barrio · operacion). Grupos derivados de las props de las ofertas del comprador + las que ya tienen docs
+  - Fallback "Documentos generales" para docs sin propiedad asignada (docs personales)
+- [x] **Cada documento card expandida** (`BuyerDocCard`):
+  - Icono por tipo (img → Image, pdf/doc → FileText)
+  - Nombre del archivo, badge de tipo de documento (DNI, Recibo de sueldo, Garantía, CUIT, Certificado de dominio, etc.)
+  - Estado con dot + badge: Subido / Pendiente de verificación / Verificado / Rechazado
+  - Fecha de subida (formatDate) + tamaño, botón "Descargar" (toast simulado), botón eliminar
+  - Si rechazado: card con borde rojo + motivo + botón "Reemplazar documento" (reabre modal prellenado tipo+propiedad)
+- [x] **Upload funcional (simulado)** — `UploadDocumentModal` + `UploadDropzone`:
+  - Dropzone "Arrastrá tus documentos aquí" (drag-over resalta, click abre modal)
+  - Selector de tipo + selector de propiedad asociada. "Seleccionar archivo" simula selección con delay (650ms) + spinner, genera filename desde el tipo
+  - Al subir: barra de progreso 0→100% animada + spinner %, luego aparece en la lista como "Pendiente de verificación" (toast)
+- [x] **Checklist de requisitos** (`DocChecklist`): toggle Compra/Alquiler + barra de progreso, tick verde si cumplido, X rojo si rechazado, reloj muted si falta; contador X/Y para requisitos con `count` (ej. recibos 2/3)
+  - Compra: DNI, CUIT, Recibos de sueldo x3, Certificado BCRA · Alquiler: DNI, Recibos x3, Garantía propietaria, CUIT garante
+- [x] Persistir en localStorage (`inmob-portal-documents-v1`)
+- [x] **Gotcha aplicado:** alpha sobre colores del theme (`bg-success/15`, etc.) es no-op en inmobiliaria → badges/circles usan `bg-surface-alt` sólido + texto/dot de color, o color sólido con `text-white`. Build OK (1908 módulos). Verificado en navegador (Playwright/Chrome): checklist, grupos, upload con progreso, persistencia, dark/light, 0 errores de consola
 
 **Criterio de exito:** Documentos organizados por propiedad. Upload simulado con progreso. Checklist de requisitos segun tipo operacion.
 
 ---
 
-## I16: Portal Interesado — Alertas funcionales
+## I16: Portal Interesado — Alertas funcionales ✅ HECHO (12 sep 2026)
 **Esfuerzo:** Medio (1-1.5 hrs)
-**Archivos:** ClientPortal.jsx (seccion alertas)
+**Archivos:** ClientPortal.jsx (seccion alertas reescrita)
 
-- [ ] **Toggle funcional** con feedback:
-  - Al activar/desactivar: toast notification "Alerta activada" / "Alerta pausada"
-  - Animacion en el switch
-  - Estado persiste en localStorage
-- [ ] **"Crear nueva alerta"** — modal completo:
-  - Tipo operacion: Compra / Alquiler / Temporario (select)
-  - Zona/Barrio: multi-select de neighborhoods.json
-  - Rango de precio: min/max con inputs numericos + moneda
-  - Tipo propiedad: multi-select (Departamento, Casa, PH, Local, Terreno)
-  - Dormitorios: minimo (select 1-5+)
-  - Superficie minima (input)
-  - Nombre de la alerta (input: "Mi busqueda zona norte")
-  - Al guardar: aparece en la lista como nueva alerta activa
-- [ ] **Cada alerta card mejorada**:
-  - Nombre, criterios resumidos como tags
-  - "X coincidencias nuevas" (numero mock)
-  - Click: ver las propiedades que matchean (filtrar properties.json con los criterios)
-  - Boton editar (reabre modal con datos)
-  - Boton eliminar con confirmacion
-- [ ] **Notificacion visual**: badge rojo en tab "Alertas" si hay coincidencias nuevas
+Reemplaza la versión básica de I1 (toggle + toast + modal simple) por un sistema completo. El modelo de criterios pasó de single-value a multi-select → se bumpeó la key de localStorage a `inmob-portal-alerts-v2` con `normalizeAlert` schema-safe.
 
-**Criterio de exito:** Alertas con toggle funcional + feedback. Crear nueva alerta con criterios completos. Ver propiedades que coinciden. Editar/eliminar.
+- [x] **Toggle funcional** con feedback:
+  - Toast "Alerta activada" / "Alerta pausada"
+  - Switch animado con Framer Motion (`layout` spring en el knob, track `bg-accent`/`bg-border` sólido — sin alpha)
+  - Persiste en localStorage
+- [x] **"Crear nueva alerta"** — `AlertFormModal` (modal ancho `max-w-2xl`, scrollable):
+  - Operación: Venta / Alquiler / Temporario (select) + **moneda** USD/ARS (toggle)
+  - Zonas/Barrios: **multi-select** de neighborhoods.json (chips toggle, sin selección = todas)
+  - Rango de precio: min/max + validación (mín > máx)
+  - Tipo propiedad: **multi-select** (Depto, Casa, PH, Local, Terreno)
+  - Dormitorios mínimo (Indistinto/1+…5+) + superficie mínima (input m²)
+  - Nombre de la alerta (input con placeholder = nombre auto-sugerido según criterios)
+  - Preview en vivo de coincidencias (`matchProperties` sobre properties.json)
+  - Mismo modal sirve para **crear y editar** (`target` = 'new' | alerta)
+- [x] **Cada alerta card mejorada** (`AlertCard`):
+  - Nombre + criterios resumidos como tags (`criteriaTags`)
+  - "X nuevas" pill roja (`bg-error text-white` sólido) = matches no vistos
+  - "Ver N propiedades" → `AlertMatchesModal` (lista con thumbnail, precio, dorm/m², link a detalle vía `onSelectProperty`); al abrir marca los matches como vistos (`seenIds`)
+  - Botón Editar (reabre modal prellenado) + Eliminar con `ConfirmDialog`
+- [x] **Notificación visual**: badge rojo en tab "Alertas" = total de coincidencias nuevas sin revisar (reutiliza el mecanismo `navBadges` de ofertas)
+- [x] Strip de resumen (Alertas / Activas / Nuevas). Dark/light OK, 0 errores de consola. Build OK (1908 módulos). Verificado en navegador (Playwright + Chrome del sistema): crear/editar/eliminar/toggle/ver-matches/persistencia/badge.
+
+**Criterio de exito:** Alertas con toggle funcional + feedback. Crear nueva alerta con criterios completos. Ver propiedades que coinciden. Editar/eliminar. ✅
 
 ---
 
-## I17: Portal Locatario (inquilino) — Vista completa
+## I17: Portal Locatario (inquilino) — Vista completa ✅ HECHO (12 sep 2026)
 **Esfuerzo:** Alto (3-4 hrs)
-**Archivos:** ClientPortal.jsx, nuevo: data/mockTenantData.js
-**Requiere:** I12 (login multi-rol) hecho primero
+**Archivos:** ClientPortal.jsx (secciones inquilino reescritas + ReceiptModal), mockTenantData.js (reescrito como modelo derivado), utils/format.js (fix TZ)
 
-- [ ] **mockTenantData.js**: datos coherentes del inquilino mock:
-  - Contrato: propiedad, propietario, fecha inicio, duracion (36 meses ley), monto base, indice ajuste (ICL), frecuencia ajuste, deposito, fecha vencimiento
-  - Pagos: ultimos 6 meses con: mes, monto, estado (pagado/pendiente/atrasado), fecha pago, medio (transferencia/efectivo/MercadoPago)
-  - Documentos: contrato PDF, recibos, garantia, seguro caucion
-  - Reparaciones: 2-3 solicitudes mock con estado
+Base creada en I12; I17 la eleva a completa y arregla bugs reales (barras del gráfico invisibles y badges/paneles sin fondo por el no-op de alpha sobre colores del theme).
 
-- [ ] **Tab "Mi contrato"**:
-  - Card principal con datos del contrato (propiedad con foto, propietario, inicio, vencimiento, meses restantes)
-  - Barra de progreso visual: mes actual de 36 meses
-  - Datos del propietario (nombre, inmobiliaria)
-  - Clausulas resumen (ajuste, plazo, deposito, penalidades)
-  - Boton "Descargar contrato" (simulado)
+- [x] **mockTenantData.js — modelo derivado (fuente única de verdad)**: todo el modelo financiero se calcula con el MISMO motor que el admin (`projectAdjustments` + `INDICES` de mockContracts) → "el inquilino ve la misma proyección que la inmobiliaria, cero sorpresas".
+  - Contrato: propiedad, propietario, inicio, 36 meses (Ley 27.551), base back-solveada para que el actual ≈ $621k, índice ICL, ajuste trimestral, depósito, vencimiento, próximo ajuste — todo derivado
+  - Pagos: **12 meses** derivados (cada mes toma el alquiler de su período), estado, fecha, medio; el actual pendiente con mora + interés calculado
+  - Documentos: contrato, garantía, seguro caución, reglamento + **recibos por mes** derivados de los pagos
+  - Reparaciones: 2 mock con timeline; `REPAIR_STATUS`/urgencias con fills sólidos (no alpha)
+- [x] **Tab "Mi contrato"**: card con foto, badges (vigente + índice), alquiler/depósito/inicio/vencimiento, barra de progreso 36 meses, chip de próximo ajuste, cláusulas, datos del propietario, descargar contrato
+- [x] **Tab "Pagos"**: strip de stats (actual / pagado 12m / próximo vto), resumen al-día vs mora (con días + interés), lista scrollable de 12 pagos con saltos trimestrales coherentes, "Pagar con MercadoPago" (delay + persist), **"Ver recibo" → ReceiptModal** estilo PDF por pago
+- [x] **Tab "Próximo ajuste"**: índice + tasa, actual vs estimado (fórmula real), alerta de próximo ajuste, **gráfico de evolución de 12 períodos** (pagado/actual/proyectado, fills sólidos y visibles en dark/light) + **comparador ICL/UVA/IPC** (mismo engine, +17.4/15.8/9.9%)
+- [x] **Tab "Documentos"**: grupo contrato/garantías + grupo **recibos de pago** (derivados, abren ReceiptModal), dropzone de upload
+- [x] **Tab "Reparaciones"**: lista con estado (pill sólido) + dot de urgencia por color, timeline con fechas (último paso pulsante si en curso), modal "Solicitar reparación" (título/desc/urgencia/foto placeholder), persiste en localStorage
+- [x] **ReceiptModal** reutilizable (pagos + documentos): membrete de la agencia, datos inquilino/propietario/inmueble, período, total, disclaimer, descargar PDF (toast)
+- [x] **Fix `formatDate` (inmobiliaria)**: las fechas ISO date-only se parseaban como UTC → mostraban un día antes en zona AR ("28 feb" en vez de "01 mar"). Ahora se fijan a mediodía local → fecha correcta en toda la app
+- [x] **Fix alpha no-op**: se reemplazaron todos los `bg-*/NN` / `border-*/NN` sobre colores del theme por fills sólidos (`bg-surface-alt`, colores sólidos, `text-white`). También `StatCard` variante accent
 
-- [ ] **Tab "Pagos"**:
-  - Lista de pagos (scroll, ultimos 12 meses)
-  - Cada pago: mes, monto (ARS), estado badge, fecha, medio de pago
-  - Si pendiente: boton "Pagar" (simula pago con delay + confirmacion, MercadoPago mock)
-  - Si atrasado: warning con dias de mora y monto con intereses (calculado)
-  - Resumen arriba: "Al dia" verde o "Deuda: $X" rojo
-
-- [ ] **Tab "Proximo ajuste"**:
-  - Mostrar fecha del proximo ajuste
-  - Indice actual (ICL/IPC/UVA) con valor mock
-  - Alquiler actual vs estimado post-ajuste
-  - Conectar logica con AdjustmentSimulator del admin (misma formula de calculo)
-  - Grafico simple: evolucion del alquiler desde inicio (barras por periodo)
-
-- [ ] **Tab "Documentos"**:
-  - Lista: Contrato, Recibos de pago (por mes), Garantia, Seguro, Reglamento
-  - Estado: Disponible / Pendiente
-  - Boton descargar por cada uno (simulado)
-
-- [ ] **Tab "Reparaciones"**:
-  - Lista de solicitudes: titulo, descripcion, fecha, estado (Solicitada/En revision/Aprobada/En proceso/Resuelta)
-  - Boton "Solicitar reparacion": modal con: titulo, descripcion, urgencia (Baja/Media/Alta/Urgente), foto (placeholder)
-  - Timeline por solicitud con fechas de cada cambio de estado
-  - Persistir en localStorage
-
-**Criterio de exito:** Portal de inquilino completo con 5 tabs funcionales. Datos coherentes. Pago simulado. Ajuste conectado con logica real. Reparaciones con solicitud.
+**Criterio de exito:** Portal de inquilino completo con 5 tabs funcionales. Datos coherentes. Pago simulado. Ajuste conectado con lógica real. Reparaciones con solicitud. ✅ Build OK (1908 módulos). Verificado en navegador (Playwright + Chrome): 5 tabs en dark/light, pago + persistencia, crear reparación, recibo, comparador de índices, gráfico visible, fechas correctas, 0 errores de consola.
 
 ---
 
@@ -485,28 +462,6 @@ Actualmente es tabla read-only. Necesita ser interactiva:
 - [ ] **Resultado**: propiedades filtradas muestran count en header "X propiedades encontradas"
 
 **Criterio de exito:** Filtros avanzados completos. Mapa con markers clickeables. Funcion de dibujar zona (aunque sea simulada). Profesional.
-
----
-
-## I20: GuidedTour funcional
-**Esfuerzo:** Medio (1-1.5 hrs)
-**Archivos:** App.jsx (verificar TOUR_STEPS si existe)
-
-- [ ] Verificar que GuidedTour de shared-ui esta importado
-- [ ] Definir 6-8 pasos del tour con targets correctos:
-  1. Hero/Buscador: "Busca propiedades por tipo, operacion y ubicacion"
-  2. Propiedades destacadas: "Explora las propiedades mas populares con tour 360"
-  3. Calculadora: "Simula tu credito hipotecario con tasas reales"
-  4. Servicios: "Servicios integrales de la inmobiliaria"
-  5. Agentes: "Nuestro equipo de asesores especializados"
-  6. Contacto: "Consultas y tasaciones gratuitas"
-  7. Portal badge: "Portal del cliente: seguimiento de visitas, ofertas, documentos"
-  8. Admin badge: "Panel de gestion: CRM, propiedades, operaciones, liquidaciones"
-- [ ] Verificar spotlight cutout en cada seccion
-- [ ] Boton "Recorrido" en navbar funcional
-- [ ] Al terminar: CTA "Explora el admin panel" o "Proba el portal"
-
-**Criterio de exito:** Tour guiado completo de 6-8 pasos funcional con spotlight.
 
 ---
 
@@ -654,3 +609,27 @@ con `min`/`max`/`error`. Reemplaza el `input type="date"` nativo (la "poronga bl
       `onChange` recibe el string ISO directo (no evento) → se inlineó el setter en cada uno.
 - [x] Rollout COMPLETO en todo el monorepo: hoteleria (9), inmobiliaria (7), salud (2), gastronomia (1).
       Builds OK en las 4 apps. 0 pickers nativos restantes.
+
+---
+
+## FINAL (sin número) · GuidedTour funcional — lo último de todo
+**Esfuerzo:** Medio (1-1.5 hrs)
+**Archivos:** App.jsx (verificar TOUR_STEPS si existe)
+
+> Movido al fondo por decisión del owner: es lo último de lo último, se hace recién cuando todo el resto esté cerrado.
+
+- [ ] Verificar que GuidedTour de shared-ui esta importado
+- [ ] Definir 6-8 pasos del tour con targets correctos:
+  1. Hero/Buscador: "Busca propiedades por tipo, operacion y ubicacion"
+  2. Propiedades destacadas: "Explora las propiedades mas populares con tour 360"
+  3. Calculadora: "Simula tu credito hipotecario con tasas reales"
+  4. Servicios: "Servicios integrales de la inmobiliaria"
+  5. Agentes: "Nuestro equipo de asesores especializados"
+  6. Contacto: "Consultas y tasaciones gratuitas"
+  7. Portal badge: "Portal del cliente: seguimiento de visitas, ofertas, documentos"
+  8. Admin badge: "Panel de gestion: CRM, propiedades, operaciones, liquidaciones"
+- [ ] Verificar spotlight cutout en cada seccion
+- [ ] Boton "Recorrido" en navbar funcional
+- [ ] Al terminar: CTA "Explora el admin panel" o "Proba el portal"
+
+**Criterio de exito:** Tour guiado completo de 6-8 pasos funcional con spotlight.

@@ -11,11 +11,15 @@ import OffersSection from './components/OffersSection'
 import ReviewsSection from './components/ReviewsSection'
 import HotelContactSection from './components/HotelContactSection'
 import GuestServicesSection from './components/GuestServicesSection'
+import EventsCalendar from './components/EventsCalendar'
 import BookingForm from './pages/BookingForm'
 import RoomDetailPage from './pages/RoomDetailPage'
 import AdminLayout from './components/admin/layout/AdminLayout'
 import GuestPortal from './components/GuestPortal'
 import GuidedTour from '@shared-ui/components/GuidedTour'
+import NewsBar, { NEWS_BAR_HEIGHT } from './components/NewsBar'
+import { useNews } from './hooks/useNews'
+import { AnimatePresence } from 'framer-motion'
 import { User, Compass } from 'lucide-react'
 import './styles.css'
 
@@ -30,9 +34,15 @@ const TOUR_STEPS = [
 export default function App() {
   const { isDark, toggleTheme } = useDarkMode()
   const { cart, addItem, removeItem } = useCart()
+  const { liveNews, dismiss: dismissNews } = useNews()
   const [selectedRoom, setSelectedRoom] = useState(null)
   const [viewMode, setViewMode] = useState('main') // 'main', 'detail', 'booking', 'admin', 'guest-portal'
   const [tourRun, setTourRun] = useState(false)
+
+  // Announcement bar is landing-only; when visible it pushes the fixed navbar
+  // down by its height so the two never overlap.
+  const showNewsBar = liveNews.length > 0
+  const navTopOffset = showNewsBar ? NEWS_BAR_HEIGHT : 0
 
   const startTour = () => {
     setViewMode('main')
@@ -58,6 +68,7 @@ export default function App() {
     { name: 'Accommodation', href: '#accommodation', onClick: () => handleNavClick('accommodation') },
     { name: 'Services', href: '#services', onClick: () => handleNavClick('services') },
     { name: 'Amenities', href: '#amenities', onClick: () => handleNavClick('amenities') },
+    { name: 'Actividades', href: '#activities', onClick: () => handleNavClick('activities') },
     { name: 'Contact', href: '#contact', onClick: () => handleNavClick('contact') },
     { name: 'Recorrido', href: '#tour', onClick: startTour, icon: Compass },
     { name: 'Guest Portal', href: '#guest', onClick: () => setViewMode('guest-portal'), icon: User },
@@ -148,11 +159,16 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-bg text-text">
-      <Navbar 
-        brand="Hotel Luxury" 
-        toggleTheme={toggleTheme} 
+      <AnimatePresence>
+        {showNewsBar && <NewsBar news={liveNews} onDismiss={dismissNews} />}
+      </AnimatePresence>
+
+      <Navbar
+        brand="Hotel Luxury"
+        toggleTheme={toggleTheme}
         isDark={isDark}
         links={navLinks}
+        topOffset={navTopOffset}
       />
 
       <main>
@@ -174,6 +190,9 @@ export default function App() {
         <section id="amenities">
           <HotelAmenities />
         </section>
+
+        {/* Hotel Activities & Events (admin-managed, guests can register) */}
+        <EventsCalendar />
 
         {/* Offers */}
         <section id="offers">

@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import { Menu, X, Sun, Moon } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
-export default function Navbar({ brand = 'InnovaTech', toggleTheme, isDark, links = [] }) {
+export default function Navbar({ brand = 'InnovaTech', toggleTheme, isDark, links = [], topOffset = 0 }) {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
@@ -18,7 +18,8 @@ export default function Navbar({ brand = 'InnovaTech', toggleTheme, isDark, link
     <motion.nav
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      style={{ top: topOffset }}
+      className={`fixed left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
           ? 'bg-bg/95 backdrop-blur-md shadow-soft'
           : 'bg-bg/80 backdrop-blur-sm'

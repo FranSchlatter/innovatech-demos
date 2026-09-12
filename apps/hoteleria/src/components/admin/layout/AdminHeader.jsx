@@ -10,7 +10,9 @@ const viewTitles = {
   housekeeping: 'Housekeeping',
   inventory: 'Inventory',
   services: 'Service Requests',
-  excursions: 'Excursiones'
+  excursions: 'Excursiones',
+  events: 'Actividades y eventos',
+  news: 'Noticias y avisos'
 }
 
 export default function AdminHeader({ isDark, toggleTheme }) {

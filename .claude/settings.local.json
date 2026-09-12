@@ -11,7 +11,8 @@
       "Bash(curl:*)",
       "Bash(xargs wc -l)",
       "Skill(impeccable)",
-      "Bash(xargs grep -l \"PlatformPublishing\")"
+      "Bash(xargs grep -l \"PlatformPublishing\")",
+      "Bash(node *)"
     ]
   },
   "hooks": {

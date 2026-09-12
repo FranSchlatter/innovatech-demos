@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "gray-on-color",
+        "value": "*",
+        "files": [
+          "apps/hoteleria/src/components/admin/excursions/ExcursionsManagement.jsx"
+        ],
+        "createdAt": "2026-09-12T14:48:12.404Z",
+        "reason": "intentional gold/silver/bronze medal badges in Top-3 ranking: dark -800/-950 text on light medal colors, high contrast and readable"
+      }
+    ]
+  }
+}

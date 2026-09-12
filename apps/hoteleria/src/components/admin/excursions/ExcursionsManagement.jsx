@@ -17,9 +17,46 @@ import {
   Ticket,
   TrendingUp,
   Trash2,
-  UserCheck
+  UserCheck,
+  BarChart3,
+  LayoutGrid,
+  DollarSign,
+  Award,
+  ImageIcon,
+  Percent
 } from 'lucide-react'
-import { mockExcursions, EXCURSION_CATEGORIES, isToday } from '../../../data/admin/mockExcursions'
+import {
+  mockExcursions,
+  EXCURSION_CATEGORIES,
+  DIFFICULTIES,
+  isToday,
+  getExcursionMetrics
+} from '../../../data/admin/mockExcursions'
+
+const STORAGE_KEY = 'hotel-excursions'
+
+// Load persisted excursions (created/edited in previous sessions) or fall back
+// to the mock seed. Wrapped in try/catch so a corrupt entry never breaks the UI.
+function loadExcursions() {
+  if (typeof window === 'undefined') return mockExcursions
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed) && parsed.length) return parsed
+    }
+  } catch {
+    /* ignore corrupt payload */
+  }
+  return mockExcursions
+}
+
+const slugify = (str) =>
+  str
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
 
 const seatColor = (booked, capacity) => {
   const pct = capacity ? booked / capacity : 0
@@ -376,12 +413,490 @@ function ManageModal({ excursion, onClose, onSave }) {
   )
 }
 
+function CreateModal({ open, onClose, onCreate }) {
+  const blank = {
+    name: '',
+    category: EXCURSION_CATEGORIES[0],
+    description: '',
+    price: '',
+    duration: '',
+    difficulty: DIFFICULTIES[0],
+    location: '',
+    meetingPoint: 'Hotel Lobby',
+    guide: '',
+    image: '',
+    defaultCapacity: 12
+  }
+  const [form, setForm] = useState(blank)
+  const [saving, setSaving] = useState(false)
+  const [touched, setTouched] = useState(false)
+
+  useEffect(() => {
+    if (open) {
+      setForm(blank)
+      setTouched(false)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
+
+  const set = (key, value) => setForm((f) => ({ ...f, [key]: value }))
+
+  const priceNum = Number(form.price)
+  const capNum = Number(form.defaultCapacity)
+  const errors = {
+    name: !form.name.trim(),
+    price: !form.price || Number.isNaN(priceNum) || priceNum <= 0,
+    duration: !form.duration.trim(),
+    capacity: !capNum || capNum < 1
+  }
+  const isValid = !Object.values(errors).some(Boolean)
+
+  const handleCreate = async () => {
+    setTouched(true)
+    if (!isValid) return
+    setSaving(true)
+    await new Promise((r) => setTimeout(r, 600))
+    onCreate({
+      name: form.name.trim(),
+      category: form.category,
+      description: form.description.trim(),
+      price: priceNum,
+      duration: form.duration.trim(),
+      difficulty: form.difficulty,
+      location: form.location.trim() || form.meetingPoint.trim() || 'Miami',
+      meetingPoint: form.meetingPoint.trim() || 'Hotel Lobby',
+      guide: form.guide.trim() || 'To be assigned',
+      image: form.image.trim(),
+      defaultCapacity: capNum
+    })
+    setSaving(false)
+    onClose()
+  }
+
+  const fieldError = (key) => touched && errors[key]
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+          className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: 12 }}
+            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-2xl bg-surface rounded-xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-5 border-b border-border">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-lg bg-primary text-primary-contrast">
+                  <Compass className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-text">New excursion</h2>
+                  <p className="text-sm text-muted">Add a tour to the catalogue</p>
+                </div>
+              </div>
+              <button onClick={onClose} className="p-2 rounded-lg hover:bg-bg text-muted hover:text-text transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-5 overflow-y-auto space-y-5">
+              <div className="grid sm:grid-cols-[1.4fr_1fr] gap-4">
+                {/* Left column */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-1.5">Name *</label>
+                    <input
+                      type="text"
+                      value={form.name}
+                      onChange={(e) => set('name', e.target.value)}
+                      placeholder="e.g. Sunset Kayak Tour"
+                      className={`w-full px-3 py-2 bg-bg border rounded-lg text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/50 ${
+                        fieldError('name') ? 'border-red-500' : 'border-border'
+                      }`}
+                    />
+                    {fieldError('name') && <p className="text-xs text-red-500 mt-1">Name is required</p>}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-1.5">Description</label>
+                    <textarea
+                      rows={3}
+                      value={form.description}
+                      onChange={(e) => set('description', e.target.value)}
+                      placeholder="Short description shown to guests…"
+                      className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text placeholder:text-muted resize-none focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-text mb-1.5">Category</label>
+                      <select
+                        value={form.category}
+                        onChange={(e) => set('category', e.target.value)}
+                        className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      >
+                        {EXCURSION_CATEGORIES.map((c) => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-text mb-1.5">Difficulty</label>
+                      <select
+                        value={form.difficulty}
+                        onChange={(e) => set('difficulty', e.target.value)}
+                        className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      >
+                        {DIFFICULTIES.map((d) => (
+                          <option key={d} value={d}>{d}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right column — image */}
+                <div>
+                  <label className="block text-sm font-medium text-text mb-1.5">Image URL</label>
+                  <div className="aspect-video rounded-lg border border-border bg-bg overflow-hidden flex items-center justify-center mb-2">
+                    {form.image ? (
+                      // eslint-disable-next-line jsx-a11y/img-redundant-alt
+                      <img
+                        src={form.image}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none'
+                        }}
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center text-muted">
+                        <ImageIcon className="w-8 h-8 mb-1" />
+                        <span className="text-xs">Preview</span>
+                      </div>
+                    )}
+                  </div>
+                  <input
+                    type="url"
+                    value={form.image}
+                    onChange={(e) => set('image', e.target.value)}
+                    placeholder="https://…"
+                    className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-text mb-1.5">Price / person *</label>
+                  <div className={`flex items-center gap-1 px-3 py-2 bg-bg border rounded-lg ${fieldError('price') ? 'border-red-500' : 'border-border'}`}>
+                    <span className="text-muted text-sm">$</span>
+                    <input
+                      type="number"
+                      min={0}
+                      value={form.price}
+                      onChange={(e) => set('price', e.target.value)}
+                      placeholder="0"
+                      className="w-full bg-transparent focus:outline-none text-sm text-text"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text mb-1.5">Duration *</label>
+                  <input
+                    type="text"
+                    value={form.duration}
+                    onChange={(e) => set('duration', e.target.value)}
+                    placeholder="e.g. 3 hours"
+                    className={`w-full px-3 py-2 bg-bg border rounded-lg text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/50 ${
+                      fieldError('duration') ? 'border-red-500' : 'border-border'
+                    }`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text mb-1.5">Default capacity *</label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={form.defaultCapacity}
+                    onChange={(e) => set('defaultCapacity', e.target.value)}
+                    className={`w-full px-3 py-2 bg-bg border rounded-lg text-sm text-text focus:outline-none focus:ring-2 focus:ring-primary/50 ${
+                      fieldError('capacity') ? 'border-red-500' : 'border-border'
+                    }`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text mb-1.5">Guide</label>
+                  <input
+                    type="text"
+                    value={form.guide}
+                    onChange={(e) => set('guide', e.target.value)}
+                    placeholder="e.g. Carlos M."
+                    className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-text mb-1.5">Location</label>
+                  <input
+                    type="text"
+                    value={form.location}
+                    onChange={(e) => set('location', e.target.value)}
+                    placeholder="e.g. South Beach"
+                    className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text mb-1.5">Meeting point</label>
+                  <input
+                    type="text"
+                    value={form.meetingPoint}
+                    onChange={(e) => set('meetingPoint', e.target.value)}
+                    placeholder="e.g. Hotel Lobby"
+                    className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  />
+                </div>
+              </div>
+
+              <p className="text-xs text-muted">
+                Two upcoming departures (today &amp; tomorrow) will be created automatically using the default capacity. You can adjust the schedule afterwards from <span className="text-text font-medium">Manage</span>.
+              </p>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-end gap-3 p-5 border-t border-border">
+              <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-text hover:bg-bg rounded-lg transition-colors">
+                Cancel
+              </button>
+              <button
+                onClick={handleCreate}
+                disabled={saving}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-contrast text-sm font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
+              >
+                <Plus className="w-4 h-4" />
+                {saving ? 'Creating…' : 'Create excursion'}
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
+
+// --- Metrics view -----------------------------------------------------------
+
+function RevenueChart({ data }) {
+  const max = Math.max(...data.map((d) => d.revenue), 1)
+  return (
+    <div className="bg-surface rounded-xl border border-border p-4 sm:p-5">
+      <h3 className="text-base font-bold text-text mb-1 flex items-center gap-2">
+        <DollarSign className="w-5 h-5 text-primary" />
+        Total revenue by excursion
+      </h3>
+      <p className="text-xs text-muted mb-4">Realised bookings · last 28 days</p>
+      <div className="space-y-3">
+        {data.map((e, i) => (
+          <div key={e.id} className="flex items-center gap-3">
+            <span className="w-32 sm:w-40 shrink-0 text-xs font-medium text-text truncate" title={e.name}>
+              {e.name}
+            </span>
+            <div className="flex-1 h-6 rounded-md bg-bg overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${(e.revenue / max) * 100}%` }}
+                transition={{ duration: 0.6, delay: i * 0.05, ease: 'easeOut' }}
+                className="h-full rounded-md bg-primary min-w-[2px]"
+              />
+            </div>
+            <span className="w-20 shrink-0 text-right text-xs font-semibold text-text tabular-nums">
+              ${e.revenue.toLocaleString()}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function TopPopular({ data }) {
+  const medals = ['bg-amber-400 text-amber-950', 'bg-slate-300 text-slate-800', 'bg-orange-400 text-orange-950']
+  const maxBookings = Math.max(...data.map((d) => d.bookings), 1)
+  return (
+    <div className="bg-surface rounded-xl border border-border p-4 sm:p-5">
+      <h3 className="text-base font-bold text-text mb-1 flex items-center gap-2">
+        <Award className="w-5 h-5 text-primary" />
+        Top 3 most popular
+      </h3>
+      <p className="text-xs text-muted mb-4">Ranked by seats sold</p>
+      {data.length === 0 ? (
+        <p className="text-sm text-muted py-6 text-center">No bookings recorded yet.</p>
+      ) : (
+        <div className="space-y-3">
+          {data.map((e, i) => (
+            <div key={e.id} className="flex items-center gap-3">
+              <span className={`w-7 h-7 shrink-0 rounded-full flex items-center justify-center text-sm font-bold ${medals[i]}`}>
+                {i + 1}
+              </span>
+              <img src={e.image} alt="" className="w-11 h-11 rounded-lg object-cover shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-text truncate">{e.name}</p>
+                <div className="h-1.5 mt-1 rounded-full bg-bg overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(e.bookings / maxBookings) * 100}%` }}
+                    transition={{ duration: 0.6, delay: i * 0.08 }}
+                    className="h-full rounded-full bg-primary"
+                  />
+                </div>
+              </div>
+              <div className="text-right shrink-0">
+                <p className="text-sm font-bold text-text tabular-nums">{e.bookings}</p>
+                <p className="text-[11px] text-muted">bookings</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function WeekdayOccupancy({ data }) {
+  const max = Math.max(...data.map((d) => d.occ), 1)
+  return (
+    <div className="bg-surface rounded-xl border border-border p-4 sm:p-5">
+      <h3 className="text-base font-bold text-text mb-1 flex items-center gap-2">
+        <Percent className="w-5 h-5 text-primary" />
+        Average occupancy by day
+      </h3>
+      <p className="text-xs text-muted mb-4">Seats filled per weekday · last 28 days</p>
+      <div className="flex items-end gap-2 sm:gap-3 h-40">
+        {data.map((d, i) => (
+          <div key={d.label} className="flex-1 flex flex-col items-center justify-end gap-1.5 h-full">
+            <span className="text-[11px] font-semibold text-text tabular-nums">{d.occ}%</span>
+            <div className="w-full flex-1 flex flex-col justify-end">
+              <motion.div
+                initial={{ height: 0 }}
+                animate={{ height: `${(d.occ / max) * 100}%` }}
+                transition={{ duration: 0.5, delay: i * 0.05 }}
+                className="w-full rounded-t-md min-h-[4px] bg-primary"
+                style={{ opacity: 0.55 + (d.occ / max) * 0.45 }}
+              />
+            </div>
+            <span className="text-[11px] text-muted">{d.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function TrendLine({ data }) {
+  const W = 280
+  const H = 110
+  const pad = 10
+  const max = Math.max(...data.map((d) => d.bookings), 1)
+  const stepX = data.length > 1 ? (W - pad * 2) / (data.length - 1) : 0
+  const points = data.map((d, i) => {
+    const x = pad + i * stepX
+    const y = H - pad - (d.bookings / max) * (H - pad * 2)
+    return { x, y, ...d }
+  })
+  const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ')
+  const areaPath = `${linePath} L ${points[points.length - 1].x.toFixed(1)} ${H - pad} L ${points[0].x.toFixed(1)} ${H - pad} Z`
+
+  return (
+    <div className="bg-surface rounded-xl border border-border p-4 sm:p-5">
+      <h3 className="text-base font-bold text-text mb-1 flex items-center gap-2">
+        <TrendingUp className="w-5 h-5 text-primary" />
+        Booking trend
+      </h3>
+      <p className="text-xs text-muted mb-4">Total seats sold per week · last 4 weeks</p>
+      <div className="text-primary">
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-32" preserveAspectRatio="none">
+          <path d={areaPath} fill="currentColor" opacity="0.12" />
+          <motion.path
+            d={linePath}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 0.9, ease: 'easeInOut' }}
+          />
+          {points.map((p) => (
+            <circle key={p.label} cx={p.x} cy={p.y} r="3.5" fill="currentColor" />
+          ))}
+        </svg>
+      </div>
+      <div className="flex justify-between mt-2">
+        {data.map((d) => (
+          <div key={d.label} className="text-center">
+            <p className="text-sm font-bold text-text tabular-nums">{d.bookings}</p>
+            <p className="text-[11px] text-muted">{d.label}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function MetricsView({ excursions }) {
+  const metrics = useMemo(() => getExcursionMetrics(excursions), [excursions])
+  const avgTicket = metrics.totalBookings ? Math.round(metrics.totalRevenue / metrics.totalBookings) : 0
+
+  return (
+    <div className="space-y-4 sm:space-y-6">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <KPICard index={0} icon={DollarSign} label="Revenue · 28 days" value={`$${metrics.totalRevenue.toLocaleString()}`} color="bg-green-500" />
+        <KPICard index={1} icon={Ticket} label="Seats sold · 28 days" value={metrics.totalBookings.toLocaleString()} color="bg-blue-500" />
+        <KPICard index={2} icon={TrendingUp} label="Avg. ticket" value={`$${avgTicket}`} sub="per seat" color="bg-purple-500" />
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <RevenueChart data={metrics.revenueByExcursion} />
+        <TopPopular data={metrics.topPopular} />
+        <WeekdayOccupancy data={metrics.occupancyByWeekday} />
+        <TrendLine data={metrics.weeklyTrend} />
+      </div>
+    </div>
+  )
+}
+
 export default function ExcursionsManagement() {
-  const [excursions, setExcursions] = useState(mockExcursions)
+  const [excursions, setExcursions] = useState(loadExcursions)
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
   const [managing, setManaging] = useState(null)
+  const [tab, setTab] = useState('catalogue')
+  const [creating, setCreating] = useState(false)
+
+  // Persist the whole list so created excursions, capacity edits and status
+  // toggles survive a refresh (demo has no backend).
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(excursions))
+    } catch {
+      /* storage full / unavailable — non-fatal for a demo */
+    }
+  }, [excursions])
 
   const stats = useMemo(() => {
     const active = excursions.filter((e) => e.status === 'active')
@@ -430,14 +945,86 @@ export default function ExcursionsManagement() {
     setExcursions((list) => list.map((e) => (e.id === updated.id ? updated : e)))
   }
 
+  const createExcursion = (form) => {
+    const base = slugify(form.name) || 'excursion'
+    const ids = new Set(excursions.map((e) => e.id))
+    let id = base
+    let n = 2
+    while (ids.has(id)) id = `${base}-${n++}` // guarantee a unique id
+    const uid = id.slice(0, 6)
+    const cap = form.defaultCapacity
+    const today = new Date().toISOString().split('T')[0]
+    const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
+
+    const newExcursion = {
+      id,
+      name: form.name,
+      category: form.category,
+      description: form.description,
+      duration: form.duration,
+      price: form.price,
+      difficulty: form.difficulty,
+      location: form.location,
+      meetingPoint: form.meetingPoint,
+      guide: form.guide,
+      rating: 5.0,
+      image: form.image || 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&q=80',
+      included: [],
+      status: 'active',
+      departures: [
+        { id: `${uid}-1`, date: today, time: '09:00', capacity: cap, booked: 0 },
+        { id: `${uid}-2`, date: tomorrow, time: '14:00', capacity: cap, booked: 0 }
+      ]
+    }
+    setExcursions((list) => [newExcursion, ...list])
+    setTab('catalogue')
+  }
+
+  const tabs = [
+    { id: 'catalogue', label: 'Catalogue', icon: LayoutGrid },
+    { id: 'metrics', label: 'Metrics', icon: BarChart3 }
+  ]
+
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div>
-        <h2 className="text-xl font-bold text-text">Excursions</h2>
-        <p className="text-sm text-muted">Schedules, capacity and availability</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-bold text-text">Excursions</h2>
+          <p className="text-sm text-muted">Schedules, capacity and performance</p>
+        </div>
+        <button
+          onClick={() => setCreating(true)}
+          className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-contrast text-sm font-medium rounded-lg hover:opacity-90 transition-opacity self-start sm:self-auto"
+        >
+          <Plus className="w-4 h-4" />
+          Add excursion
+        </button>
       </div>
 
+      {/* Tabs */}
+      <div className="flex gap-1 p-1 bg-bg border border-border rounded-lg w-full sm:w-auto sm:inline-flex">
+        {tabs.map((t) => {
+          const activeTab = tab === t.id
+          return (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeTab ? 'bg-primary text-primary-contrast' : 'text-muted hover:text-text'
+              }`}
+            >
+              <t.icon className="w-4 h-4" />
+              {t.label}
+            </button>
+          )
+        })}
+      </div>
+
+      {tab === 'metrics' ? (
+        <MetricsView excursions={excursions} />
+      ) : (
+        <>
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <KPICard index={0} icon={Compass} label="Active excursions" value={`${stats.activeCount}/${stats.total}`} color="bg-teal-500" />
@@ -500,11 +1087,19 @@ export default function ExcursionsManagement() {
           <p className="text-sm text-muted">Try adjusting your filters or search query</p>
         </div>
       )}
+        </>
+      )}
 
       <ManageModal
         excursion={managing}
         onClose={() => setManaging(null)}
         onSave={saveExcursion}
+      />
+
+      <CreateModal
+        open={creating}
+        onClose={() => setCreating(false)}
+        onCreate={createExcursion}
       />
     </div>
   )

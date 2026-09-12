@@ -41,11 +41,15 @@ export function formatArea(m2) {
 export function formatDate(iso) {
   if (!iso) return '—'
   try {
+    // Date-only ISO strings ("YYYY-MM-DD") parse as UTC midnight, which renders one
+    // calendar day early in negative-offset timezones (e.g. AR, UTC-3). Pin those to
+    // local noon so the displayed day matches the stored day everywhere.
+    const d = /^\d{4}-\d{2}-\d{2}$/.test(iso) ? new Date(`${iso}T12:00:00`) : new Date(iso)
     return new Intl.DateTimeFormat('es-AR', {
       day: '2-digit',
       month: 'short',
       year: 'numeric'
-    }).format(new Date(iso))
+    }).format(d)
   } catch {
     return iso
   }

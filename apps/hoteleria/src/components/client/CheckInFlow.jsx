@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   X,
   ArrowLeft,
   ArrowRight,
   User,
+  Users,
+  UserPlus,
   CreditCard,
   Globe,
   Phone,
@@ -24,10 +26,12 @@ import {
 
 // ---------------------------------------------------------------------------
 // H16 — Online check-in (Guest Portal)
-// A self-contained 3-step wizard the guest completes before arriving. On
-// confirmation it flips the reservation to "checked-in" and issues a simulated
-// digital room key. Colours stick to solid theme fills (alpha over the CSS-var
-// theme colours is a silent no-op here); success tints use the standard Tailwind
+// A self-contained wizard the guest completes before arriving. On confirmation
+// it flips the reservation to "checked-in" and issues a simulated digital room
+// key. The step list is dynamic: a "Companions" step is inserted only when the
+// reservation is for more than one guest (name + document per accompanying
+// guest). Colours stick to solid theme fills (alpha over the CSS-var theme
+// colours is a silent no-op here); success tints use the standard Tailwind
 // palette (emerald), which does support alpha.
 // ---------------------------------------------------------------------------
 
@@ -59,12 +63,6 @@ const ARRIVAL_WINDOWS = [
   'After 21:00'
 ]
 
-const STEPS = [
-  { num: 1, label: 'Your details' },
-  { num: 2, label: 'Preferences' },
-  { num: 3, label: 'Confirm' }
-]
-
 const documentTypeLabel = (id) =>
   DOCUMENT_TYPES.find((d) => d.id === id)?.label || 'Document'
 
@@ -80,7 +78,21 @@ const formatStayDate = (dateStr) => {
 }
 
 export default function CheckInFlow({ open, onClose, guest, onComplete }) {
-  const [step, setStep] = useState(1)
+  // The reservation covers `guests` people; everyone beyond the main guest is a
+  // companion we collect name + document for.
+  const companionCount = Math.max(0, (guest?.reservation?.guests || 1) - 1)
+  const hasCompanions = companionCount > 0
+
+  // Dynamic step list — the "Companions" step only appears when relevant.
+  const steps = useMemo(() => {
+    const s = [{ key: 'details', label: 'Your details' }]
+    if (hasCompanions) s.push({ key: 'companions', label: 'Companions' })
+    s.push({ key: 'preferences', label: 'Preferences' })
+    s.push({ key: 'confirm', label: 'Confirm' })
+    return s
+  }, [hasCompanions])
+
+  const [stepIdx, setStepIdx] = useState(0)
   const [errors, setErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [result, setResult] = useState(null) // { digitalKey } once confirmed
@@ -95,17 +107,34 @@ export default function CheckInFlow({ open, onClose, guest, onComplete }) {
     floor: 'any',
     pillow: 'medium',
     arrival: '15:00 – 18:00',
-    specialRequests: ''
+    specialRequests: '',
+    companions: Array.from({ length: companionCount }, () => ({
+      fullName: '',
+      documentType: 'passport',
+      documentNumber: ''
+    }))
   }))
+
+  const currentKey = steps[stepIdx]?.key
+  const nextIsConfirm = steps[stepIdx + 1]?.key === 'confirm'
 
   const update = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }))
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }))
   }
 
-  const validateStep = (current) => {
+  const updateCompanion = (index, field, value) => {
+    setForm((prev) => ({
+      ...prev,
+      companions: prev.companions.map((c, i) => (i === index ? { ...c, [field]: value } : c))
+    }))
+    const errKey = `companion-${index}-${field}`
+    if (errors[errKey]) setErrors((prev) => ({ ...prev, [errKey]: undefined }))
+  }
+
+  const validateStep = (key) => {
     const next = {}
-    if (current === 1) {
+    if (key === 'details') {
       if (!form.fullName.trim()) next.fullName = 'Full name is required'
       if (!form.documentNumber.trim()) next.documentNumber = 'Document number is required'
       if (!form.nationality.trim()) next.nationality = 'Nationality is required'
@@ -115,18 +144,23 @@ export default function CheckInFlow({ open, onClose, guest, onComplete }) {
       } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
         next.email = 'Enter a valid email'
       }
+    } else if (key === 'companions') {
+      form.companions.forEach((c, i) => {
+        if (!c.fullName.trim()) next[`companion-${i}-fullName`] = 'Name is required'
+        if (!c.documentNumber.trim()) next[`companion-${i}-documentNumber`] = 'Document is required'
+      })
     }
     setErrors(next)
     return Object.keys(next).length === 0
   }
 
   const handleNext = () => {
-    if (validateStep(step)) setStep((s) => Math.min(3, s + 1))
+    if (validateStep(currentKey)) setStepIdx((s) => Math.min(steps.length - 1, s + 1))
   }
 
   const handleBack = () => {
     setErrors({})
-    setStep((s) => Math.max(1, s - 1))
+    setStepIdx((s) => Math.max(0, s - 1))
   }
 
   const handleConfirm = () => {
@@ -152,7 +186,7 @@ export default function CheckInFlow({ open, onClose, guest, onComplete }) {
     // Defer reset until after the exit animation.
     setTimeout(() => {
       if (!result) {
-        setStep(1)
+        setStepIdx(0)
         setErrors({})
       }
     }, 300)
@@ -285,7 +319,7 @@ export default function CheckInFlow({ open, onClose, guest, onComplete }) {
                 <div className="bg-surface px-5 md:px-6 py-5 border-b border-border">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      {step > 1 && (
+                      {stepIdx > 0 && (
                         <motion.button
                           initial={{ opacity: 0, x: -8 }}
                           animate={{ opacity: 1, x: 0 }}
@@ -314,16 +348,16 @@ export default function CheckInFlow({ open, onClose, guest, onComplete }) {
 
                   {/* Step indicator */}
                   <div className="flex items-center gap-2 mt-4">
-                    {STEPS.map((s) => (
-                      <div key={s.num} className="flex flex-col items-center flex-1">
+                    {steps.map((s, i) => (
+                      <div key={s.key} className="flex flex-col items-center flex-1">
                         <div
                           className={`h-1.5 w-full rounded-full transition-colors ${
-                            s.num <= step ? 'bg-accent' : 'bg-border'
+                            i <= stepIdx ? 'bg-accent' : 'bg-border'
                           }`}
                         />
                         <span
                           className={`text-xs mt-1.5 hidden sm:block ${
-                            s.num <= step ? 'text-accent font-medium' : 'text-muted'
+                            i <= stepIdx ? 'text-accent font-medium' : 'text-muted'
                           }`}
                         >
                           {s.label}
@@ -336,10 +370,10 @@ export default function CheckInFlow({ open, onClose, guest, onComplete }) {
                 {/* --------------------------------------------------------- Body */}
                 <div className="p-5 md:p-6">
                   <AnimatePresence mode="wait">
-                    {/* ------------------------------------------ Step 1: Details */}
-                    {step === 1 && (
+                    {/* ------------------------------------------ Step: Details */}
+                    {currentKey === 'details' && (
                       <motion.div
-                        key="step1"
+                        key="step-details"
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20 }}
@@ -441,10 +475,98 @@ export default function CheckInFlow({ open, onClose, guest, onComplete }) {
                       </motion.div>
                     )}
 
-                    {/* -------------------------------------- Step 2: Preferences */}
-                    {step === 2 && (
+                    {/* -------------------------------------- Step: Companions */}
+                    {currentKey === 'companions' && (
                       <motion.div
-                        key="step2"
+                        key="step-companions"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                      >
+                        <h3 className="text-lg font-semibold text-primary mb-1">Accompanying guests</h3>
+                        <p className="text-sm text-muted mb-5">
+                          Your reservation is for {(guest?.reservation?.guests || 1)} guests. Please add the
+                          details of everyone travelling with you.
+                        </p>
+
+                        <div className="space-y-5">
+                          {form.companions.map((c, i) => (
+                            <div key={i} className="bg-surface rounded-xl p-4 border border-border">
+                              <div className="flex items-center gap-2 mb-4">
+                                <span className="w-7 h-7 rounded-full bg-accent/15 text-accent flex items-center justify-center">
+                                  <UserPlus className="w-4 h-4" />
+                                </span>
+                                <h4 className="font-semibold text-primary">Guest {i + 2}</h4>
+                              </div>
+
+                              <div className="space-y-4">
+                                <Field label="Full name" icon={User} error={errors[`companion-${i}-fullName`]}>
+                                  <input
+                                    type="text"
+                                    value={c.fullName}
+                                    onChange={(e) => updateCompanion(i, 'fullName', e.target.value)}
+                                    placeholder="As shown on their document"
+                                    className="flex-1 bg-transparent focus:outline-none text-sm"
+                                  />
+                                </Field>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                  <div>
+                                    <label className="block text-sm font-medium mb-2">Document type</label>
+                                    <div className="flex items-center gap-3 px-4 py-3 bg-bg rounded-lg border border-border focus-within:border-accent transition-colors">
+                                      <CreditCard className="w-5 h-5 text-accent flex-shrink-0" />
+                                      <select
+                                        value={c.documentType}
+                                        onChange={(e) => updateCompanion(i, 'documentType', e.target.value)}
+                                        className="flex-1 bg-transparent focus:outline-none text-sm cursor-pointer"
+                                      >
+                                        {DOCUMENT_TYPES.map((d) => (
+                                          <option key={d.id} value={d.id}>{d.label}</option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                  </div>
+                                  <Field
+                                    label="Document number"
+                                    icon={CreditCard}
+                                    error={errors[`companion-${i}-documentNumber`]}
+                                  >
+                                    <input
+                                      type="text"
+                                      value={c.documentNumber}
+                                      onChange={(e) => updateCompanion(i, 'documentNumber', e.target.value)}
+                                      placeholder="Number"
+                                      className="flex-1 bg-transparent focus:outline-none text-sm"
+                                    />
+                                  </Field>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="flex gap-3 mt-7">
+                          <button
+                            onClick={handleBack}
+                            className="flex-1 py-3 rounded-xl font-semibold border border-border text-muted hover:text-primary hover:border-accent transition"
+                          >
+                            Back
+                          </button>
+                          <button
+                            onClick={handleNext}
+                            className="flex-1 bg-accent text-white py-3 rounded-xl font-bold hover:opacity-90 transition flex items-center justify-center gap-2"
+                          >
+                            Continue
+                            <ArrowRight className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* -------------------------------------- Step: Preferences */}
+                    {currentKey === 'preferences' && (
+                      <motion.div
+                        key="step-preferences"
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20 }}
@@ -571,10 +693,10 @@ export default function CheckInFlow({ open, onClose, guest, onComplete }) {
                       </motion.div>
                     )}
 
-                    {/* ------------------------------------------ Step 3: Confirm */}
-                    {step === 3 && (
+                    {/* ------------------------------------------ Step: Confirm */}
+                    {currentKey === 'confirm' && (
                       <motion.div
-                        key="step3"
+                        key="step-confirm"
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20 }}
@@ -590,6 +712,9 @@ export default function CheckInFlow({ open, onClose, guest, onComplete }) {
                             <Recap icon={MapPin} label="Room" value={`${room.number} · ${room.type}`} full />
                             <Recap icon={Calendar} label="Check-in" value={formatStayDate(reservation.checkIn)} />
                             <Recap icon={Calendar} label="Check-out" value={formatStayDate(reservation.checkOut)} />
+                            {reservation.guests > 1 && (
+                              <Recap icon={Users} label="Guests" value={`${reservation.guests} people`} />
+                            )}
                           </div>
                         </div>
 
@@ -611,6 +736,27 @@ export default function CheckInFlow({ open, onClose, guest, onComplete }) {
                             <Recap icon={Mail} label="Email" value={form.email} full />
                           </div>
                         </div>
+
+                        {/* Companions recap */}
+                        {hasCompanions && (
+                          <div className="bg-surface rounded-xl p-4 mb-4">
+                            <h4 className="font-semibold text-primary mb-3 flex items-center gap-2">
+                              <Users className="w-4 h-4 text-accent" />
+                              Accompanying guests
+                            </h4>
+                            <div className="space-y-2">
+                              {form.companions.map((c, i) => (
+                                <div key={i} className="flex items-center justify-between gap-3 text-sm">
+                                  <span className="font-medium text-primary truncate">{c.fullName || `Guest ${i + 2}`}</span>
+                                  <span className="text-muted flex items-center gap-1.5 shrink-0">
+                                    <CreditCard className="w-3.5 h-3.5 text-accent" />
+                                    {documentTypeLabel(c.documentType)} · {c.documentNumber || '—'}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
 
                         {/* Preferences recap */}
                         <div className="bg-surface rounded-xl p-4 mb-4">

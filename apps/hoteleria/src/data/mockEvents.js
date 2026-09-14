@@ -15,10 +15,13 @@
 //   capacity    max attendees
 //   registered  attendees already signed up (grows as guests register)
 //   category    'social' | 'wellness' | 'culinary' | 'entertainment'
-//   recurring   repeats regularly (weekly) — shown as a badge
+//   recurring   legacy weekly flag — repeats on the weekday of `date`
+//   recurrence  { weekdays: number[] } — real weekly recurrence (getDay() values);
+//               takes precedence over `recurring`. Empty/absent = one-off.
 //   cancelled   admin-cancelled flag (hidden from the front, struck in admin)
 
 import { PartyPopper, Flower2, Wine, Music } from 'lucide-react'
+import { nextOccurrence, weekdayOf, describeWeekdays } from './recurrence'
 
 // Presentation config per category. Uses standard Tailwind palette colors
 // (indigo/emerald/amber/fuchsia) because those DO support the /alpha modifier,
@@ -180,15 +183,41 @@ export const initialEvents = [
 
 export const todayISO = () => localISO(new Date())
 
-// Derive the state of an event from its date + cancelled flag.
+// --- Recurrence -------------------------------------------------------------
+// The weekdays an event repeats on. Prefers the explicit `recurrence.weekdays`
+// model; falls back to the legacy `recurring` boolean (weekly on its own day).
+export const getEventWeekdays = (event) => {
+  if (event.recurrence?.weekdays?.length) return event.recurrence.weekdays
+  if (event.recurring && event.date) return [weekdayOf(event.date)]
+  return []
+}
+
+export const isRecurring = (event) => getEventWeekdays(event).length > 0
+
+// Human label for the recurrence ("Semanal · Lun y Jue"), or '' when one-off.
+export const recurrenceLabel = (event) => {
+  const wds = getEventWeekdays(event)
+  return wds.length ? `Semanal · ${describeWeekdays(wds)}` : ''
+}
+
+// The date that matters for display/status: for a recurring event it's the next
+// occurrence on/after today (so it never goes stale); for a one-off it's `date`.
+export const effectiveEventDate = (event, today = todayISO()) => {
+  const wds = getEventWeekdays(event)
+  if (wds.length) return nextOccurrence(wds, today > event.date ? today : event.date)
+  return event.date
+}
+
+// Derive the state of an event from its effective date + cancelled flag.
 //   cancelled → manually cancelled by the admin
-//   past      → already happened (before today)
+//   past      → already happened (only possible for one-off events)
 //   today     → happens today
 //   upcoming  → in the future
 export const eventStatus = (event, today = todayISO()) => {
   if (event.cancelled) return 'cancelled'
-  if (event.date < today) return 'past'
-  if (event.date === today) return 'today'
+  const date = effectiveEventDate(event, today)
+  if (date < today) return 'past'
+  if (date === today) return 'today'
   return 'upcoming'
 }
 

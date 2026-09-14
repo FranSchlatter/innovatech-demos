@@ -28,8 +28,11 @@ import {
   spotsLeft,
   formatEventDate,
   formatTimeRange,
+  effectiveEventDate,
+  getEventWeekdays,
   todayISO
 } from '../../../data/mockEvents'
+import { WEEKDAYS, weekdayOf, describeWeekdays } from '../../../data/recurrence'
 
 const STATUS = {
   today: { label: 'Hoy', cls: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20' },
@@ -70,7 +73,7 @@ function KPICard({ icon: Icon, label, value, sub, color, index }) {
 }
 
 // ---------------------------------------------------------------- Create / edit modal
-function EventModal({ open, editing, onClose, onSave }) {
+function EventModal({ open, editing, initialDate, onClose, onSave }) {
   const empty = {
     name: '',
     description: '',
@@ -81,7 +84,7 @@ function EventModal({ open, editing, onClose, onSave }) {
     location: '',
     image: '',
     capacity: 30,
-    recurring: false
+    weekdays: []
   }
   const [draft, setDraft] = useState(empty)
   const [saving, setSaving] = useState(false)
@@ -100,12 +103,23 @@ function EventModal({ open, editing, onClose, onSave }) {
             location: editing.location,
             image: editing.image || '',
             capacity: editing.capacity,
-            recurring: !!editing.recurring
+            weekdays: getEventWeekdays(editing)
           }
-        : { ...empty, date: todayISO() }
+        : { ...empty, date: initialDate || todayISO() }
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, editing])
+  }, [open, editing, initialDate])
+
+  const recurring = draft.weekdays.length > 0
+  const toggleRecurring = () =>
+    setDraft((d) => ({ ...d, weekdays: d.weekdays.length ? [] : [weekdayOf(d.date)] }))
+  const toggleWeekday = (value) =>
+    setDraft((d) => ({
+      ...d,
+      weekdays: d.weekdays.includes(value)
+        ? d.weekdays.filter((w) => w !== value)
+        : [...d.weekdays, value]
+    }))
 
   const capacityNum = Number(draft.capacity) || 0
   const valid =
@@ -119,13 +133,17 @@ function EventModal({ open, editing, onClose, onSave }) {
   const handleSave = async () => {
     setSaving(true)
     await new Promise((r) => setTimeout(r, 500))
+    const { weekdays, ...rest } = draft
     onSave({
-      ...draft,
+      ...rest,
       name: draft.name.trim(),
       description: draft.description.trim(),
       location: draft.location.trim(),
       image: draft.image.trim(),
-      capacity: capacityNum
+      capacity: capacityNum,
+      // Keep the legacy boolean in sync so anything reading `recurring` still works.
+      recurring: weekdays.length > 0,
+      recurrence: { weekdays }
     })
     setSaving(false)
     onClose()
@@ -258,7 +276,9 @@ function EventModal({ open, editing, onClose, onSave }) {
 
               {/* Date */}
               <div>
-                <label className="block text-sm font-medium text-text mb-2">Fecha</label>
+                <label className="block text-sm font-medium text-text mb-2">
+                  {recurring ? 'A partir de' : 'Fecha'}
+                </label>
                 <DatePicker
                   value={draft.date}
                   min={todayISO()}
@@ -300,28 +320,50 @@ function EventModal({ open, editing, onClose, onSave }) {
               </div>
 
               {/* Recurring */}
-              <button
-                type="button"
-                onClick={() => set({ recurring: !draft.recurring })}
-                className={`w-full flex items-center justify-between gap-2 px-4 py-3 rounded-lg border transition-colors ${
-                  draft.recurring ? 'bg-primary/10 border-primary/30' : 'bg-bg border-border'
-                }`}
-              >
-                <span className="flex items-center gap-2 text-sm font-medium text-text">
-                  <Repeat className="w-4 h-4 text-muted" /> Evento recurrente (semanal)
-                </span>
-                <span
-                  className={`relative w-10 h-5 rounded-full transition-colors ${
-                    draft.recurring ? 'bg-primary' : 'bg-border'
-                  }`}
+              <div className={`rounded-lg border transition-colors ${recurring ? 'border-primary/40 bg-primary/5' : 'border-border bg-bg'}`}>
+                <button
+                  type="button"
+                  onClick={toggleRecurring}
+                  className="w-full flex items-center justify-between gap-2 px-4 py-3"
                 >
-                  <span
-                    className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
-                      draft.recurring ? 'translate-x-5' : ''
-                    }`}
-                  />
-                </span>
-              </button>
+                  <span className="flex items-center gap-2 text-sm font-medium text-text">
+                    <Repeat className="w-4 h-4 text-muted" /> Evento recurrente (semanal)
+                  </span>
+                  <span className={`relative w-10 h-5 rounded-full transition-colors ${recurring ? 'bg-primary' : 'bg-border'}`}>
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                        recurring ? 'translate-x-5' : ''
+                      }`}
+                    />
+                  </span>
+                </button>
+
+                {/* Weekday picker — only when recurrence is on */}
+                {recurring && (
+                  <div className="px-4 pb-4 pt-1">
+                    <p className="text-xs text-muted mb-2">Se repite cada semana los días:</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {WEEKDAYS.map((w) => {
+                        const active = draft.weekdays.includes(w.value)
+                        return (
+                          <button
+                            key={w.value}
+                            type="button"
+                            onClick={() => toggleWeekday(w.value)}
+                            className={`w-10 h-9 rounded-lg text-xs font-semibold border transition-colors ${
+                              active
+                                ? 'bg-primary text-primary-contrast border-primary'
+                                : 'bg-bg text-muted border-border hover:border-primary'
+                            }`}
+                          >
+                            {w.short}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center justify-end gap-3 p-5 border-t border-border">
@@ -353,6 +395,8 @@ function EventCard({ event, today, onEdit, onCancel, onDelete }) {
   const left = spotsLeft(event)
   const pct = event.capacity ? Math.min(100, Math.round((event.registered / event.capacity) * 100)) : 0
   const cancelled = event.cancelled
+  const weekdays = getEventWeekdays(event)
+  const shownDate = effectiveEventDate(event, today)
 
   return (
     <motion.div
@@ -388,10 +432,10 @@ function EventCard({ event, today, onEdit, onCancel, onDelete }) {
       {/* Body */}
       <div className="p-4 flex flex-col flex-1">
         <div className="flex items-center gap-3 text-xs text-muted mb-3 flex-wrap">
-          <span className="flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5" />{formatEventDate(event.date, today)}</span>
+          <span className="flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5" />{formatEventDate(shownDate, today)}</span>
           <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{formatTimeRange(event.startTime, event.endTime)}</span>
-          {event.recurring && (
-            <span className="flex items-center gap-1"><Repeat className="w-3.5 h-3.5" />Semanal</span>
+          {weekdays.length > 0 && (
+            <span className="flex items-center gap-1"><Repeat className="w-3.5 h-3.5" />{describeWeekdays(weekdays)}</span>
           )}
         </div>
 
@@ -442,22 +486,40 @@ function EventCard({ event, today, onEdit, onCancel, onDelete }) {
 }
 
 // ---------------------------------------------------------------- Monthly calendar view
-function MonthCalendar({ events, today, onEdit }) {
+function MonthCalendar({ events, today, onEdit, onCreateOnDate }) {
   const [viewMonth, setViewMonth] = useState(() => {
     const d = new Date(today + 'T00:00:00')
     return new Date(d.getFullYear(), d.getMonth(), 1)
   })
 
-  // Group events by ISO date for O(1) lookup while rendering cells.
-  const byDate = useMemo(() => {
+  // Split events once: one-offs land on their exact date; recurring events are
+  // matched per-cell by weekday (from their start date onward), so a weekly
+  // event shows on every matching day of the month, not just its anchor.
+  const { byDate, recurring } = useMemo(() => {
     const map = {}
+    const rec = []
     events.forEach((e) => {
-      if (!map[e.date]) map[e.date] = []
-      map[e.date].push(e)
+      const wds = getEventWeekdays(e)
+      if (wds.length) {
+        rec.push({ event: e, weekdays: wds })
+      } else {
+        if (!map[e.date]) map[e.date] = []
+        map[e.date].push(e)
+      }
     })
     Object.values(map).forEach((list) => list.sort((a, b) => a.startTime.localeCompare(b.startTime)))
-    return map
+    return { byDate: map, recurring: rec }
   }, [events])
+
+  // All event occurrences for a given cell (one-offs + recurring matches),
+  // sorted by start time. Recurring hits are tagged so we can mark them.
+  const eventsForDay = (iso, weekday) => {
+    const oneOffs = (byDate[iso] || []).map((e) => ({ event: e, isOccurrence: false }))
+    const recHits = recurring
+      .filter(({ event, weekdays }) => weekdays.includes(weekday) && iso >= event.date)
+      .map(({ event }) => ({ event, isOccurrence: iso !== event.date }))
+    return [...oneOffs, ...recHits].sort((a, b) => a.event.startTime.localeCompare(b.event.startTime))
+  }
 
   const cells = useMemo(() => {
     const year = viewMonth.getFullYear()
@@ -507,34 +569,47 @@ function MonthCalendar({ events, today, onEdit }) {
       {/* Day grid */}
       <div className="grid grid-cols-7 gap-1">
         {cells.map((d, i) => {
-          if (!d) return <span key={`blank-${i}`} className="min-h-[76px]" />
+          if (!d) return <span key={`blank-${i}`} className="min-h-[84px]" />
           const iso = toISO(d)
-          const dayEvents = byDate[iso] || []
+          const dayEvents = eventsForDay(iso, d.getDay())
           const isToday = iso === today
+          const canCreate = iso >= today
           return (
             <div
               key={iso}
-              className={`min-h-[76px] rounded-lg border p-1.5 flex flex-col gap-1 ${
+              onClick={canCreate ? () => onCreateOnDate(iso) : undefined}
+              role={canCreate ? 'button' : undefined}
+              title={canCreate ? 'Crear evento este día' : undefined}
+              className={`group relative min-h-[84px] rounded-lg border p-1.5 flex flex-col gap-1 transition-colors ${
                 isToday ? 'border-primary bg-primary/5' : 'border-border bg-bg'
-              }`}
+              } ${canCreate ? 'cursor-pointer hover:border-primary' : ''}`}
             >
-              <span className={`text-[11px] font-semibold self-end ${isToday ? 'text-primary' : 'text-muted'}`}>
-                {d.getDate()}
-              </span>
+              <div className="flex items-center justify-between">
+                {canCreate && (
+                  <Plus className="w-3 h-3 text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
+                <span className={`text-[11px] font-semibold ml-auto ${isToday ? 'text-primary' : 'text-muted'}`}>
+                  {d.getDate()}
+                </span>
+              </div>
               <div className="flex flex-col gap-1 overflow-hidden">
-                {dayEvents.slice(0, 3).map((e) => {
+                {dayEvents.slice(0, 3).map(({ event: e, isOccurrence }) => {
                   const cfg = EVENT_CATEGORIES[e.category] || EVENT_CATEGORIES.social
                   return (
                     <button
-                      key={e.id}
-                      onClick={() => onEdit(e)}
-                      title={`${e.startTime} · ${e.name}`}
+                      key={`${e.id}-${iso}`}
+                      onClick={(ev) => { ev.stopPropagation(); onEdit(e) }}
+                      title={`${e.startTime} · ${e.name}${isOccurrence ? ' (recurrente)' : ''}`}
                       className={`w-full text-left text-[10px] leading-tight px-1.5 py-1 rounded ${cfg.softBg} ${cfg.softText} hover:opacity-80 transition-opacity truncate ${
                         e.cancelled ? 'line-through opacity-60' : ''
                       }`}
                     >
-                      <span className={`inline-block w-1.5 h-1.5 rounded-full ${cfg.dot} mr-1 align-middle`} />
-                      {e.name}
+                      {isOccurrence ? (
+                        <Repeat className="inline-block w-2 h-2 mr-1 align-middle" />
+                      ) : (
+                        <span className={`inline-block w-1.5 h-1.5 rounded-full ${cfg.dot} mr-1 align-middle`} />
+                      )}
+                      <span className="font-semibold tabular-nums">{e.startTime}</span> {e.name}
                     </button>
                   )
                 })}
@@ -568,6 +643,7 @@ export default function EventsManagement() {
   const { events, addEvent, updateEvent, deleteEvent, toggleCancel } = useEvents()
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState(null)
+  const [createDate, setCreateDate] = useState(null) // pre-filled date when creating from the calendar
   const [tab, setTab] = useState('list') // 'list' | 'calendar'
   const [categoryFilter, setCategoryFilter] = useState('all')
 
@@ -601,10 +677,17 @@ export default function EventsManagement() {
 
   const openCreate = () => {
     setEditing(null)
+    setCreateDate(null)
+    setModalOpen(true)
+  }
+  const openCreateOnDate = (iso) => {
+    setEditing(null)
+    setCreateDate(iso)
     setModalOpen(true)
   }
   const openEdit = (item) => {
     setEditing(item)
+    setCreateDate(null)
     setModalOpen(true)
   }
   const handleSave = (draft) => {
@@ -680,7 +763,7 @@ export default function EventsManagement() {
 
       {/* Content */}
       {tab === 'calendar' ? (
-        <MonthCalendar events={events} today={today} onEdit={openEdit} />
+        <MonthCalendar events={events} today={today} onEdit={openEdit} onCreateOnDate={openCreateOnDate} />
       ) : sorted.length === 0 ? (
         <div className="bg-surface rounded-xl border border-border text-center py-12">
           <CalendarDays className="w-10 h-10 mx-auto text-muted mb-2" />
@@ -706,6 +789,7 @@ export default function EventsManagement() {
       <EventModal
         open={modalOpen}
         editing={editing}
+        initialDate={createDate}
         onClose={() => setModalOpen(false)}
         onSave={handleSave}
       />

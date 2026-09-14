@@ -57,12 +57,17 @@ export const NEWS_TYPE_OPTIONS = Object.entries(NEWS_TYPES).map(([value, cfg]) =
   icon: cfg.icon
 }))
 
+// Local ISO 'YYYY-MM-DD' (not toISOString()/UTC) so the date window matches the
+// calendar/DatePicker and never shifts a day near midnight in UTC-3.
+const pad = (n) => String(n).padStart(2, '0')
+const localISO = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+
 // Build ISO dates relative to today so the seeded demo never goes stale.
 const iso = (offsetDays) => {
   const d = new Date()
   d.setHours(0, 0, 0, 0)
   d.setDate(d.getDate() + offsetDays)
-  return d.toISOString().split('T')[0]
+  return localISO(d)
 }
 
 // Seed announcements — one of each state so every status is visible in the
@@ -106,7 +111,7 @@ export const initialNews = [
   }
 ]
 
-export const todayISO = () => new Date().toISOString().split('T')[0]
+export const todayISO = () => localISO(new Date())
 
 // Derive the live state of an announcement from its dates + enabled flag.
 //   paused    → manually disabled

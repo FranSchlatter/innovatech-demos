@@ -10,7 +10,10 @@ import {
   Trash2,
   Pencil,
   CalendarRange,
-  Eye
+  Eye,
+  History,
+  ChevronDown,
+  Copy
 } from 'lucide-react'
 import { useNews } from '../../../hooks/useNews'
 import {
@@ -225,10 +228,18 @@ function NewsModal({ open, editing, onClose, onSave }) {
 }
 
 // ---------------------------------------------------------------- Main
+// Add N days to an ISO date (local).
+const addDaysISO = (iso, days) => {
+  const d = new Date(iso + 'T00:00:00')
+  d.setDate(d.getDate() + days)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 export default function NewsManagement() {
   const { news, addNews, updateNews, deleteNews, toggleNews } = useNews()
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState(null)
+  const [showHistory, setShowHistory] = useState(false)
 
   const today = todayISO()
 
@@ -241,6 +252,18 @@ export default function NewsManagement() {
         return (b.startDate || '').localeCompare(a.startDate || '')
       }),
     [news, today]
+  )
+
+  // Current board = everything still relevant (active / scheduled / paused).
+  // Expired announcements move to a separate, collapsible history log so the
+  // board stays focused on what's live or coming up.
+  const current = useMemo(() => sorted.filter((n) => newsStatus(n, today) !== 'expired'), [sorted, today])
+  const history = useMemo(
+    () =>
+      sorted
+        .filter((n) => newsStatus(n, today) === 'expired')
+        .sort((a, b) => (b.endDate || '').localeCompare(a.endDate || '')), // most recently ended first
+    [sorted, today]
   )
 
   const activeCount = news.filter((n) => newsStatus(n, today) === 'active').length
@@ -256,6 +279,18 @@ export default function NewsManagement() {
   const handleSave = (draft) => {
     if (editing) updateNews(editing.id, draft)
     else addNews(draft)
+  }
+  // Re-publish a past announcement: clone its content with a fresh 7-day window
+  // starting today, enabled. Drops the old id so a new one is generated.
+  const reuseNews = (item) => {
+    addNews({
+      title: item.title,
+      message: item.message,
+      type: item.type,
+      startDate: today,
+      endDate: addDaysISO(today, 7),
+      enabled: true
+    })
   }
 
   return (
@@ -284,16 +319,21 @@ export default function NewsManagement() {
         <span className="text-muted">de {news.length} en total</span>
       </div>
 
-      {/* List */}
+      {/* Board — active / scheduled / paused */}
       {news.length === 0 ? (
         <div className="bg-surface rounded-xl border border-border text-center py-12">
           <Megaphone className="w-10 h-10 mx-auto text-muted mb-2" />
           <p className="text-sm text-muted">No hay avisos. Creá el primero.</p>
         </div>
+      ) : current.length === 0 ? (
+        <div className="bg-surface rounded-xl border border-border text-center py-10">
+          <Megaphone className="w-9 h-9 mx-auto text-muted mb-2" />
+          <p className="text-sm text-muted">No hay avisos vigentes. Mirá el historial abajo o creá uno nuevo.</p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
           <AnimatePresence initial={false}>
-            {sorted.map((item) => {
+            {current.map((item) => {
               const status = newsStatus(item, today)
               const st = STATUS[status]
               const cfg = NEWS_TYPES[item.type] || NEWS_TYPES.info
@@ -355,6 +395,79 @@ export default function NewsManagement() {
                 </motion.div>
               )
             })}
+          </AnimatePresence>
+        </div>
+      )}
+
+      {/* History — expired announcements, collapsed by default */}
+      {history.length > 0 && (
+        <div className="bg-surface rounded-xl border border-border overflow-hidden">
+          <button
+            onClick={() => setShowHistory((v) => !v)}
+            className="w-full flex items-center justify-between gap-3 px-4 py-3 hover:bg-bg transition-colors"
+          >
+            <span className="flex items-center gap-2 text-sm font-semibold text-text">
+              <History className="w-4 h-4 text-muted" />
+              Historial de avisos
+              <span className="text-xs font-medium text-muted">({history.length})</span>
+            </span>
+            <ChevronDown className={`w-4 h-4 text-muted transition-transform ${showHistory ? 'rotate-180' : ''}`} />
+          </button>
+
+          <AnimatePresence initial={false}>
+            {showHistory && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                className="overflow-hidden"
+              >
+                <div className="divide-y divide-border border-t border-border">
+                  {history.map((item) => {
+                    const cfg = NEWS_TYPES[item.type] || NEWS_TYPES.info
+                    const TypeIcon = cfg.icon
+                    return (
+                      <div key={item.id} className="flex items-center gap-3 px-4 py-3">
+                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg shrink-0 ${cfg.softBg} ${cfg.softText}`}>
+                          <TypeIcon className="w-4 h-4" />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-text truncate">{item.title}</p>
+                          <p className="text-xs text-muted flex items-center gap-1.5">
+                            <CalendarRange className="w-3 h-3" />
+                            {fmtDate(item.startDate)} → {fmtDate(item.endDate)}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            onClick={() => reuseNews(item)}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-primary hover:bg-bg transition-colors"
+                            title="Reutilizar: republica este aviso 7 días desde hoy"
+                          >
+                            <Copy className="w-3.5 h-3.5" /> Reutilizar
+                          </button>
+                          <button
+                            onClick={() => openEdit(item)}
+                            className="p-1.5 rounded-lg text-muted hover:text-primary hover:bg-bg transition-colors"
+                            title="Editar aviso"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => deleteNews(item.id)}
+                            className="p-1.5 rounded-lg text-muted hover:text-red-500 transition-colors"
+                            title="Eliminar aviso"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
       )}

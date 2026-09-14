@@ -276,6 +276,13 @@ de la paleta estándar de Tailwind (blue/amber/emerald con /alpha), NO los token
 
 **Criterio de exito:** Admin crea aviso con fechas. Aviso aparece automaticamente en la landing. Desaparece cuando pasa la fecha. ✅
 
+**Iteración (2026-09-14):** tablero del admin ahora separa vigentes (activo/programado/pausado)
+de un **historial colapsable** de expirados (filas compactas con acción "Reutilizar" = republica
+7 días desde hoy, + editar/eliminar). Fix de correctitud: `mockNews` pasó a fecha **local** (no
+`toISOString()` UTC) para que la ventana de fechas no desfase un día en UTC-3.
+Pendiente a criterio del owner: sección "Novedades" en el home (feed) — se dejó fuera porque la
+`NewsBar` ya cubre el aviso urgente; se hace solo si se quieren comunicados largos.
+
 ---
 
 ## H14: Panel de Actividades / Eventos ✅
@@ -310,6 +317,16 @@ DatePicker no desfasen un día cerca de medianoche en UTC-3.
 
 **Criterio de exito:** Admin crea eventos. Eventos aparecen en front con info completa. Huesped puede registrarse. ✅
 
+**Iteración (2026-09-14):**
+- Admin calendario: **click en un día** (hoy o futuro) abre el modal de crear con la fecha
+  pre-cargada; los chips ahora muestran la **hora** (`19:00 · Nombre`).
+- **Recurrencia real**: el toggle "recurrente" dejó de ser cosmético — ahora se eligen los
+  **días de la semana** (`recurrence.weekdays`) y el evento se muestra en el calendario en cada
+  día que corresponde (ícono `Repeat` en las ocurrencias). La fecha efectiva es la próxima
+  ocurrencia, así los recurrentes no vencen. Modelo compartido en `data/recurrence.js`.
+- Front: nueva vista **carrusel horizontal** (swipe/drag + flechas + snap, con animación de
+  entrada) como default, con toggle a **grilla**. Muestra "Próximo: <fecha>" y badge "Semanal".
+
 ---
 
 ## H16: Check-in digital (Guest Portal) ✅
@@ -338,6 +355,13 @@ divisor usa `bg-primary-contrast opacity-20` (opacidad de elemento, no alpha de 
 
 **Criterio de exito:** Flujo de check-in online completo de 3 pasos. Cambia el estado de la reserva. Key digital simulada. ✅
 
+**Iteración (2026-09-14):** los pasos ahora son **dinámicos**: si la reserva es para más de un
+huésped (`reservation.guests > 1`) se inserta un paso **"Acompañantes"** que pide nombre +
+documento por persona (con validación), y se listan en el resumen de confirmación. Con un solo
+huésped el flujo queda igual (sin paso extra). El check-in **desde recepción/admin** NO es parte
+de H16 — es **H26** (estación de check-in completa: documentos con foto, asignación de habitación,
+pago, firma), compartida huésped/recepción. Definir en H26 si se fusiona con este wizard.
+
 ---
 
 ## H17: Excursions — Agregar nueva + metricas ✅
@@ -365,6 +389,13 @@ tokens del theme); la línea SVG usa `text-primary` + `stroke="currentColor"`. V
 dev transform OK, test de lógica (revenue positivo, top3, weekday 0-100%, determinismo) PASS.
 
 **Criterio de exito:** Se puede crear excursion nueva. Metricas visibles con datos calculados del mock. ✅
+
+**Iteración (2026-09-14):** **recurrencia de salidas** (lo que se pedía con "setear días y
+horarios"). En el modal **crear**: toggle "Schedule recurring departures" → elegís días de la
+semana + uno o más horarios + cantidad de semanas, y se autogeneran las departures (con preview
+del total); si está apagado, sigue el fallback de hoy+mañana. En **Manage**: bloque "Generate
+recurring departures" que agrega salidas a una excursión existente (saltea duplicados de
+fecha+hora). Usa el modelo compartido `data/recurrence.js` (mismo que eventos H14).
 
 ---
 

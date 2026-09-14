@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { initialEvents, isUpcoming, isFull, todayISO } from '../data/mockEvents'
+import { initialEvents, isUpcoming, isFull, todayISO, effectiveEventDate } from '../data/mockEvents'
 
 // Shared event state between the admin (EventsManagement) and the public landing
 // (EventsCalendar). Both surfaces read/write the same localStorage entry, so an
@@ -141,12 +141,16 @@ export function useEvents() {
 
   const isRegistered = useCallback((id) => registered.includes(id), [registered])
 
-  // Live events for the front: not cancelled, not past, soonest first.
+  // Live events for the front: not cancelled, not past, soonest first. Recurring
+  // events sort by their next occurrence (effective date) so they never sink
+  // below one-offs whose stored date has already passed.
   const upcomingEvents = useMemo(() => {
     const today = todayISO()
     return events
       .filter((e) => isUpcoming(e, today))
-      .sort((a, b) => (a.date + a.startTime).localeCompare(b.date + b.startTime))
+      .sort((a, b) =>
+        (effectiveEventDate(a, today) + a.startTime).localeCompare(effectiveEventDate(b, today) + b.startTime)
+      )
   }, [events])
 
   return {

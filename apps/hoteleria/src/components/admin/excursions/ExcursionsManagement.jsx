@@ -23,7 +23,9 @@ import {
   DollarSign,
   Award,
   ImageIcon,
-  Percent
+  Percent,
+  Repeat,
+  CalendarPlus
 } from 'lucide-react'
 import {
   mockExcursions,
@@ -32,6 +34,7 @@ import {
   isToday,
   getExcursionMetrics
 } from '../../../data/admin/mockExcursions'
+import { WEEKDAYS, expandWeekly, describeWeekdays, todayISO } from '../../../data/recurrence'
 
 const STORAGE_KEY = 'hotel-excursions'
 
@@ -69,6 +72,85 @@ const formatDepDate = (dateStr) => {
   const d = new Date(dateStr + 'T00:00:00')
   const label = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
   return isToday(dateStr) ? `Today · ${label}` : label
+}
+
+// --- Recurrence building blocks (shared by Create + Manage) -----------------
+
+// Multi-select weekday chips (Mon→Sun). `value` is an array of getDay() numbers.
+function WeekdayChips({ value, onToggle }) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {WEEKDAYS.map((w) => {
+        const active = value.includes(w.value)
+        return (
+          <button
+            key={w.value}
+            type="button"
+            onClick={() => onToggle(w.value)}
+            className={`w-10 h-9 rounded-lg text-xs font-semibold border transition-colors ${
+              active
+                ? 'bg-primary text-primary-contrast border-primary'
+                : 'bg-bg text-muted border-border hover:border-primary'
+            }`}
+          >
+            {w.short}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+// A list of times entered as chips. `value` is an array of 'HH:MM' strings.
+function TimesInput({ value, onAdd, onRemove }) {
+  const [time, setTime] = useState('09:00')
+  return (
+    <div>
+      <div className="flex items-end gap-2">
+        <input
+          type="time"
+          value={time}
+          onChange={(e) => setTime(e.target.value)}
+          className="px-2 py-1.5 bg-bg border border-border rounded-md text-sm text-text focus:outline-none focus:border-primary"
+        />
+        <button
+          type="button"
+          onClick={() => time && onAdd(time)}
+          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-primary text-primary-contrast text-sm font-medium hover:opacity-90 transition-opacity"
+        >
+          <Plus className="w-4 h-4" /> Add time
+        </button>
+      </div>
+      {value.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mt-2">
+          {value.map((t) => (
+            <span key={t} className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-bg border border-border text-xs font-medium text-text">
+              <Clock className="w-3 h-3 text-muted" />
+              {t}
+              <button type="button" onClick={() => onRemove(t)} className="text-muted hover:text-red-500">
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Turn a recurrence spec into concrete departure objects (stable-ish ids).
+function buildRecurringDepartures({ weekdays, times, weeks, capacity, startISO, idBase, existing = [] }) {
+  const taken = new Set(existing.map((d) => `${d.date}T${d.time}`))
+  const slots = expandWeekly({ startDate: startISO, weekdays, weeks, times })
+  return slots
+    .filter((s) => !taken.has(`${s.date}T${s.time}`)) // skip slots that already exist
+    .map((s, i) => ({
+      id: `${idBase}-r${i}-${s.time.replace(':', '')}`,
+      date: s.date,
+      time: s.time,
+      capacity,
+      booked: 0
+    }))
 }
 
 function KPICard({ icon: Icon, label, value, sub, color, index }) {
@@ -197,6 +279,7 @@ function ManageModal({ excursion, onClose, onSave }) {
   const [draft, setDraft] = useState(null)
   const [saving, setSaving] = useState(false)
   const [newDep, setNewDep] = useState({ date: '', time: '', capacity: 10 })
+  const [rec, setRec] = useState({ weekdays: [], times: [], weeks: 4, capacity: 10 })
 
   // Initialise a fresh draft each time the modal opens (null between opens
   // guarantees a re-init even when reopening the same excursion after cancel).
@@ -204,10 +287,50 @@ function ManageModal({ excursion, onClose, onSave }) {
     if (excursion) {
       setDraft(JSON.parse(JSON.stringify(excursion)))
       setNewDep({ date: '', time: '', capacity: 10 })
+      setRec({ weekdays: [], times: [], weeks: 4, capacity: 10 })
     } else {
       setDraft(null)
     }
   }, [excursion])
+
+  const toggleRecDay = (value) =>
+    setRec((r) => ({
+      ...r,
+      weekdays: r.weekdays.includes(value) ? r.weekdays.filter((w) => w !== value) : [...r.weekdays, value]
+    }))
+  const addRecTime = (t) => setRec((r) => (r.times.includes(t) ? r : { ...r, times: [...r.times, t].sort() }))
+  const removeRecTime = (t) => setRec((r) => ({ ...r, times: r.times.filter((x) => x !== t) }))
+
+  const recPreview =
+    rec.weekdays.length && rec.times.length && draft
+      ? buildRecurringDepartures({
+          weekdays: rec.weekdays,
+          times: rec.times,
+          weeks: Number(rec.weeks) || 1,
+          capacity: 1,
+          startISO: todayISO(),
+          idBase: 'preview',
+          existing: draft.departures
+        }).length
+      : 0
+
+  const generateRecurring = () => {
+    if (!recPreview) return
+    const deps = buildRecurringDepartures({
+      weekdays: rec.weekdays,
+      times: rec.times,
+      weeks: Number(rec.weeks) || 1,
+      capacity: Math.max(1, Number(rec.capacity) || 1),
+      startISO: todayISO(),
+      idBase: draft.id,
+      existing: draft.departures
+    })
+    setDraft((d) => ({
+      ...d,
+      departures: [...d.departures, ...deps].sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time))
+    }))
+    setRec((r) => ({ ...r, weekdays: [], times: [] }))
+  }
 
   const setCapacity = (depId, delta) => {
     setDraft((d) => ({
@@ -389,6 +512,58 @@ function ManageModal({ excursion, onClose, onSave }) {
                     <Plus className="w-4 h-4" /> Add
                   </button>
                 </div>
+
+                {/* Recurring generator — set weekdays + times and auto-create slots */}
+                <div className="mt-3 p-3 bg-bg rounded-lg space-y-3">
+                  <p className="text-xs font-semibold text-text flex items-center gap-1.5">
+                    <Repeat className="w-3.5 h-3.5 text-muted" /> Generate recurring departures
+                  </p>
+                  <div>
+                    <label className="block text-xs text-muted mb-1.5">Repeat on</label>
+                    <WeekdayChips value={rec.weekdays} onToggle={toggleRecDay} />
+                  </div>
+                  <div className="flex flex-wrap gap-4">
+                    <div>
+                      <label className="block text-xs text-muted mb-1.5">Times</label>
+                      <TimesInput value={rec.times} onAdd={addRecTime} onRemove={removeRecTime} />
+                    </div>
+                    <div className="w-20">
+                      <label className="block text-xs text-muted mb-1.5">Weeks</label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={12}
+                        value={rec.weeks}
+                        onChange={(e) => setRec((r) => ({ ...r, weeks: e.target.value }))}
+                        className="w-full px-2 py-1.5 bg-surface border border-border rounded-md text-sm text-text focus:outline-none focus:border-primary"
+                      />
+                    </div>
+                    <div className="w-20">
+                      <label className="block text-xs text-muted mb-1.5">Cap.</label>
+                      <input
+                        type="number"
+                        min={1}
+                        value={rec.capacity}
+                        onChange={(e) => setRec((r) => ({ ...r, capacity: e.target.value }))}
+                        className="w-full px-2 py-1.5 bg-surface border border-border rounded-md text-sm text-text focus:outline-none focus:border-primary"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-xs text-muted">
+                      {recPreview > 0
+                        ? `${recPreview} new departure${recPreview === 1 ? '' : 's'} · ${describeWeekdays(rec.weekdays)}`
+                        : 'Pick weekdays and at least one time.'}
+                    </p>
+                    <button
+                      onClick={generateRecurring}
+                      disabled={!recPreview}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-contrast text-sm font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+                    >
+                      <CalendarPlus className="w-4 h-4" /> Generate
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -425,7 +600,8 @@ function CreateModal({ open, onClose, onCreate }) {
     meetingPoint: 'Hotel Lobby',
     guide: '',
     image: '',
-    defaultCapacity: 12
+    defaultCapacity: 12,
+    recurrence: { enabled: false, weekdays: [], times: [], weeks: 4 }
   }
   const [form, setForm] = useState(blank)
   const [saving, setSaving] = useState(false)
@@ -441,13 +617,26 @@ function CreateModal({ open, onClose, onCreate }) {
 
   const set = (key, value) => setForm((f) => ({ ...f, [key]: value }))
 
+  const rec = form.recurrence
+  const setRec = (patch) => setForm((f) => ({ ...f, recurrence: { ...f.recurrence, ...patch } }))
+  const toggleRecDay = (v) =>
+    setRec({ weekdays: rec.weekdays.includes(v) ? rec.weekdays.filter((x) => x !== v) : [...rec.weekdays, v] })
+  const addRecTime = (t) => setRec({ times: rec.times.includes(t) ? rec.times : [...rec.times, t].sort() })
+  const removeRecTime = (t) => setRec({ times: rec.times.filter((x) => x !== t) })
+
+  const recCount =
+    rec.enabled && rec.weekdays.length && rec.times.length
+      ? expandWeekly({ startDate: todayISO(), weekdays: rec.weekdays, weeks: Number(rec.weeks) || 1, times: rec.times }).length
+      : 0
+
   const priceNum = Number(form.price)
   const capNum = Number(form.defaultCapacity)
   const errors = {
     name: !form.name.trim(),
     price: !form.price || Number.isNaN(priceNum) || priceNum <= 0,
     duration: !form.duration.trim(),
-    capacity: !capNum || capNum < 1
+    capacity: !capNum || capNum < 1,
+    recurrence: rec.enabled && recCount === 0
   }
   const isValid = !Object.values(errors).some(Boolean)
 
@@ -467,7 +656,10 @@ function CreateModal({ open, onClose, onCreate }) {
       meetingPoint: form.meetingPoint.trim() || 'Hotel Lobby',
       guide: form.guide.trim() || 'To be assigned',
       image: form.image.trim(),
-      defaultCapacity: capNum
+      defaultCapacity: capNum,
+      recurrence: rec.enabled && recCount > 0
+        ? { weekdays: rec.weekdays, times: rec.times, weeks: Number(rec.weeks) || 1 }
+        : null
     })
     setSaving(false)
     onClose()
@@ -672,9 +864,56 @@ function CreateModal({ open, onClose, onCreate }) {
                 </div>
               </div>
 
-              <p className="text-xs text-muted">
-                Two upcoming departures (today &amp; tomorrow) will be created automatically using the default capacity. You can adjust the schedule afterwards from <span className="text-text font-medium">Manage</span>.
-              </p>
+              {/* Schedule / recurrence */}
+              <div className={`rounded-lg border transition-colors ${rec.enabled ? 'border-primary/40 bg-primary/5' : 'border-border bg-bg'}`}>
+                <button
+                  type="button"
+                  onClick={() => setRec({ enabled: !rec.enabled })}
+                  className="w-full flex items-center justify-between gap-2 px-4 py-3"
+                >
+                  <span className="flex items-center gap-2 text-sm font-medium text-text">
+                    <Repeat className="w-4 h-4 text-muted" /> Schedule recurring departures
+                  </span>
+                  <span className={`relative w-10 h-5 rounded-full transition-colors ${rec.enabled ? 'bg-primary' : 'bg-border'}`}>
+                    <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${rec.enabled ? 'translate-x-5' : ''}`} />
+                  </span>
+                </button>
+
+                {rec.enabled ? (
+                  <div className="px-4 pb-4 pt-1 space-y-3">
+                    <div>
+                      <label className="block text-xs text-muted mb-1.5">Repeat on</label>
+                      <WeekdayChips value={rec.weekdays} onToggle={toggleRecDay} />
+                    </div>
+                    <div className="flex flex-wrap gap-4 items-start">
+                      <div>
+                        <label className="block text-xs text-muted mb-1.5">Times</label>
+                        <TimesInput value={rec.times} onAdd={addRecTime} onRemove={removeRecTime} />
+                      </div>
+                      <div className="w-20">
+                        <label className="block text-xs text-muted mb-1.5">Weeks</label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={12}
+                          value={rec.weeks}
+                          onChange={(e) => setRec({ weeks: e.target.value })}
+                          className="w-full px-2 py-1.5 bg-surface border border-border rounded-md text-sm text-text focus:outline-none focus:border-primary"
+                        />
+                      </div>
+                    </div>
+                    <p className={`text-xs ${fieldError('recurrence') ? 'text-red-500' : 'text-muted'}`}>
+                      {recCount > 0
+                        ? `${recCount} departure${recCount === 1 ? '' : 's'} will be created · ${describeWeekdays(rec.weekdays)} · next ${rec.weeks} weeks.`
+                        : 'Pick at least one weekday and one time.'}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="px-4 pb-4 pt-1 text-xs text-muted">
+                    Two upcoming departures (today &amp; tomorrow) will be created automatically using the default capacity. You can adjust the schedule afterwards from <span className="text-text font-medium">Manage</span>.
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Footer */}
@@ -953,8 +1192,29 @@ export default function ExcursionsManagement() {
     while (ids.has(id)) id = `${base}-${n++}` // guarantee a unique id
     const uid = id.slice(0, 6)
     const cap = form.defaultCapacity
-    const today = new Date().toISOString().split('T')[0]
-    const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
+
+    // Departures come from the recurrence spec when provided; otherwise fall back
+    // to the classic two auto slots (today & tomorrow).
+    let departures = []
+    if (form.recurrence?.weekdays?.length && form.recurrence?.times?.length) {
+      departures = buildRecurringDepartures({
+        weekdays: form.recurrence.weekdays,
+        times: form.recurrence.times,
+        weeks: form.recurrence.weeks || 4,
+        capacity: cap,
+        startISO: todayISO(),
+        idBase: uid
+      })
+    }
+    if (departures.length === 0) {
+      const today = todayISO()
+      const tomorrow = new Date(Date.now() + 86400000)
+      const tomorrowISO = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`
+      departures = [
+        { id: `${uid}-1`, date: today, time: '09:00', capacity: cap, booked: 0 },
+        { id: `${uid}-2`, date: tomorrowISO, time: '14:00', capacity: cap, booked: 0 }
+      ]
+    }
 
     const newExcursion = {
       id,
@@ -971,10 +1231,7 @@ export default function ExcursionsManagement() {
       image: form.image || 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&q=80',
       included: [],
       status: 'active',
-      departures: [
-        { id: `${uid}-1`, date: today, time: '09:00', capacity: cap, booked: 0 },
-        { id: `${uid}-2`, date: tomorrow, time: '14:00', capacity: cap, booked: 0 }
-      ]
+      departures
     }
     setExcursions((list) => [newExcursion, ...list])
     setTab('catalogue')

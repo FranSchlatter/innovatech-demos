@@ -20,8 +20,10 @@ import {
   TENANT_PAYMENTS, TENANT_DOCUMENTS, TENANT_RECEIPTS, TENANT_REPAIRS, REPAIR_URGENCIES, REPAIR_STATUS
 } from '../data/mockTenantData'
 import {
-  MOCK_OWNER, OWNER_PROPERTIES, OWNER_LIQUIDATIONS, OWNER_COLLECTION,
-  OWNER_COLLECTION_HISTORY, OWNER_DOCUMENTS, COLLECTION_STATUS, PROPERTY_RENTAL_STATUS
+  MOCK_OWNER, OWNER_PROPERTIES, OWNER_PERIODS, computeOwnerPeriod, OWNER_MGMT_FEE_PCT,
+  OWNER_COLLECTION, OWNER_COLLECTION_HISTORY, OWNER_DOCUMENTS, OWNER_DOC_TYPES,
+  ownerDocLabel, ownerDocKind, OWNER_DOCS_KEY, OWNER_DOC_STATUS,
+  COLLECTION_STATUS, PROPERTY_RENTAL_STATUS
 } from '../data/mockOwnerData'
 import {
   BUYER_DOC_TYPES, docTypeLabel, docTypeKind, suggestedFileName,
@@ -2745,150 +2747,334 @@ function ReceiptRow({ label, value }) {
 // ============================================================
 function OwnerSections({ section, showToast, propById }) {
   if (section === 'properties') return <OwnerProperties propById={propById} />
-  if (section === 'liquidations') return <OwnerLiquidations showToast={showToast} />
+  if (section === 'liquidations') return <OwnerLiquidations propById={propById} showToast={showToast} />
   if (section === 'documents') return <OwnerDocuments propById={propById} showToast={showToast} />
   if (section === 'collection') return <OwnerCollection propById={propById} />
   return null
 }
 
+// Owner-side expense total (all line items, incl. insurance) and derived net.
+const expensesOf = (item) => item.expenses.reduce((s, e) => s + e.amount, 0)
+const commissionOf = (item) => Math.round(item.rent * item.commissionPct / 100)
+
 function OwnerProperties({ propById }) {
+  const rentedCount = OWNER_PROPERTIES.filter((p) => p.status === 'rented').length
+  const monthlyNet = OWNER_PROPERTIES
+    .filter((p) => p.status === 'rented')
+    .reduce((s, p) => s + (p.rent - commissionOf(p) - expensesOf(p)), 0)
+
   return (
     <>
-      <SectionHeading title="Mis propiedades" subtitle="Tu cartera en alquiler y su estado actual." />
+      <SectionHeading title="Mis propiedades" subtitle="Tu cartera en alquiler, su rentabilidad y el historial de cada unidad." />
+
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <StatCard label="Propiedades" value={OWNER_PROPERTIES.length} sub={`${rentedCount} alquiladas`} icon={Building2} />
+        <StatCard label="Alquiladas" value={rentedCount} sub={`${OWNER_PROPERTIES.length - rentedCount} disponible`} icon={CheckCircle} />
+        <StatCard label="Neto estimado / mes" value={arsMoney(monthlyNet)} sub="Renta menos gastos y comisión" icon={TrendingUp} accent />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {OWNER_PROPERTIES.map((item) => {
-          const prop = propById(item.propertyId)
-          const st = PROPERTY_RENTAL_STATUS[item.status] || PROPERTY_RENTAL_STATUS.rented
-          const net = item.status === 'rented' ? item.rent - item.monthlyExpenses - Math.round(item.rent * item.commissionPct / 100) : 0
-          return (
-            <div key={item.propertyId} className="bg-surface border border-border rounded-2xl overflow-hidden shadow-soft">
-              <div className="relative h-40">
-                <img src={prop?.images?.[0]} alt={prop?.title} className="w-full h-full object-cover" />
-                <span className={`absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-semibold ${st.cls}`}>{st.label}</span>
-              </div>
-              <div className="p-5">
-                <h3 className="font-semibold text-primary">{prop?.title}</h3>
-                <div className="inline-flex items-center gap-1.5 text-sm text-muted mt-1">
-                  <MapPin className="w-4 h-4" /> {prop?.address}, {prop?.neighborhood}
-                </div>
-
-                {item.status === 'rented' ? (
-                  <div className="grid grid-cols-2 gap-3 mt-4">
-                    <Info label="Inquilino" value={item.tenant} />
-                    <Info label="Desde" value={formatDate(item.since)} />
-                    <Info label="Alquiler" value={formatPrice(item.rent, item.currency, 'rent')} strong />
-                    <Info label="Vence contrato" value={formatDate(item.contractEnd)} />
-                  </div>
-                ) : (
-                  <div className="mt-4 rounded-lg bg-surface-alt border border-border p-3 text-sm text-muted">
-                    Unidad disponible. Último inquilino: {item.history?.[0]?.tenant || '—'}.
-                  </div>
-                )}
-
-                {item.status === 'rented' && (
-                  <div className="mt-4 pt-4 border-t border-border flex items-center justify-between text-sm">
-                    <span className="text-muted">Neto estimado / mes</span>
-                    <span className="font-semibold text-success">{formatPrice(net, item.currency).replace('/mes', '')}</span>
-                  </div>
-                )}
-
-                {item.history?.length > 0 && (
-                  <details className="mt-3 group">
-                    <summary className="cursor-pointer text-sm font-medium text-accent inline-flex items-center gap-1">
-                      <ChevronRight className="w-4 h-4 transition-transform group-open:rotate-90" />
-                      Historial de inquilinos ({item.history.length})
-                    </summary>
-                    <ul className="mt-2 space-y-1.5 pl-5">
-                      {item.history.map((h, i) => (
-                        <li key={i} className="text-sm text-muted flex items-center justify-between gap-3">
-                          <span className="text-text">{h.tenant}</span>
-                          <span>{formatDate(h.from)} – {formatDate(h.to)}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </details>
-                )}
-              </div>
-            </div>
-          )
-        })}
+        {OWNER_PROPERTIES.map((item) => (
+          <OwnerPropertyCard key={item.propertyId} item={item} prop={propById(item.propertyId)} />
+        ))}
       </div>
     </>
   )
 }
 
-function OwnerLiquidations({ showToast }) {
-  const year = OWNER_LIQUIDATIONS.reduce(
-    (acc, l) => ({
-      collected: acc.collected + l.collected,
-      commission: acc.commission + l.commission,
-      expenses: acc.expenses + l.expenses,
-      net: acc.net + l.net
+function OwnerPropertyCard({ item, prop }) {
+  const [open, setOpen] = useState(false)
+  const st = PROPERTY_RENTAL_STATUS[item.status] || PROPERTY_RENTAL_STATUS.rented
+  const rented = item.status === 'rented'
+  const commission = commissionOf(item)
+  const expenses = expensesOf(item)
+  const net = rented ? item.rent - commission - expenses : -expenses
+
+  return (
+    <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-soft flex flex-col">
+      <div className="relative h-40">
+        <img src={prop?.images?.[0]} alt={prop?.title} className="w-full h-full object-cover" />
+        <span className={`absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-semibold ${st.cls}`}>{st.label}</span>
+      </div>
+      <div className="p-5 flex flex-col flex-1">
+        <h3 className="font-semibold text-primary">{prop?.title}</h3>
+        <div className="inline-flex items-center gap-1.5 text-sm text-muted mt-1">
+          <MapPin className="w-4 h-4 shrink-0" /> {prop?.address}, {prop?.neighborhood}
+        </div>
+
+        {rented ? (
+          <div className="grid grid-cols-2 gap-3 mt-4">
+            <Info label="Inquilino" value={item.tenant} />
+            <Info label="Desde" value={formatDate(item.since)} />
+            <Info label="Alquiler" value={formatPrice(item.rent, item.currency, 'rent')} strong />
+            <Info label="Vence contrato" value={formatDate(item.contractEnd)} />
+          </div>
+        ) : (
+          <div className="mt-4 rounded-lg bg-surface-alt border border-border p-3 text-sm text-muted">
+            Unidad disponible. Último inquilino: {item.history?.[0]?.tenant || '—'}.
+          </div>
+        )}
+
+        {/* Profitability breakdown */}
+        <div className="mt-4 pt-4 border-t border-border space-y-1.5 text-sm">
+          {rented ? (
+            <>
+              <div className="flex items-center justify-between">
+                <span className="text-muted">Alquiler</span>
+                <span className="text-text font-medium">{arsMoney(item.rent)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted">Comisión ({item.commissionPct}%)</span>
+                <span className="text-error">− {arsMoney(commission)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted">Gastos</span>
+                <span className="text-error">− {arsMoney(expenses)}</span>
+              </div>
+              <div className="flex items-center justify-between pt-2 mt-1 border-t border-border">
+                <span className="text-text font-medium">Neto / mes</span>
+                <span className="font-bold text-success">{arsMoney(net)}</span>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center justify-between">
+              <span className="text-muted">Costo de vacancia / mes</span>
+              <span className="font-bold text-error">− {arsMoney(expenses)}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Expense detail + tenant history */}
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-accent hover:underline self-start"
+        >
+          <ChevronRight className={`w-4 h-4 transition-transform ${open ? 'rotate-90' : ''}`} />
+          {open ? 'Ocultar detalle' : 'Ver detalle'}
+        </button>
+
+        <AnimatePresence initial={false}>
+          {open && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="overflow-hidden"
+            >
+              <div className="pt-3 space-y-4">
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-wider text-muted mb-2">Gastos mensuales</div>
+                  <ul className="space-y-1.5">
+                    {item.expenses.map((e, i) => (
+                      <li key={i} className="flex items-center justify-between text-sm">
+                        <span className="text-text">{e.label}</span>
+                        <span className="text-muted">{arsMoney(e.amount)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                {item.history?.length > 0 && (
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-wider text-muted mb-2">Inquilinos anteriores</div>
+                    <ul className="space-y-1.5">
+                      {item.history.map((h, i) => (
+                        <li key={i} className="text-sm flex items-center justify-between gap-3">
+                          <span className="text-text">{h.tenant}</span>
+                          <span className="text-muted">{formatDate(h.from)} – {formatDate(h.to)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  )
+}
+
+function OwnerLiquidations({ propById, showToast }) {
+  const [detail, setDetail] = useState(null)
+
+  // Computed per period, reusing the admin engine.
+  const rows = OWNER_PERIODS.map((p) => ({ period: p, c: computeOwnerPeriod(p) }))
+  const settled = rows.filter((r) => r.period.status === 'settled')
+
+  // Accumulated summary over settled periods.
+  const acc = settled.reduce(
+    (a, r) => ({
+      collected: a.collected + r.c.grossCollected,
+      commission: a.commission + r.c.mgmtFee,
+      expenses: a.expenses + r.c.expensesTotal,
+      net: a.net + r.c.net
     }),
     { collected: 0, commission: 0, expenses: 0, net: 0 }
   )
 
   return (
     <>
-      <SectionHeading title="Liquidaciones" subtitle="El detalle mensual de lo que recibís por tus propiedades." />
+      <SectionHeading title="Liquidaciones" subtitle="Lo que recibís cada mes: lo cobrado, menos comisión y gastos." />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard label="Cobrado (3 meses)" value={formatPrice(year.collected, 'ARS').replace('/mes', '')} icon={Wallet} />
-        <StatCard label="Comisión" value={formatPrice(year.commission, 'ARS').replace('/mes', '')} icon={DollarSign} />
-        <StatCard label="Gastos" value={formatPrice(year.expenses, 'ARS').replace('/mes', '')} icon={FileText} />
-        <StatCard label="Neto" value={formatPrice(year.net, 'ARS').replace('/mes', '')} icon={TrendingUp} accent />
+        <StatCard label={`Cobrado (${settled.length} meses)`} value={arsMoney(acc.collected)} icon={Wallet} />
+        <StatCard label="Comisión" value={arsMoney(acc.commission)} icon={DollarSign} />
+        <StatCard label="Gastos" value={arsMoney(acc.expenses)} icon={FileText} />
+        <StatCard label="Neto acumulado" value={arsMoney(acc.net)} icon={TrendingUp} accent />
       </div>
 
       <div className="space-y-3">
-        {OWNER_LIQUIDATIONS.map((l) => {
-          const settled = l.status === 'settled'
+        {rows.map(({ period, c }) => {
+          const isSettled = period.status === 'settled'
           return (
-            <div key={l.id} className="bg-surface border border-border rounded-xl p-5 shadow-soft">
+            <div key={period.id} className="bg-surface border border-border rounded-xl p-5 shadow-soft">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-primary">{l.period}</h3>
-                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${settled ? 'bg-success/15 text-success' : 'bg-warning/15 text-warning'}`}>
-                      {settled ? 'Liquidada' : 'Pendiente'}
+                    <h3 className="font-semibold text-primary capitalize">{period.period}</h3>
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${isSettled ? 'bg-success text-white' : 'bg-warning text-white'}`}>
+                      {isSettled ? 'Liquidada' : 'Pendiente'}
                     </span>
                   </div>
                   <div className="text-sm text-muted mt-1">Neto a cobrar</div>
-                  <div className="text-xl font-bold text-primary">{formatPrice(l.net, 'ARS').replace('/mes', '')}</div>
+                  <div className="text-xl font-bold text-primary">{arsMoney(c.net)}</div>
+                  {c.pending > 0 && (
+                    <div className="inline-flex items-center gap-1.5 text-xs text-warning mt-1">
+                      <Clock className="w-3.5 h-3.5" /> {arsMoney(c.pending)} pendiente de cobro
+                    </div>
+                  )}
                 </div>
                 <button
-                  onClick={() => showToast(`PDF de ${l.period} generado`)}
+                  onClick={() => setDetail({ period, c })}
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-sm font-medium text-text hover:bg-surface-alt transition-colors"
                 >
-                  <Download className="w-4 h-4" /> Descargar PDF
+                  <Eye className="w-4 h-4" /> Ver detalle
                 </button>
               </div>
               <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-border text-sm">
                 <div>
                   <div className="text-muted">Cobrado</div>
-                  <div className="font-semibold text-text">{formatPrice(l.collected, 'ARS').replace('/mes', '')}</div>
+                  <div className="font-semibold text-text">{arsMoney(c.grossCollected)}</div>
                 </div>
                 <div>
                   <div className="text-muted">Comisión</div>
-                  <div className="font-semibold text-text">−{formatPrice(l.commission, 'ARS').replace('/mes', '')}</div>
+                  <div className="font-semibold text-text">− {arsMoney(c.mgmtFee)}</div>
                 </div>
                 <div>
                   <div className="text-muted">Gastos</div>
-                  <div className="font-semibold text-text">−{formatPrice(l.expenses, 'ARS').replace('/mes', '')}</div>
+                  <div className="font-semibold text-text">− {arsMoney(c.expensesTotal)}</div>
                 </div>
               </div>
             </div>
           )
         })}
       </div>
+
+      <LiquidationDetailModal detail={detail} propById={propById} onClose={() => setDetail(null)} showToast={showToast} />
     </>
   )
 }
 
+// PDF-style liquidation detail with the per-property breakdown (mirrors the admin receipt).
+function LiquidationDetailModal({ detail, propById, onClose, showToast }) {
+  return (
+    <ModalShell open={!!detail} onClose={onClose} icon={Receipt} title="Detalle de liquidación" maxW="max-w-2xl">
+      {detail && (
+        <div className="p-5 md:p-6">
+          <div className="rounded-xl border border-border bg-bg p-5 md:p-6 space-y-5">
+            {/* Agency header */}
+            <div className="flex items-start justify-between gap-4 border-b border-border pb-4">
+              <div>
+                <p className="text-lg font-bold text-primary">Terranova Propiedades</p>
+                <p className="text-xs text-muted">Administración de alquileres · CUIT 30-71234567-8</p>
+                <p className="text-xs text-muted">Av. Corrientes 1234, CABA · (011) 4000-1234</p>
+              </div>
+              <div className="text-right shrink-0">
+                <p className="text-xs font-semibold uppercase tracking-wide text-accent">Liquidación</p>
+                <p className="text-xs text-muted mt-1 capitalize">{detail.period.period}</p>
+                <p className="text-xs text-muted">N° {detail.period.id}</p>
+              </div>
+            </div>
+
+            {/* Owner */}
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-muted">Propietario</p>
+              <p className="text-sm font-semibold text-text">{MOCK_OWNER.name}</p>
+              <p className="text-xs text-muted">CUIT {MOCK_OWNER.cuit} · {MOCK_OWNER.address}</p>
+              <p className="text-xs text-muted">{MOCK_OWNER.bank} · CBU {MOCK_OWNER.cbu}</p>
+            </div>
+
+            {/* Per-property table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-left text-muted border-b border-border">
+                    <th className="py-2 font-semibold">Propiedad / Inquilino</th>
+                    <th className="py-2 font-semibold text-right">Cobrado</th>
+                    <th className="py-2 font-semibold text-right">Gastos</th>
+                    <th className="py-2 font-semibold text-right">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {detail.c.perProperty.map((p) => {
+                    const prop = propById(p.propertyId)
+                    const st = COLLECTION_STATUS[p.status] || COLLECTION_STATUS.pendiente
+                    return (
+                      <tr key={p.propertyId} className="border-b border-border/60 align-top">
+                        <td className="py-2 pr-2">
+                          <p className="text-text font-medium">{prop?.title}</p>
+                          <p className="text-muted">{p.tenant} · {st.label}</p>
+                        </td>
+                        <td className="py-2 text-right text-text whitespace-nowrap">{arsMoney(p.collected)}</td>
+                        <td className="py-2 text-right text-error whitespace-nowrap">{p.expensesTotal ? `− ${arsMoney(p.expensesTotal)}` : '—'}</td>
+                        <td className="py-2 text-right font-semibold text-text whitespace-nowrap">{arsMoney(p.subtotal)}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Totals */}
+            <div className="ml-auto max-w-xs space-y-1 text-xs">
+              <div className="flex justify-between"><span className="text-muted">Total cobrado</span><span className="text-text">{arsMoney(detail.c.grossCollected)}</span></div>
+              <div className="flex justify-between"><span className="text-muted">Comisión ({(OWNER_MGMT_FEE_PCT * 100).toFixed(0)}%)</span><span className="text-error">− {arsMoney(detail.c.mgmtFee)}</span></div>
+              <div className="flex justify-between"><span className="text-muted">Gastos</span><span className="text-error">− {arsMoney(detail.c.expensesTotal)}</span></div>
+              <div className="flex justify-between pt-2 border-t border-border text-sm font-bold"><span className="text-text">Neto a cobrar</span><span className="text-accent">{arsMoney(detail.c.net)}</span></div>
+            </div>
+
+            {detail.c.pending > 0 && (
+              <p className="text-[11px] text-warning inline-flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5" /> {arsMoney(detail.c.pending)} pendiente de cobro — no incluido en el neto.
+              </p>
+            )}
+
+            <p className="text-[10px] text-muted border-t border-border pt-3">
+              Documento generado automáticamente con fines demostrativos. No posee validez fiscal. Los montos corresponden al período indicado y quedan sujetos a la rendición definitiva de gastos.
+            </p>
+          </div>
+
+          <button
+            onClick={() => { showToast(`Liquidación de ${detail.period.period} descargada (PDF)`); onClose() }}
+            className="mt-5 w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-lg bg-gold text-primary font-semibold hover:opacity-90 transition-opacity"
+          >
+            <Download className="w-4 h-4" /> Descargar PDF
+          </button>
+        </div>
+      )}
+    </ModalShell>
+  )
+}
+
 function OwnerCollection({ propById }) {
-  const expected = OWNER_COLLECTION.filter((c) => c.status !== 'vacant').reduce((s, c) => s + c.amount, 0)
-  const collected = OWNER_COLLECTION.filter((c) => c.status === 'collected').reduce((s, c) => s + c.amount, 0)
+  const active = OWNER_COLLECTION.filter((c) => c.status !== 'vacant')
+  const expected = active.reduce((s, c) => s + c.amount, 0)
+  const collected = OWNER_COLLECTION.filter((c) => c.status === 'cobrado' || c.status === 'parcial').reduce((s, c) => s + c.amount, 0)
   const pct = expected ? Math.round((collected / expected) * 100) : 0
-  const max = Math.max(...OWNER_COLLECTION_HISTORY.map((h) => h.expected))
+  const overdue = OWNER_COLLECTION.filter((c) => c.status === 'atrasado')
+  const max = Math.max(...OWNER_COLLECTION_HISTORY.map((h) => h.expected), 1)
 
   return (
     <>
@@ -2899,8 +3085,8 @@ function OwnerCollection({ propById }) {
           <div>
             <div className="text-sm text-muted">Cobrado este mes</div>
             <div className="text-2xl font-bold text-primary">
-              {formatPrice(collected, 'ARS').replace('/mes', '')}
-              <span className="text-base font-medium text-muted"> / {formatPrice(expected, 'ARS').replace('/mes', '')}</span>
+              {arsMoney(collected)}
+              <span className="text-base font-medium text-muted"> / {arsMoney(expected)}</span>
             </div>
           </div>
           <span className="text-lg font-bold text-accent">{pct}%</span>
@@ -2915,20 +3101,37 @@ function OwnerCollection({ propById }) {
         </div>
       </div>
 
+      {/* Morosidad alert */}
+      {overdue.length > 0 && (
+        <div className="flex items-start gap-2.5 rounded-xl border border-error bg-surface-alt px-4 py-3 mb-6">
+          <AlertTriangle className="w-5 h-5 text-error shrink-0 mt-0.5" />
+          <div className="text-sm text-text">
+            <span className="font-semibold text-error">{overdue.length}</span>{' '}
+            {overdue.length === 1 ? 'propiedad con pago atrasado' : 'propiedades con pagos atrasados'}:{' '}
+            {overdue.map((c) => c.tenant).join(', ')}. Un asesor ya está gestionando el reclamo.
+          </div>
+        </div>
+      )}
+
       <div className="space-y-3 mb-6">
         {OWNER_COLLECTION.map((c) => {
           const prop = propById(c.propertyId)
-          const st = COLLECTION_STATUS[c.status] || COLLECTION_STATUS.pending
-          const late = c.status === 'overdue'
+          const st = COLLECTION_STATUS[c.status] || COLLECTION_STATUS.pendiente
+          const late = c.status === 'atrasado'
+          const daysOverdue = late ? daysLate(c.dueDate) : 0
           return (
-            <div key={c.propertyId} className={`bg-surface border rounded-xl p-4 flex flex-wrap items-center gap-4 ${late ? 'border-error/40' : 'border-border'}`}>
+            <div key={c.propertyId} className={`bg-surface border rounded-xl p-4 flex flex-wrap items-center gap-4 ${late ? 'border-error' : 'border-border'}`}>
               <img src={prop?.images?.[0]} alt={prop?.title} className="w-14 h-14 rounded-lg object-cover shrink-0" />
               <div className="min-w-0 flex-1">
                 <div className="font-medium text-text truncate">{prop?.title}</div>
-                <div className="text-sm text-muted">{c.tenant || 'Sin inquilino'}{c.dueDate ? ` · vence ${formatDate(c.dueDate)}` : ''}</div>
+                <div className="text-sm text-muted">
+                  {c.tenant || 'Sin inquilino'}
+                  {c.status === 'cobrado' && c.collectDate ? ` · cobrado ${formatDate(c.collectDate)}` : c.dueDate ? ` · vence ${formatDate(c.dueDate)}` : ''}
+                  {late && daysOverdue > 0 ? ` · ${daysOverdue} ${daysOverdue === 1 ? 'día' : 'días'} de atraso` : ''}
+                </div>
               </div>
               <div className="text-right shrink-0">
-                <div className="font-semibold text-primary">{formatPrice(c.amount, 'ARS').replace('/mes', '')}</div>
+                <div className="font-semibold text-primary">{arsMoney(c.amount)}</div>
                 <span className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${st.cls}`}>{st.label}</span>
               </div>
             </div>
@@ -2966,30 +3169,358 @@ function OwnerCollection({ propById }) {
 }
 
 function OwnerDocuments({ propById, showToast }) {
-  // Group docs by property.
-  const groups = OWNER_PROPERTIES.map((p) => ({
-    prop: propById(p.propertyId),
-    docs: OWNER_DOCUMENTS.filter((d) => d.propertyId === p.propertyId)
-  })).filter((g) => g.docs.length > 0)
+  const [documents, setDocuments] = useState(() => {
+    try {
+      const saved = localStorage.getItem(OWNER_DOCS_KEY)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed)) return parsed
+      }
+    } catch {
+      /* ignore corrupt storage */
+    }
+    return OWNER_DOCUMENTS
+  })
+  const [uploadOpen, setUploadOpen] = useState(false)
+  const [prefill, setPrefill] = useState(null)
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(OWNER_DOCS_KEY, JSON.stringify(documents))
+    } catch {
+      /* ignore quota errors */
+    }
+  }, [documents])
+
+  const addDocument = ({ name, type, propertyId, size }) => {
+    const doc = {
+      id: `OD-${Date.now()}`,
+      propertyId,
+      name,
+      type,
+      kind: ownerDocKind(type),
+      size,
+      uploadedAt: '2026-09-11',
+      status: 'pending'
+    }
+    setDocuments((prev) => [doc, ...prev])
+    showToast('Documento subido · pendiente de verificación')
+  }
+
+  const deleteDocument = (id) => {
+    setDocuments((prev) => prev.filter((d) => d.id !== id))
+    showToast('Documento eliminado', 'muted')
+  }
+
+  const openUpload = (pre = null) => {
+    setPrefill(pre)
+    setUploadOpen(true)
+  }
+
+  const groups = OWNER_PROPERTIES
+    .map((p) => ({ prop: propById(p.propertyId), docs: documents.filter((d) => d.propertyId === p.propertyId) }))
+    .filter((g) => g.docs.length > 0)
+  const generalDocs = documents.filter((d) => !d.propertyId)
+  const pending = documents.filter((d) => d.status === 'pending').length
 
   return (
     <>
-      <SectionHeading title="Documentos" subtitle="Documentación organizada por propiedad." />
-      <div className="space-y-6">
-        {groups.map((g) => (
-          <div key={g.prop?.id}>
-            <h4 className="font-semibold text-primary mb-3 flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-accent" /> {g.prop?.title}
-            </h4>
-            <div className="space-y-3">
-              {g.docs.map((d) => (
-                <DocRow key={d.id} doc={d} showToast={showToast} />
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
+        <SectionHeading title="Documentos" subtitle="Contratos, títulos y certificados organizados por propiedad." />
+        <button
+          onClick={() => openUpload()}
+          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-gold text-primary text-sm font-semibold hover:opacity-90 transition-opacity shrink-0"
+        >
+          <UploadCloud className="w-4 h-4" /> Subir documento
+        </button>
+      </div>
+
+      {pending > 0 && (
+        <div className="flex items-center gap-2.5 rounded-xl border border-border bg-surface-alt px-4 py-3 mb-5">
+          <Clock className="w-5 h-5 text-warning shrink-0" />
+          <span className="text-sm text-text">
+            <span className="font-semibold">{pending}</span>{' '}
+            {pending === 1 ? 'documento en revisión' : 'documentos en revisión'} por la administración.
+          </span>
+        </div>
+      )}
+
+      <UploadDropzone onActivate={() => openUpload()} />
+
+      {documents.length === 0 ? (
+        <div className="mt-6">
+          <EmptyState icon={FolderOpen} title="Todavía no hay documentos" text="Subí contratos, títulos o certificados para tenerlos siempre a mano." />
+        </div>
+      ) : (
+        <div className="space-y-6 mt-6">
+          {groups.map((g) => (
+            <OwnerDocGroup
+              key={g.prop?.id}
+              icon={Building2}
+              title={g.prop?.title}
+              subtitle={`${g.prop?.neighborhood} · ${g.docs.length} ${g.docs.length === 1 ? 'documento' : 'documentos'}`}
+              docs={g.docs}
+              onDownload={(d) => showToast(`Descargando ${d.name}…`)}
+              onDelete={deleteDocument}
+            />
+          ))}
+          {generalDocs.length > 0 && (
+            <OwnerDocGroup
+              icon={FolderOpen}
+              title="Documentos generales"
+              subtitle={`${generalDocs.length} ${generalDocs.length === 1 ? 'documento' : 'documentos'} sin propiedad asociada`}
+              docs={generalDocs}
+              onDownload={(d) => showToast(`Descargando ${d.name}…`)}
+              onDelete={deleteDocument}
+            />
+          )}
+        </div>
+      )}
+
+      <OwnerUploadModal
+        open={uploadOpen}
+        onClose={() => setUploadOpen(false)}
+        onUpload={addDocument}
+        properties={OWNER_PROPERTIES.map((p) => propById(p.propertyId)).filter(Boolean)}
+        prefill={prefill}
+      />
+    </>
+  )
+}
+
+function OwnerDocGroup({ icon: Icon, title, subtitle, docs, onDownload, onDelete }) {
+  const [open, setOpen] = useState(true)
+  return (
+    <div className="bg-surface border border-border rounded-2xl overflow-hidden">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-surface-alt transition-colors"
+      >
+        <span className="p-2 rounded-lg bg-surface-alt text-accent shrink-0">
+          <Icon className="w-4 h-4" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-semibold text-primary truncate">{title}</span>
+          <span className="block text-xs text-muted truncate">{subtitle}</span>
+        </span>
+        <span className="inline-flex items-center justify-center min-w-[1.5rem] h-6 px-2 rounded-full bg-surface-alt text-xs font-semibold text-text shrink-0">
+          {docs.length}
+        </span>
+        <ChevronDown className={`w-5 h-5 text-muted shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="overflow-hidden"
+          >
+            <div className="px-5 pb-5 pt-1 space-y-3">
+              {docs.map((d) => (
+                <OwnerDocCard key={d.id} doc={d} onDownload={() => onDownload(d)} onDelete={() => onDelete(d.id)} />
               ))}
             </div>
-          </div>
-        ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+function OwnerDocCard({ doc, onDownload, onDelete }) {
+  const st = OWNER_DOC_STATUS[doc.status] || OWNER_DOC_STATUS.available
+  const available = doc.status === 'available'
+  return (
+    <div className="rounded-xl border border-border bg-surface p-4 flex items-start gap-4">
+      <div className="p-2.5 rounded-lg bg-surface-alt text-primary shrink-0">
+        <KindIcon kind={doc.kind} className="w-5 h-5" />
       </div>
-    </>
+      <div className="min-w-0 flex-1">
+        <div className="font-medium text-text truncate">{doc.name}</div>
+        <div className="flex flex-wrap items-center gap-2 mt-1.5">
+          <span className="px-2 py-0.5 rounded bg-surface-alt text-xs font-medium text-text">{ownerDocLabel(doc.type)}</span>
+          <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium ${st.cls}`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${available ? 'bg-white' : 'bg-white'}`} /> {st.label}
+          </span>
+        </div>
+        <div className="flex items-center gap-3 mt-2 text-xs text-muted">
+          <span className="inline-flex items-center gap-1"><CalendarClock className="w-3.5 h-3.5" /> {formatDate(doc.uploadedAt)}</span>
+          {doc.size && <span>{doc.size}</span>}
+        </div>
+      </div>
+      <div className="flex items-center gap-1 shrink-0">
+        <button
+          onClick={onDownload}
+          disabled={!available}
+          aria-label="Descargar"
+          className="p-2 rounded-lg hover:bg-surface-alt text-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <Download className="w-5 h-5" />
+        </button>
+        <button
+          onClick={onDelete}
+          aria-label="Eliminar"
+          className="p-2 rounded-lg hover:bg-surface-alt text-muted hover:text-error transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// Owner document upload — same simulated phase machine as the buyer flow (I15).
+function OwnerUploadModal({ open, onClose, onUpload, properties, prefill }) {
+  const [type, setType] = useState('contract')
+  const [propertyId, setPropertyId] = useState('')
+  const [phase, setPhase] = useState('idle') // idle | picking | ready | uploading
+  const [fileName, setFileName] = useState('')
+  const [progress, setProgress] = useState(0)
+
+  const ownerSuggestedName = (t) => `${ownerDocLabel(t).replace(/\s+/g, '-').toLowerCase()}-${Date.now().toString().slice(-4)}.${ownerDocKind(t) === 'img' ? 'jpg' : 'pdf'}`
+
+  useEffect(() => {
+    if (!open) return
+    setType(prefill?.type || 'contract')
+    setPropertyId(prefill?.propertyId || '')
+    setPhase('idle')
+    setFileName('')
+    setProgress(0)
+  }, [open, prefill])
+
+  useEffect(() => {
+    if (phase === 'ready') setFileName(ownerSuggestedName(type))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [type, phase])
+
+  const pickFile = () => {
+    setPhase('picking')
+    setTimeout(() => {
+      setFileName(ownerSuggestedName(type))
+      setPhase('ready')
+    }, 650)
+  }
+
+  useEffect(() => {
+    if (phase !== 'uploading') return
+    let pct = 0
+    const id = setInterval(() => {
+      pct = Math.min(100, pct + 12)
+      setProgress(pct)
+      if (pct >= 100) {
+        clearInterval(id)
+        setTimeout(() => {
+          onUpload({ name: fileName, type, propertyId: propertyId || null, size: KIND_SIZE[ownerDocKind(type)] || '240 KB' })
+          onClose()
+        }, 350)
+      }
+    }, 140)
+    return () => clearInterval(id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase])
+
+  const startUpload = () => {
+    if (phase !== 'ready') return
+    setProgress(0)
+    setPhase('uploading')
+  }
+
+  const busy = phase === 'picking' || phase === 'uploading'
+
+  return (
+    <ModalShell open={open} onClose={busy ? () => {} : onClose} icon={UploadCloud} title="Subir documento">
+      <div className="p-5 md:p-6 space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-text mb-1.5">Tipo de documento</label>
+            <select value={type} onChange={(e) => setType(e.target.value)} disabled={busy} className={fieldCls}>
+              {OWNER_DOC_TYPES.map((t) => (
+                <option key={t.id} value={t.id}>{t.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-text mb-1.5">Propiedad asociada</label>
+            <select value={propertyId} onChange={(e) => setPropertyId(e.target.value)} disabled={busy} className={fieldCls}>
+              <option value="">General (sin propiedad)</option>
+              {properties.map((p) => (
+                <option key={p.id} value={p.id}>{p.title}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {phase === 'ready' || phase === 'uploading' ? (
+          <div className="rounded-xl border border-border bg-surface-alt p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-lg bg-surface text-primary shrink-0">
+                <KindIcon kind={ownerDocKind(type)} className="w-5 h-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="font-medium text-text truncate">{fileName}</div>
+                <div className="text-xs text-muted">{KIND_SIZE[ownerDocKind(type)] || '240 KB'}</div>
+              </div>
+              {phase === 'ready' && (
+                <button onClick={pickFile} className="text-xs font-medium text-accent hover:underline shrink-0">
+                  Cambiar
+                </button>
+              )}
+            </div>
+            {phase === 'uploading' && (
+              <div className="mt-3">
+                <div className="h-2 rounded-full bg-surface overflow-hidden">
+                  <div className="h-full rounded-full bg-accent transition-all duration-150" style={{ width: `${progress}%` }} />
+                </div>
+                <div className="flex items-center gap-1.5 mt-1.5 text-xs text-muted">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> Subiendo… {progress}%
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={pickFile}
+            disabled={busy}
+            className="w-full border-2 border-dashed border-border rounded-xl p-7 text-center bg-surface-alt/50 hover:border-accent/60 transition-colors disabled:opacity-60"
+          >
+            {phase === 'picking' ? (
+              <>
+                <Loader2 className="w-7 h-7 mx-auto text-accent mb-2 animate-spin" />
+                <p className="text-sm font-medium text-text">Seleccionando archivo…</p>
+              </>
+            ) : (
+              <>
+                <Paperclip className="w-7 h-7 mx-auto text-muted mb-2" />
+                <p className="text-sm font-medium text-text">Seleccionar archivo</p>
+                <p className="text-xs text-muted mt-1">Simulado para la demo · no se sube nada real</p>
+              </>
+            )}
+          </button>
+        )}
+
+        <div className="flex gap-3 pt-1">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={busy}
+            className="flex-1 py-2.5 rounded-lg border border-border text-text font-medium hover:bg-surface-alt transition-colors disabled:opacity-50"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={startUpload}
+            disabled={phase !== 'ready'}
+            className="flex-1 py-2.5 rounded-lg bg-gold text-primary font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Subir documento
+          </button>
+        </div>
+      </div>
+    </ModalShell>
   )
 }
 

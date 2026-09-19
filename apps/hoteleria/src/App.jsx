@@ -142,7 +142,7 @@ export default function App() {
     return (
       <div className="min-h-screen bg-bg text-text">
         <Navbar
-          brand="Hotel Luxury"
+          brand="Villa Serena"
           toggleTheme={toggleTheme}
           isDark={isDark}
           links={navLinks}
@@ -152,7 +152,7 @@ export default function App() {
           onBack={handleBackToMain}
           onReserve={handleReserveFromDetail}
         />
-        <Footer brand="Hotel Luxury" />
+        <Footer brand="Villa Serena" />
       </div>
     )
   }
@@ -164,7 +164,7 @@ export default function App() {
       </AnimatePresence>
 
       <Navbar
-        brand="Hotel Luxury"
+        brand="Villa Serena"
         toggleTheme={toggleTheme}
         isDark={isDark}
         links={navLinks}
@@ -229,7 +229,7 @@ export default function App() {
         </section>
       </main>
 
-      <Footer brand="Hotel Luxury" />
+      <Footer brand="Villa Serena" />
 
       <GuidedTour steps={TOUR_STEPS} run={tourRun} onClose={() => setTourRun(false)} />
     </div>

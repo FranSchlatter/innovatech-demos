@@ -15,9 +15,11 @@ import {
   CheckCircle,
   AlertCircle,
   X,
-  UserPlus
+  UserPlus,
+  MessageSquare
 } from 'lucide-react'
 import { useAdminData } from '../../../hooks/useAdminData'
+import { useAdmin } from '../../../context/AdminContext'
 import StatusBadge from '../shared/StatusBadge'
 
 const serviceTypeIcons = {
@@ -56,7 +58,7 @@ const typeFilters = [
   { value: 'facilities', label: 'Facilities' }
 ]
 
-function RequestCard({ request, onStatusChange, onAssign, staff }) {
+function RequestCard({ request, onStatusChange, onAssign, onMessage, staff }) {
   const [showActions, setShowActions] = useState(false)
   const Icon = serviceTypeIcons[request.type] || Bell
   const iconColor = serviceTypeColors[request.type] || 'bg-gray-500'
@@ -138,54 +140,62 @@ function RequestCard({ request, onStatusChange, onAssign, staff }) {
         </div>
       )}
 
-      {/* Actions */}
-      {request.status !== 'completed' && (
-        <div className="flex gap-2 pt-2 border-t border-border">
-          {request.status === 'pending' && (
-            <>
-              <select
-                onChange={(e) => {
-                  if (e.target.value) {
-                    const selectedStaff = staff.find(s => s.id === e.target.value)
-                    onAssign(request.id, e.target.value, selectedStaff?.name)
-                  }
-                }}
-                className="flex-1 px-3 py-2 bg-bg border border-border rounded-lg text-xs text-text
-                  focus:outline-none focus:ring-2 focus:ring-primary/50"
-                defaultValue=""
-              >
-                <option value="" disabled>Assign to...</option>
-                {staff.filter(s => s.status === 'on-duty').map(s => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </select>
-            </>
-          )}
+      {/* Actions — the "message guest" button is always available (H22),
+          the status action depends on the current stage. */}
+      <div className="flex gap-2 pt-2 border-t border-border">
+        <button
+          onClick={() => onMessage(request)}
+          title="Escribir al huésped en la Bandeja IA"
+          className="flex-shrink-0 flex items-center justify-center gap-1.5 px-3 py-2
+            bg-primary/10 text-primary text-xs font-medium rounded-lg
+            hover:bg-primary/20 transition-colors"
+        >
+          <MessageSquare className="w-4 h-4" />
+          <span className="hidden sm:inline">Escribir</span>
+        </button>
 
-          {request.status === 'assigned' && (
-            <button
-              onClick={() => onStatusChange(request.id, 'in-progress')}
-              className="flex-1 flex items-center justify-center gap-2 px-3 py-2
-                bg-purple-500 text-white text-xs font-medium rounded-lg
-                hover:bg-purple-600 transition-colors"
-            >
-              Start
-            </button>
-          )}
+        {request.status === 'pending' && (
+          <select
+            onChange={(e) => {
+              if (e.target.value) {
+                const selectedStaff = staff.find(s => s.id === e.target.value)
+                onAssign(request.id, e.target.value, selectedStaff?.name)
+              }
+            }}
+            className="flex-1 px-3 py-2 bg-bg border border-border rounded-lg text-xs text-text
+              focus:outline-none focus:ring-2 focus:ring-primary/50"
+            defaultValue=""
+          >
+            <option value="" disabled>Assign to...</option>
+            {staff.filter(s => s.status === 'on-duty').map(s => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
+        )}
 
-          {request.status === 'in-progress' && (
-            <button
-              onClick={() => onStatusChange(request.id, 'completed')}
-              className="flex-1 flex items-center justify-center gap-2 px-3 py-2
-                bg-green-500 text-white text-xs font-medium rounded-lg
-                hover:bg-green-600 transition-colors"
-            >
-              <CheckCircle className="w-4 h-4" />
-              Complete
-            </button>
-          )}
-        </div>
-      )}
+        {request.status === 'assigned' && (
+          <button
+            onClick={() => onStatusChange(request.id, 'in-progress')}
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2
+              bg-purple-500 text-white text-xs font-medium rounded-lg
+              hover:bg-purple-600 transition-colors"
+          >
+            Start
+          </button>
+        )}
+
+        {request.status === 'in-progress' && (
+          <button
+            onClick={() => onStatusChange(request.id, 'completed')}
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2
+              bg-green-500 text-white text-xs font-medium rounded-lg
+              hover:bg-green-600 transition-colors"
+          >
+            <CheckCircle className="w-4 h-4" />
+            Complete
+          </button>
+        )}
+      </div>
     </motion.div>
   )
 }
@@ -227,6 +237,7 @@ function StatsBar({ requests }) {
 
 export default function ServiceRequestsMonitor() {
   const { serviceRequests, staff, updateServiceRequest } = useAdminData()
+  const { openInboxWithTarget } = useAdmin()
   const [statusFilter, setStatusFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
@@ -273,6 +284,20 @@ export default function ServiceRequestsMonitor() {
       status: 'assigned',
       assignedTo: staffId,
       assignedToName: staffName
+    })
+  }
+
+  // H22 — hand the request off to the unified Inbox, which finds or creates the
+  // guest's conversation and pre-fills a contextual reply. A nonce guarantees a
+  // fresh object so repeated clicks always re-trigger the Inbox effect.
+  const handleMessage = (request) => {
+    openInboxWithTarget({
+      requestId: request.id,
+      guestName: request.guestName,
+      roomNumber: request.roomNumber,
+      type: request.type,
+      description: request.description,
+      nonce: Date.now()
     })
   }
 
@@ -360,6 +385,7 @@ export default function ServiceRequestsMonitor() {
               staff={staff}
               onStatusChange={handleStatusChange}
               onAssign={handleAssign}
+              onMessage={handleMessage}
             />
           ))}
         </AnimatePresence>

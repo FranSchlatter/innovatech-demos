@@ -332,6 +332,36 @@ export const mockInventory = [
     restockHistory: [
       { date: formatDate(subDays(today, 5)), quantity: 200, by: 'Clean Co.' }
     ]
+  },
+  // Legacy / discontinued items — kept in the catalog but never consumed anymore.
+  // They surface in the "possibly obsolete" trends section (no restock history).
+  {
+    id: 'INV-021',
+    name: 'Cigarette Packs (Minibar)',
+    category: 'minibar',
+    sku: 'MNB-CIG-001',
+    currentStock: 24,
+    minStock: 10,
+    maxStock: 60,
+    unit: 'packs',
+    location: 'Minibar Storage',
+    lastRestocked: formatDate(subDays(today, 210)),
+    costPerUnit: 9.00,
+    restockHistory: []
+  },
+  {
+    id: 'INV-022',
+    name: 'Guest Sewing Kits',
+    category: 'amenities',
+    sku: 'AME-SEW-001',
+    currentStock: 90,
+    minStock: 40,
+    maxStock: 200,
+    unit: 'kits',
+    location: 'Amenities Storage',
+    lastRestocked: formatDate(subDays(today, 240)),
+    costPerUnit: 1.20,
+    restockHistory: []
   }
 ]
 
@@ -352,4 +382,171 @@ export const getTotalInventoryValue = () => {
 
 export const getCategories = () => {
   return [...new Set(mockInventory.map(item => item.category))]
+}
+
+// ---------------------------------------------------------------------------
+// Consumption analytics (H21)
+//
+// The trends below are derived from a DETERMINISTIC, seeded model keyed only by
+// each item's static identity (id + category + min/max/cost). This is on purpose:
+// `useAdminData` persists `inventory` to localStorage, so metrics must NOT depend
+// on mutable/persisted stock — otherwise a stale save would show empty trends.
+// Same seeded-PRNG pattern as mockHousekeeping (H10) and mockExcursions (H17).
+// ---------------------------------------------------------------------------
+
+// mulberry32 — tiny deterministic PRNG (identical algo used across the admin mocks)
+function mulberry32(seed) {
+  let a = seed >>> 0
+  return function () {
+    a |= 0
+    a = (a + 0x6d2b79f5) | 0
+    let t = Math.imul(a ^ (a >>> 15), 1 | a)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+// Stable string → uint32 hash so the same item id always yields the same numbers.
+function hashSeed(str) {
+  let h = 2166136261 >>> 0
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return h >>> 0
+}
+
+// Relative demand per category: how fast stock turns over. Minibar moves fastest,
+// linens slowest. Drives consumption, restock frequency and low-stock frequency.
+export const CATEGORY_DEMAND = {
+  linens: 0.5,
+  amenities: 1.1,
+  minibar: 1.5,
+  cleaning: 0.7
+}
+
+// Items with no ongoing consumption — legacy/discontinued. Surface as "obsolete".
+const OBSOLETE_IDS = new Set(['INV-021', 'INV-022'])
+
+// A couple of chronically under-stocked fast movers, guaranteed to trip the
+// "raise the minimum" suggestion regardless of the PRNG draw (demo reliability).
+const CHRONIC_IDS = new Set(['INV-013', 'INV-007'])
+
+const ANALYTICS_WINDOW_DAYS = 90
+
+// Per-item consumption model. Pure + deterministic for a given item identity.
+export function getItemConsumption(item) {
+  if (OBSOLETE_IDS.has(item.id)) {
+    return {
+      monthlyConsumption: 0,
+      monthlyCost: 0,
+      restockVolume90: 0,
+      restocks90: 0,
+      lowStockHits30: 0,
+      neverRestocked: true,
+      recommendedMin: item.minStock
+    }
+  }
+
+  const rng = mulberry32(hashSeed(item.id))
+  const demand = CATEGORY_DEMAND[item.category] ?? 1
+  const chronicBoost = CHRONIC_IDS.has(item.id) ? 1.6 : 1
+  // Monthly turnover as a fraction of max capacity (~0.55–1.45 × demand).
+  const turnover = demand * chronicBoost * (0.55 + rng() * 0.9)
+
+  const monthlyConsumption = Math.max(1, Math.round(item.maxStock * turnover))
+  const monthlyCost = Math.round(monthlyConsumption * item.costPerUnit)
+  const restockVolume90 = monthlyConsumption * 3
+
+  // Refill amount per restock ≈ (max − min); refills needed per month follow from it.
+  const fillQty = Math.max(1, item.maxStock - item.minStock)
+  const refillsPerMonth = monthlyConsumption / fillQty
+  const restocks90 = Math.min(14, Math.max(1, Math.round(refillsPerMonth * 3)))
+  // Each refill implies the item dipped to its minimum, so refills/month ≈ low-stock hits.
+  const lowStockHits30 = Math.max(0, Math.round(refillsPerMonth))
+
+  // Suggested minimum ≈ half a month of demand (a sensible reorder buffer), capped
+  // below max. Only meaningful when it's actually higher than the current minimum.
+  const recommendedMin = Math.min(
+    item.maxStock - 1,
+    Math.max(item.minStock + 1, Math.round(monthlyConsumption * 0.5))
+  )
+
+  return {
+    monthlyConsumption,
+    monthlyCost,
+    restockVolume90,
+    restocks90,
+    lowStockHits30,
+    neverRestocked: false,
+    recommendedMin
+  }
+}
+
+// Aggregate analytics over the whole inventory. Pure function of the passed array,
+// so it works with both the seed data and anything persisted in localStorage.
+export function getInventoryAnalytics(inventory) {
+  const perItem = {}
+  inventory.forEach(it => {
+    perItem[it.id] = getItemConsumption(it)
+  })
+
+  // Consumption + cost per category (last 30 days).
+  const catMap = {}
+  inventory.forEach(it => {
+    const a = perItem[it.id]
+    if (!catMap[it.category]) {
+      catMap[it.category] = {
+        category: it.category,
+        monthlyConsumption: 0,
+        monthlyCost: 0,
+        itemCount: 0
+      }
+    }
+    catMap[it.category].monthlyConsumption += a.monthlyConsumption
+    catMap[it.category].monthlyCost += a.monthlyCost
+    catMap[it.category].itemCount += 1
+  })
+  const byCategory = Object.values(catMap).sort((a, b) => b.monthlyCost - a.monthlyCost)
+  const totalMonthlyCost = byCategory.reduce((s, c) => s + c.monthlyCost, 0)
+  const totalMonthlyConsumption = byCategory.reduce((s, c) => s + c.monthlyConsumption, 0)
+
+  // Top consumed by 90-day restock volume.
+  const topConsumed = inventory
+    .filter(it => !perItem[it.id].neverRestocked)
+    .map(it => ({ ...it, ...perItem[it.id] }))
+    .sort((a, b) => b.restockVolume90 - a.restockVolume90)
+    .slice(0, 5)
+
+  // Never restocked → possible obsolete stock (dead capital tied up).
+  const obsolete = inventory
+    .filter(it => perItem[it.id].neverRestocked)
+    .map(it => ({ ...it, tiedUpValue: it.currentStock * it.costPerUnit }))
+
+  // Reorder suggestions: hit the minimum 3+ times in the last month AND the current
+  // minimum sits below the recommended buffer (so applying it clears the suggestion).
+  const suggestions = inventory
+    .map(it => ({ item: it, a: perItem[it.id] }))
+    .filter(({ item, a }) => a.lowStockHits30 >= 3 && item.minStock < a.recommendedMin)
+    .map(({ item, a }) => ({
+      id: item.id,
+      name: item.name,
+      category: item.category,
+      unit: item.unit,
+      currentMin: item.minStock,
+      suggestedMin: a.recommendedMin,
+      hits: a.lowStockHits30
+    }))
+    .sort((x, y) => y.hits - x.hits)
+
+  return {
+    perItem,
+    byCategory,
+    totalMonthlyCost,
+    totalMonthlyConsumption,
+    topConsumed,
+    obsolete,
+    suggestions,
+    windowDays: ANALYTICS_WINDOW_DAYS
+  }
 }

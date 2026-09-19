@@ -1278,7 +1278,7 @@ export default function GuestPortal({ onExit }) {
                   <h3 className="font-bold mb-1">Live Chat</h3>
                   <p className="text-sm text-muted">Instant support</p>
                 </button>
-                <a href="mailto:concierge@hotelluxury.com" className="bg-surface p-6 rounded-xl text-center hover:bg-surface/80 transition">
+                <a href="mailto:concierge@villaserena.com" className="bg-surface p-6 rounded-xl text-center hover:bg-surface/80 transition">
                   <Mail className="w-10 h-10 mx-auto mb-3 text-accent" />
                   <h3 className="font-bold mb-1">Email Us</h3>
                   <p className="text-sm text-muted">We respond quickly</p>
@@ -1293,7 +1293,7 @@ export default function GuestPortal({ onExit }) {
                     { q: 'What are the check-out times?', a: 'Check-out is at 11:00 AM. Late check-out is available upon request.' },
                     { q: 'Is breakfast included?', a: 'Breakfast is included with select room packages. Check your reservation details.' },
                     { q: 'Where is the fitness center?', a: 'The fitness center is located on the 2nd floor, open 24/7 for guests.' },
-                    { q: 'How do I connect to WiFi?', a: 'Connect to "Hotel_Luxury_Guest" and use your room number and last name to log in.' }
+                    { q: 'How do I connect to WiFi?', a: 'Connect to "VillaSerena_Guest" and use your room number and last name to log in.' }
                   ].map((faq, index) => (
                     <details key={index} className="group">
                       <summary className="flex items-center justify-between cursor-pointer p-3 bg-bg rounded-lg hover:bg-bg/80">
@@ -1314,7 +1314,7 @@ export default function GuestPortal({ onExit }) {
                     <Wifi className="w-5 h-5 text-accent mt-1" />
                     <div>
                       <p className="font-medium">WiFi</p>
-                      <p className="text-sm text-muted">Network: Hotel_Luxury_Guest</p>
+                      <p className="text-sm text-muted">Network: VillaSerena_Guest</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">

@@ -178,7 +178,7 @@ export default function BookingForm({ room, onBook }) {
               Reservation Confirmed!
             </h2>
             <p className="text-muted mb-8 max-w-md mx-auto">
-              Thank you for choosing Hotel Luxury. We've received your booking request and will contact you shortly.
+              Thank you for choosing Villa Serena. We've received your booking request and will contact you shortly.
             </p>
           </motion.div>
 

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, forwardRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Package,
@@ -18,9 +18,17 @@ import {
   History,
   MapPin,
   DollarSign,
-  BarChart3
+  BarChart3,
+  LineChart,
+  Archive,
+  Lightbulb,
+  Trophy,
+  Layers,
+  ArrowUp,
+  Check
 } from 'lucide-react'
 import { useAdminData } from '../../../hooks/useAdminData'
+import { getInventoryAnalytics, getItemConsumption } from '../../../data/admin/mockInventory'
 
 const categoryConfig = {
   linens: { icon: Shirt, color: 'bg-blue-500', label: 'Linens' },
@@ -216,10 +224,11 @@ function InventoryStats({ inventory }) {
   )
 }
 
-function InventoryCard({ item, onRestock, onViewHistory }) {
+const InventoryCard = forwardRef(function InventoryCard({ item, onRestock, onViewHistory }, ref) {
   const config = categoryConfig[item.category]
   const Icon = config?.icon || Box
   const isLow = item.currentStock <= item.minStock
+  const consumption = getItemConsumption(item)
 
   const timeAgo = (dateString) => {
     const date = new Date(dateString)
@@ -236,6 +245,7 @@ function InventoryCard({ item, onRestock, onViewHistory }) {
 
   return (
     <motion.div
+      ref={ref}
       layout
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
@@ -283,10 +293,26 @@ function InventoryCard({ item, onRestock, onViewHistory }) {
         </div>
       </div>
 
-      {/* Last Restocked */}
-      <div className="flex items-center gap-1 text-xs text-muted mb-3">
-        <History className="w-3 h-3" />
-        <span>Restocked {timeAgo(item.lastRestocked)}</span>
+      {/* Last Restocked + monthly consumption */}
+      <div className="flex items-center justify-between gap-2 text-xs text-muted mb-3">
+        <div className="flex items-center gap-1 min-w-0">
+          <History className="w-3 h-3 flex-shrink-0" />
+          <span className="truncate">Restocked {timeAgo(item.lastRestocked)}</span>
+        </div>
+        {consumption.neverRestocked ? (
+          <span className="flex items-center gap-1 text-muted whitespace-nowrap" title="No consumption recorded — possibly obsolete">
+            <Archive className="w-3 h-3" />
+            No usage
+          </span>
+        ) : (
+          <span
+            className="flex items-center gap-1 text-primary whitespace-nowrap font-medium"
+            title="Estimated monthly consumption"
+          >
+            <TrendingDown className="w-3 h-3" />
+            ~{consumption.monthlyConsumption} {item.unit}/mo
+          </span>
+        )}
       </div>
 
       {/* Actions */}
@@ -310,7 +336,7 @@ function InventoryCard({ item, onRestock, onViewHistory }) {
       </div>
     </motion.div>
   )
-}
+})
 
 function RestockModal({ item, onClose, onRestock }) {
   const [quantity, setQuantity] = useState('')
@@ -532,13 +558,335 @@ function HistoryModal({ item, onClose }) {
   )
 }
 
+// --- Trends tab (H21) -------------------------------------------------------
+
+function TrendCard({ children, className = '' }) {
+  return (
+    <div className={`bg-surface rounded-xl border border-border p-4 sm:p-5 ${className}`}>
+      {children}
+    </div>
+  )
+}
+
+function ReorderSuggestions({ suggestions, adjustedIds, onAdjust }) {
+  if (suggestions.length === 0) return null
+
+  return (
+    <TrendCard className="border-amber-500/40 bg-amber-500/5">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="p-2 rounded-lg bg-amber-500/20">
+          <Lightbulb className="w-5 h-5 text-amber-500" />
+        </div>
+        <div>
+          <h3 className="font-semibold text-text">Reorder point suggestions</h3>
+          <p className="text-sm text-muted">
+            Items that hit their minimum 3+ times this month — consider a higher floor
+          </p>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        {suggestions.map((s) => {
+          const config = categoryConfig[s.category]
+          const Icon = config?.icon || Box
+          const done = adjustedIds.has(s.id)
+
+          return (
+            <div
+              key={s.id}
+              className="flex items-center gap-3 p-3 bg-bg rounded-lg border border-border"
+            >
+              <div className={`p-1.5 rounded-lg ${config?.color || 'bg-gray-500'} flex-shrink-0`}>
+                <Icon className="w-4 h-4 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-text truncate">{s.name}</p>
+                <p className="text-xs text-muted flex items-center gap-1.5 flex-wrap">
+                  <span className="text-amber-600 dark:text-amber-400 font-medium">
+                    {s.hits}× low this month
+                  </span>
+                  <span>·</span>
+                  <span className="inline-flex items-center gap-1">
+                    min {s.currentMin}
+                    <ArrowUp className="w-3 h-3 rotate-45" />
+                    <strong className="text-text">{s.suggestedMin}</strong> {s.unit}
+                  </span>
+                </p>
+              </div>
+              {done ? (
+                <span className="px-3 py-1.5 text-xs font-medium text-green-600 dark:text-green-400 flex items-center gap-1 whitespace-nowrap">
+                  <Check className="w-3.5 h-3.5" />
+                  Adjusted
+                </span>
+              ) : (
+                <button
+                  onClick={() => onAdjust(s.id, s.suggestedMin)}
+                  className="px-3 py-1.5 bg-amber-500 text-white text-xs font-medium rounded-lg
+                    hover:bg-amber-600 transition-colors flex items-center gap-1 whitespace-nowrap"
+                >
+                  <ArrowUp className="w-3 h-3" />
+                  Set min {s.suggestedMin}
+                </button>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </TrendCard>
+  )
+}
+
+function CategoryConsumptionChart({ byCategory, totalMonthlyCost }) {
+  const maxConsumption = Math.max(...byCategory.map(c => c.monthlyConsumption), 1)
+
+  return (
+    <TrendCard>
+      <div className="flex items-center gap-2 mb-4">
+        <Layers className="w-5 h-5 text-primary" />
+        <h3 className="font-semibold text-text">Consumption by category</h3>
+        <span className="ml-auto text-xs text-muted">last 30 days</span>
+      </div>
+
+      <div className="space-y-4">
+        {byCategory.map((cat) => {
+          const config = categoryConfig[cat.category]
+          const Icon = config?.icon || Box
+          const width = (cat.monthlyConsumption / maxConsumption) * 100
+          const costShare = totalMonthlyCost > 0
+            ? Math.round((cat.monthlyCost / totalMonthlyCost) * 100)
+            : 0
+
+          return (
+            <div key={cat.category}>
+              <div className="flex items-center justify-between mb-1.5 text-sm">
+                <span className="flex items-center gap-2 text-text font-medium">
+                  <span className={`p-1 rounded ${config?.color || 'bg-gray-500'}`}>
+                    <Icon className="w-3 h-3 text-white" />
+                  </span>
+                  {config?.label || cat.category}
+                </span>
+                <span className="text-muted">
+                  <strong className="text-text">{cat.monthlyConsumption.toLocaleString()}</strong> u
+                  <span className="mx-1.5">·</span>
+                  ${cat.monthlyCost.toLocaleString()}/mo
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 h-3 bg-border rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${width}%` }}
+                    transition={{ duration: 0.6, ease: 'easeOut' }}
+                    className={`h-full ${config?.color || 'bg-gray-500'} rounded-full`}
+                  />
+                </div>
+                <span className="text-xs text-muted w-10 text-right">{costShare}%</span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
+        <span className="text-sm text-muted">Total monthly spend</span>
+        <span className="text-lg font-bold text-text">${totalMonthlyCost.toLocaleString()}</span>
+      </div>
+    </TrendCard>
+  )
+}
+
+const medalColor = ['bg-amber-400', 'bg-gray-300', 'bg-amber-600']
+
+function TopConsumedList({ items }) {
+  const maxVolume = Math.max(...items.map(i => i.restockVolume90), 1)
+
+  return (
+    <TrendCard>
+      <div className="flex items-center gap-2 mb-4">
+        <Trophy className="w-5 h-5 text-primary" />
+        <h3 className="font-semibold text-text">Top consumed</h3>
+        <span className="ml-auto text-xs text-muted">by 90-day volume</span>
+      </div>
+
+      <div className="space-y-3">
+        {items.map((item, idx) => {
+          const config = categoryConfig[item.category]
+          const width = (item.restockVolume90 / maxVolume) * 100
+
+          return (
+            <div key={item.id} className="flex items-center gap-3">
+              <div
+                className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0
+                  ${idx < 3 ? `${medalColor[idx]} text-black` : 'bg-border text-muted'}`}
+              >
+                {idx + 1}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between mb-1 text-sm">
+                  <span className="text-text font-medium truncate">{item.name}</span>
+                  <span className="text-muted whitespace-nowrap ml-2">
+                    {item.restockVolume90.toLocaleString()} {item.unit}
+                  </span>
+                </div>
+                <div className="h-2 bg-border rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${width}%` }}
+                    transition={{ duration: 0.6, ease: 'easeOut', delay: idx * 0.06 }}
+                    className={`h-full ${config?.color || 'bg-gray-500'} rounded-full`}
+                  />
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </TrendCard>
+  )
+}
+
+function ObsoleteItems({ items }) {
+  const tiedUp = items.reduce((s, i) => s + i.tiedUpValue, 0)
+
+  return (
+    <TrendCard>
+      <div className="flex items-center gap-2 mb-4">
+        <Archive className="w-5 h-5 text-primary" />
+        <h3 className="font-semibold text-text">Possibly obsolete</h3>
+        <span className="ml-auto text-xs text-muted">never restocked</span>
+      </div>
+
+      {items.length === 0 ? (
+        <p className="text-sm text-muted py-4 text-center">
+          Every item has restock activity — nothing looks obsolete.
+        </p>
+      ) : (
+        <>
+          <div className="space-y-2">
+            {items.map((item) => {
+              const config = categoryConfig[item.category]
+              const Icon = config?.icon || Box
+
+              return (
+                <div
+                  key={item.id}
+                  className="flex items-center gap-3 p-3 bg-bg rounded-lg border border-border"
+                >
+                  <div className={`p-1.5 rounded-lg ${config?.color || 'bg-gray-500'} flex-shrink-0 opacity-70`}>
+                    <Icon className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-text truncate">{item.name}</p>
+                    <p className="text-xs text-muted">{item.sku} · {item.location}</p>
+                  </div>
+                  <div className="text-right whitespace-nowrap">
+                    <p className="text-sm font-medium text-text">${item.tiedUpValue.toLocaleString()}</p>
+                    <p className="text-xs text-muted">{item.currentStock} {item.unit}</p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+          <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
+            <span className="text-sm text-muted">Capital tied up</span>
+            <span className="text-lg font-bold text-text">${tiedUp.toLocaleString()}</span>
+          </div>
+        </>
+      )}
+    </TrendCard>
+  )
+}
+
+function TrendsView({ inventory, onAdjustMin }) {
+  const analytics = useMemo(() => getInventoryAnalytics(inventory), [inventory])
+  const [adjustedIds, setAdjustedIds] = useState(new Set())
+
+  const handleAdjust = (id, min) => {
+    onAdjustMin(id, min)
+    setAdjustedIds(prev => new Set(prev).add(id))
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* KPI strip */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-surface rounded-xl border border-border p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-green-500/10">
+              <DollarSign className="w-5 h-5 text-green-500" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-text">${analytics.totalMonthlyCost.toLocaleString()}</p>
+              <p className="text-xs text-muted">Monthly spend</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-surface rounded-xl border border-border p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-blue-500/10">
+              <TrendingDown className="w-5 h-5 text-blue-500" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-text">{analytics.totalMonthlyConsumption.toLocaleString()}</p>
+              <p className="text-xs text-muted">Units / month</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-surface rounded-xl border border-border p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-amber-500/10">
+              <Lightbulb className="w-5 h-5 text-amber-500" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-amber-500">{analytics.suggestions.length}</p>
+              <p className="text-xs text-muted">Reorder alerts</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-surface rounded-xl border border-border p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-purple-500/10">
+              <Archive className="w-5 h-5 text-purple-500" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-text">{analytics.obsolete.length}</p>
+              <p className="text-xs text-muted">Possibly obsolete</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ReorderSuggestions
+        suggestions={analytics.suggestions}
+        adjustedIds={adjustedIds}
+        onAdjust={handleAdjust}
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <CategoryConsumptionChart
+          byCategory={analytics.byCategory}
+          totalMonthlyCost={analytics.totalMonthlyCost}
+        />
+        <TopConsumedList items={analytics.topConsumed} />
+      </div>
+
+      <ObsoleteItems items={analytics.obsolete} />
+    </div>
+  )
+}
+
 export default function InventoryManagement() {
-  const { inventory, restockItem } = useAdminData()
+  const { inventory, restockItem, updateInventory } = useAdminData()
+  const [view, setView] = useState('inventory') // 'inventory' | 'trends'
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [stockFilter, setStockFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [restockModal, setRestockModal] = useState(null)
   const [historyModal, setHistoryModal] = useState(null)
+
+  const handleAdjustMin = (id, minStock) => {
+    updateInventory(id, { minStock })
+  }
 
   // Get low stock items
   const lowStockItems = useMemo(() => {
@@ -580,13 +928,45 @@ export default function InventoryManagement() {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div>
-        <h2 className="text-xl font-bold text-text">Inventory Management</h2>
-        <p className="text-sm text-muted">
-          {filteredInventory.length} items
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-bold text-text">Inventory Management</h2>
+          <p className="text-sm text-muted">
+            {view === 'inventory' ? `${filteredInventory.length} items` : 'Consumption trends & reorder insights'}
+          </p>
+        </div>
+
+        {/* Tab switcher */}
+        <div className="inline-flex bg-bg border border-border rounded-lg p-1 self-start sm:self-auto">
+          <button
+            onClick={() => setView('inventory')}
+            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
+              view === 'inventory'
+                ? 'bg-primary text-primary-contrast'
+                : 'text-muted hover:text-text'
+            }`}
+          >
+            <Package className="w-4 h-4" />
+            Inventory
+          </button>
+          <button
+            onClick={() => setView('trends')}
+            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
+              view === 'trends'
+                ? 'bg-primary text-primary-contrast'
+                : 'text-muted hover:text-text'
+            }`}
+          >
+            <LineChart className="w-4 h-4" />
+            Trends
+          </button>
+        </div>
       </div>
 
+      {view === 'trends' ? (
+        <TrendsView inventory={inventory} onAdjustMin={handleAdjustMin} />
+      ) : (
+      <>
       {/* Stats */}
       <InventoryStats inventory={inventory} />
 
@@ -671,6 +1051,8 @@ export default function InventoryManagement() {
             Try adjusting your search or filters
           </p>
         </motion.div>
+      )}
+      </>
       )}
 
       {/* Modals */}

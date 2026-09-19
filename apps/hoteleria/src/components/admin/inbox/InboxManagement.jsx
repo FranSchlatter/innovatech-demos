@@ -2,17 +2,24 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Bot, Sparkles, MessageCircle, Instagram, Globe, CalendarDays, User,
-  Headset, Send, ChevronDown, Zap
+  Headset, Send, ChevronDown, Zap, ConciergeBell
 } from 'lucide-react'
 import { mockConversations } from '../../../data/admin/mockConversations'
+import {
+  serviceConvId,
+  serviceReplyTemplate,
+  buildServiceConversation
+} from '../../../data/admin/serviceThreads'
 import { useLiveChat } from '../../../hooks/useLiveChat'
+import { useAdmin } from '../../../context/AdminContext'
 
 const CHANNEL = {
   whatsapp: { icon: MessageCircle, label: 'WhatsApp', color: 'text-green-500' },
   instagram: { icon: Instagram, label: 'Instagram', color: 'text-pink-500' },
   web: { icon: Globe, label: 'Web', color: 'text-blue-500' },
   booking: { icon: CalendarDays, label: 'Booking', color: 'text-indigo-500' },
-  portal: { icon: Headset, label: 'Portal · Chat en vivo', color: 'text-accent' }
+  portal: { icon: Headset, label: 'Portal · Chat en vivo', color: 'text-accent' },
+  service: { icon: ConciergeBell, label: 'Solicitud de servicio', color: 'text-amber-500' }
 }
 
 // Staff-side quick replies (H4 templates).
@@ -29,6 +36,8 @@ const TEMPLATES = [
 
 // localStorage key for staff replies appended to the mock conversations (H4).
 const INBOX_KEY = 'hotel-admin-inbox'
+// localStorage key for conversations spawned from a service request (H22).
+const SERVICE_THREADS_KEY = 'hotel-admin-inbox-service-threads'
 const PORTAL_ID = '__portal__'
 
 function loadExtraMessages() {
@@ -37,6 +46,15 @@ function loadExtraMessages() {
     return raw ? JSON.parse(raw) : {}
   } catch {
     return {}
+  }
+}
+
+function loadServiceThreads() {
+  try {
+    const raw = localStorage.getItem(SERVICE_THREADS_KEY)
+    return raw ? JSON.parse(raw) : []
+  } catch {
+    return []
   }
 }
 
@@ -92,7 +110,9 @@ function pendingCount(messages) {
 
 export default function InboxManagement() {
   const liveChat = useLiveChat()
+  const { inboxTarget, consumeInboxTarget } = useAdmin()
   const [extraMessages, setExtraMessages] = useState(loadExtraMessages)
+  const [serviceThreads, setServiceThreads] = useState(loadServiceThreads)
   const [activeId, setActiveId] = useState(mockConversations[0].id)
   const [draft, setDraft] = useState('')
   const [showTemplates, setShowTemplates] = useState(false)
@@ -107,6 +127,15 @@ export default function InboxManagement() {
       // Ignore storage errors.
     }
   }, [extraMessages])
+
+  // Persist conversations spawned from service requests (H22).
+  useEffect(() => {
+    try {
+      localStorage.setItem(SERVICE_THREADS_KEY, JSON.stringify(serviceThreads))
+    } catch {
+      // Ignore storage errors.
+    }
+  }, [serviceThreads])
 
   // Build the portal conversation from the shared live-chat state (H5).
   const portalConversation = useMemo(() => {
@@ -133,14 +162,25 @@ export default function InboxManagement() {
     }
   }, [liveChat.messages, liveChat.guest])
 
-  // Merge appended staff replies onto the mock conversations, portal pinned on top.
+  // Merge appended staff replies onto every conversation. Order: portal (live)
+  // first, then service-request threads (H22), then the mock conversations.
   const conversations = useMemo(() => {
-    const regular = mockConversations.map((c) => ({
+    const withReplies = (c) => ({
       ...c,
       messages: [...c.messages, ...(extraMessages[c.id] || [])]
-    }))
-    return [portalConversation, ...regular]
-  }, [extraMessages, portalConversation])
+    })
+    const service = serviceThreads.map((c) => {
+      const merged = withReplies(c)
+      const last = merged.messages[merged.messages.length - 1]
+      return {
+        ...merged,
+        lastAt: last ? messageTime(last) : 'sin mensajes',
+        unread: pendingCount(merged.messages)
+      }
+    })
+    const regular = mockConversations.map(withReplies)
+    return [portalConversation, ...service, ...regular]
+  }, [extraMessages, serviceThreads, portalConversation])
 
   const active = conversations.find((c) => c.id === activeId) || conversations[0]
 
@@ -150,6 +190,42 @@ export default function InboxManagement() {
       threadRef.current.scrollTop = threadRef.current.scrollHeight
     }
   }, [active?.id, active?.messages.length])
+
+  // H22 — a service request asked to open the Inbox for a guest. Reuse an
+  // existing conversation if the guest already has one, otherwise spin up a
+  // service thread. Then preselect it, pre-fill the reply and focus the input.
+  useEffect(() => {
+    if (!inboxTarget) return
+
+    const existing = mockConversations.find(
+      (c) => c.guest.toLowerCase() === (inboxTarget.guestName || '').toLowerCase()
+    )
+    const targetId = existing ? existing.id : serviceConvId(inboxTarget)
+
+    if (!existing) {
+      setServiceThreads((prev) =>
+        prev.some((c) => c.id === targetId)
+          ? prev
+          : [buildServiceConversation(inboxTarget, Date.now()), ...prev]
+      )
+    }
+
+    setActiveId(targetId)
+    setDraft(serviceReplyTemplate(inboxTarget))
+    setShowTemplates(false)
+    consumeInboxTarget()
+
+    const focusTimer = setTimeout(() => {
+      const el = inputRef.current
+      if (el) {
+        el.focus()
+        // Drop the caret at the end so the greeting reads as a natural prefix.
+        const end = el.value.length
+        el.setSelectionRange(end, end)
+      }
+    }, 80)
+    return () => clearTimeout(focusTimer)
+  }, [inboxTarget, consumeInboxTarget])
 
   const handleSend = () => {
     const text = draft.trim()
@@ -327,6 +403,11 @@ export default function InboxManagement() {
             <div className="rounded-lg p-3 bg-accent/10 border border-accent/20">
               <p className="text-xs font-semibold text-accent flex items-center gap-1.5"><Headset className="w-3.5 h-3.5" /> Chat en vivo</p>
               <p className="text-xs text-muted mt-1">Conectado con el portal del huésped. Lo que escribas acá le llega al instante; si nadie responde en 5 s, la IA envía un aviso automático.</p>
+            </div>
+          ) : active.channel === 'service' ? (
+            <div className="rounded-lg p-3 bg-amber-500/10 border border-amber-500/20">
+              <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1.5"><ConciergeBell className="w-3.5 h-3.5" /> Solicitud de servicio</p>
+              <p className="text-xs text-muted mt-1">Conversación abierta desde el monitor de solicitudes. Escribile al huésped para coordinar; tu respuesta queda registrada en el historial.</p>
             </div>
           ) : active.aiHandled && (
             <div className="rounded-lg p-3 bg-primary/10 border border-primary/20">

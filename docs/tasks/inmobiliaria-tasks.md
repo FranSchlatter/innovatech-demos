@@ -400,93 +400,63 @@ Base creada en I12; I17 la eleva a completa y arregla bugs reales (barras del gr
 **Archivos:** ClientPortal.jsx, nuevo: data/mockOwnerData.js
 **Requiere:** I12 (login multi-rol) hecho primero
 
-- [ ] **mockOwnerData.js**: datos del propietario mock:
-  - 3 propiedades en alquiler: titulo, inquilino, monto, estado cobro, contrato vigente
-  - Liquidaciones: ultimas 3 mensuales por propiedad
-  - Documentos: contratos, habilitaciones, certificados
+- [x] **mockOwnerData.js — modelo derivado del motor del admin (fuente única de verdad)**: las liquidaciones mensuales reusan el MISMO `computePeriod` del admin (cobrado − comisión − gastos = neto, breakdown por propiedad, taxonomía `cobrado/parcial/pendiente/atrasado`) → el propietario ve exactamente los números de la inmobiliaria.
+  - 3 propiedades reales (PROP-005 Herrera, PROP-011 Bianchi, PROP-014 vacante) con renta = precio del listing, gastos como line items (Expensas/ABL/Seguro), comisión 8%, historial 2-3 inquilinos, índice ICL
+  - `OWNER_PERIODS`: 6 meses (Abr→Sep 2026) derivados con escalón trimestral ICL en julio + reparación puntual; Sep actual con Herrera atrasado. `OWNER_COLLECTION` y `OWNER_COLLECTION_HISTORY` derivados de los períodos
+  - Documentos por propiedad con kind/size/fecha/estado; tipos y helpers para el upload; key localStorage propia
+  - Status maps a **fills sólidos** (`bg-success text-white`…) — el alpha sobre colores del theme es no-op en esta app
+- [x] **Tab "Mis propiedades"**: strip de stats (propiedades/alquiladas/neto mensual), card por propiedad con foto, estado (Alquilada/Disponible sólido), inquilino+desde+alquiler+vencimiento, **breakdown de rentabilidad** (alquiler − comisión − gastos = neto; vacante muestra costo de vacancia), "Ver detalle" que expande gastos mensuales + inquilinos anteriores
+- [x] **Tab "Liquidaciones"**: resumen acumulado (cobrado/comisión/gastos/neto de meses liquidados), lista por período con estado Liquidada/Pendiente, neto y nota de pendiente de cobro, **"Ver detalle" → LiquidationDetailModal** estilo PDF con desglose por propiedad (cobrado/gastos/subtotal), totales, disclaimer y descargar PDF (toast)
+- [x] **Tab "Documentos"**: grupos colapsables por propiedad + generales, banner de docs en revisión, dropzone, **upload simulado con progreso (patrón I15)** que persiste en localStorage (llega como "En revisión"), descargar/eliminar por doc
+- [x] **Tab "Estado de cobro"**: barra cobrado/esperado del mes (%), **alerta de morosidad** (borde rojo, lista de atrasados + días de atraso), fila por propiedad con estado sólido y fecha de cobro/vencimiento, **gráfico de 6 meses** (barras cobrado vs esperado, escalón trimestral visible, fills sólidos)
 
-- [ ] **Tab "Mis propiedades"**:
-  - Cards por propiedad con foto, titulo, direccion
-  - Inquilino actual: nombre, desde cuando, monto actual
-  - Estado: Alquilada / Disponible / En refaccion
-  - Proximo vencimiento de contrato
-  - Rentabilidad: monto mensual - gastos = neto (calculo simple)
-  - Click: expande detalle con historial de inquilinos (mock 2-3 anteriores)
-
-- [ ] **Tab "Liquidaciones"**:
-  - Vista similar al admin pero desde perspectiva del propietario
-  - Lista por mes: periodo, total cobrado, comision, gastos, neto a cobrar
-  - Click: detalle con desglose por propiedad
-  - Estado: Liquidada / Pendiente
-  - Boton "Descargar PDF" por liquidacion (simulado)
-  - Resumen anual: total cobrado, total gastos, total neto, comision total
-
-- [ ] **Tab "Documentos"**:
-  - Organizados por propiedad
-  - Tipos: Contrato con inquilino, Titulo propiedad, Habilitacion municipal, Certificado catastral, Poliza seguro
-  - Upload simulado (como I15)
-
-- [ ] **Tab "Estado de cobro"**:
-  - Dashboard de cobros de TODAS las propiedades
-  - Por propiedad: inquilino, monto, estado del mes actual (Cobrado/Pendiente/Atrasado)
-  - Total a cobrar este mes vs cobrado
-  - Morosidad: propiedades con pagos atrasados (highlight rojo)
-  - Grafico: cobros ultimos 6 meses (barras, cobrado vs esperado)
-
-**Criterio de exito:** Portal propietario con 4 tabs. Ve sus propiedades, liquidaciones, estado de cobro. Puede descargar docs. Datos coherentes con admin.
+**Criterio de exito:** Portal propietario con 4 tabs funcionales. Datos coherentes con el admin (mismo motor de liquidación). Descarga de docs + upload persistente. ✅ Build OK (1908 módulos). Verificado en navegador (Playwright + Chrome): 4 tabs en dark/light, detalle de liquidación con breakdown, upload + persistencia tras reload (8→9 docs), morosidad con días de atraso, gráfico con alturas reales, 0 errores de consola.
 
 ---
 
-## I19: Mapa con zonas dibujables + filtros avanzados
+## I19: Mapa con zonas dibujables + filtros avanzados ✅ HECHO (19 sep 2026)
 **Esfuerzo:** Muy Alto (3-4 hrs)
-**Archivos:** PropertiesListPage.jsx (361 lineas), PropertyMap.jsx (60 lineas)
+**Archivos:** PropertiesListPage.jsx (reescrito ~700 lineas), PropertyMap.jsx (reescrito ~320 lineas)
 
-- [ ] **Filtros avanzados** (agregar a los existentes):
-  - Superficie total: rango min/max (slider dual o inputs)
-  - Antiguedad: select (Estrenar/1-5 anos/5-10/10-20/+20)
-  - Cochera: toggle Si/No/Indistinto
-  - Amenities: checklist (Pileta, Seguridad, Parrilla, Gym, SUM, Balcon, Terraza, Lavadero)
-  - Orientacion: select (Norte/Sur/Este/Oeste/Indistinto)
-  - Boton "Limpiar filtros"
-  - Boton "Guardar busqueda como alerta" (crea alerta en portal)
-- [ ] **Mapa mejorado**:
-  - Reemplazar embed actual con mapa CSS/SVG interactivo (mockup de mapa de Santa Fe)
-  - Markers por cada propiedad (color segun operacion: venta=azul, alquiler=verde, temporario=naranja)
-  - Hover en marker: tooltip con titulo, precio, foto mini
-  - Click en marker: scroll a la propiedad en la lista (highlight)
-- [ ] **Dibujar zona de interes** (simulado):
-  - Boton "Dibujar zona" activa modo dibujo
-  - Click en el mapa agrega puntos del poligono (mostrar como dots + lineas SVG)
-  - Al cerrar el poligono (4+ puntos), filtrar propiedades que caen dentro (mock: todas las del barrio mas cercano al area dibujada)
-  - Boton "Limpiar zona"
-- [ ] **Resultado**: propiedades filtradas muestran count en header "X propiedades encontradas"
+- [x] **Filtros avanzados** (sección colapsable "Más filtros" con badge de conteo activo):
+  - Superficie total: inputs min/max (m²) + track visual del rango sobre bounds del dataset (0–1200 m²)
+  - Antiguedad: select (A estrenar / 1-5 / 5-10 / 10-20 / +20) derivado de `yearBuilt` (2026) + condición "A estrenar"
+  - Cochera: select Con/Sin/Indistinto (garage>0)
+  - Amenities: checklist de 8 chips con matching por keywords contra los amenities free-form (Pileta/Piscina, Seguridad/Portería/CCTV, Parrilla/Quincho, Gym, SUM/Club house, Balcón, Terraza/Solárium, Lavadero/Laundry) — AND
+  - Orientacion: select Norte/Sur/Este/Oeste (substring, "Norte" matchea Noreste/Noroeste)
+  - Boton "Limpiar filtros" (resetea también avanzados + zona)
+  - Boton "Guardar como alerta": construye criteria compatible con el schema del portal y lo persiste en `inmob-portal-alerts-v2` (currency='' = cualquiera) → aparece en el portal Interesado > Alertas. Toast de confirmación
+- [x] **Mapa mejorado** (SVG/CSS, sin lib externa):
+  - Markers coloreados por operacion (venta=blue-600, alquiler=emerald-600, temporario=orange-500 — paleta real de Tailwind, el alpha sobre theme es no-op)
+  - Hover en marker: tooltip con foto mini + título + precio + m² + "Ver ficha" (abre detalle)
+  - Click en marker: highlight (border-accent) + scrollIntoView de la fila en la lista (id `maprow-<id>`)
+  - Leyenda con los 3 colores + contador (`pointer-events-none` para no comerse clicks de dibujo)
+- [x] **Dibujar zona de interes** (point-in-polygon REAL, no mock):
+  - "Dibujar zona" activa modo dibujo (cursor crosshair, pines pointer-events-none)
+  - Click en el mapa agrega vértices (dots + polyline SVG punteada); Deshacer / Cancelar / Cerrar zona
+  - Al cerrar (3+ puntos, o click sobre el 1er vértice) filtra por ray-casting sobre (lng,lat) de cada propiedad; polígono relleno persistente
+  - "Limpiar zona" (en el mapa y "quitar" en el header)
+- [x] **Resultado**: count en header "X propiedades encontradas" + indicador "· zona dibujada" cuando aplica
 
-**Criterio de exito:** Filtros avanzados completos. Mapa con markers clickeables. Funcion de dibujar zona (aunque sea simulada). Profesional.
+**Criterio de exito:** Filtros avanzados completos. Mapa con markers clickeables. Dibujo de zona funcional (real point-in-polygon). Profesional. ✅ Build OK (1908 módulos). Verificado en navegador (Playwright + Chrome): amenity 14→5, badge de filtros, guardar-alerta + persistencia, mapa con pines/leyenda/tooltip, dibujo de 4 puntos → filtra a 2, limpiar zona, marker-click→highlight en lista, reset 14, dark mode + mobile responsive, 0 errores de consola.
 
 ---
 
-## I21: MortgageCalculator mejoras
+## I21: MortgageCalculator mejoras ✅ HECHO (19 sep 2026)
 **Esfuerzo:** Medio (1.5-2 hrs)
-**Archivos:** MortgageCalculator.jsx (233 lineas)
+**Archivos:** MortgageCalculator.jsx (reescrito ~760 lineas). Nuevo: data/mockMortgage.js (helpers de finanzas + bancos + UVA + docs)
 
 Investigar e implementar mejoras argentinas:
 
-- [ ] **Comparacion de bancos**: agregar tab/seccion con tabla comparativa
-  - 4-5 bancos mock: Nacion, Provincia, Santander, BBVA, Galicia
-  - Por banco: tasa nominal, tasa efectiva, requisitos resumidos, tipo credito (UVA/tradicional)
-  - Resultado: cuota estimada por banco para el monto ingresado
-- [ ] **Toggle UVA vs Tradicional**:
-  - UVA: cuota se calcula con valor UVA actual (mock), mostrar evolucion historica (grafico simple)
-  - Tradicional: tasa fija, cuota fija
-  - Comparativa visual: total a pagar UVA vs tradicional (con supuesto de inflacion configurable)
-- [ ] **Cuadro de amortizacion**: tabla desplegable con primeros 12 meses: mes, cuota, capital, interes, saldo
-- [ ] **Requisitos generales**: seccion informativa
-  - Ingreso minimo requerido (cuota < 25% ingreso)
-  - Input "Mi ingreso mensual" → "Podes acceder a credito de hasta $X"
-  - Documentacion requerida (listado informativo)
-- [ ] **Mejoras visuales**: grafico dona/pie capital vs interes, animacion de numeros
+- [x] **Comparacion de bancos** (tab "Comparar bancos"): tabla (desktop) + cards (mobile) con 6 bancos UVA reales (Nación/Provincia/Ciudad/Hipotecario/Santander/Galicia). Por banco: TNA, TEA (derivada), % que financia (LTV), plazo máx, requisitos resumidos + highlight. Cuota estimada calculada para el crédito actual, ordenada asc con badge "Mejor cuota"; si el plazo elegido supera el máx del banco se recalcula y avisa
+- [x] **UVA vs Tradicional** (tab "UVA vs. fija"): slider de inflación (10–60%). En vez de comparar totales nominales (que bajo alta inflación disparan la UVA a números alarmantes y engañosos), se reencuadró en la historia REAL del mercado argentino: (1) cuota inicial UVA vs fija + **ingreso necesario** para cada una (accesibilidad = el driver real), (2) callout de **año de cruce** donde la cuota UVA iguala a la fija, (3) gráfico **"cuota en pesos de hoy"** (UVA plana, fija que se licúa, con cruce visible), (4) **costo total en pesos de hoy** (valor presente descontado por inflación) con nota honesta nominal-vs-real, (5) **gráfico de evolución histórica de la UVA** (12 meses + interanual). Valor UVA mock derivado
+- [x] **Cuadro de amortizacion** (tab "Amortización"): sistema francés, tabla mes/cuota/capital/interés/saldo (primeros 12 meses) + toggle **vista anual** (resumen por año, saldo llega a 0 en el último). Cálculo verificado (interés mes 1 = capital×TNA/12)
+- [x] **Capacidad de crédito** (tab "¿Cuánto puedo pedir?"): input ingreso mensual + selector relación cuota-ingreso (25%/30%) → "podés acceder a hasta $X" (inversa de la fórmula francesa), ingreso mínimo para el crédito actual, badge Calificás/Ingreso insuficiente + barra cuota/ingreso (verde/rojo)
+- [x] **Requisitos** (tab "Requisitos"): documentación agrupada (personales / ingresos / propiedad / crédito) con checklist informativo + nota de tasación
+- [x] **Mejoras visuales**: **donut SVG** capital vs interés (arco dorado animado) en el panel de resultado, **AnimatedNumber** (count-up con framer-motion `animate`+`useMotionValue`) en cuota y filas, TEA equivalente en vivo bajo la tasa
+- [x] **Gotcha aplicado:** las decoraciones del panel `bg-primary` (que en el modo oscuro de la app invierte a claro) usaban `white/alpha` → se lavaban. Reemplazadas por `currentColor` + `color-mix`/`strokeOpacity` para que el track del donut, la barra de interés y los divisores se vean en ambos temas. Charts dentro de tabs usan `animate` (no `whileInView`, que no dispara al cambiar de tab con el contenido ya en viewport)
 
-**Criterio de exito:** Comparacion entre bancos. Toggle UVA vs tradicional. Cuadro amortizacion. Informacion de requisitos. Mas util para el usuario.
+**Criterio de exito:** Comparacion entre bancos. UVA vs tradicional (honesto, no engañoso). Cuadro amortizacion. Requisitos + capacidad de crédito. ✅ Build OK (1909 módulos). Verificado en navegador (Playwright + Chrome): 5 tabs en dark/light, cálculos de amortización correctos (saldo→0), capacidad con calificación, cambio de moneda USD/ARS coherente, donut + números animados, 0 errores de consola.
 
 ---
 
@@ -494,29 +464,14 @@ Investigar e implementar mejoras argentinas:
 **Esfuerzo:** Alto (2-3 hrs)
 **Archivos:** Nuevo: components/PropertyValuation.jsx, o nueva pagina
 
-- [ ] **Formulario de tasacion**:
-  - Ubicacion: barrio (dropdown), direccion (input)
-  - Tipo: departamento/casa/PH/local/terreno
-  - Superficie total y cubierta (inputs m2)
-  - Antiguedad (select o input anos)
-  - Estado: excelente/bueno/regular/a refaccionar
-  - Dormitorios, banos, cochera, amenities
-  - Boton "Tasar propiedad"
-- [ ] **Resultado de tasacion**:
-  - Precio estimado: rango (min-max) con valor central destacado
-  - Precio por m2 calculado
-  - Confianza de la estimacion (Alta/Media/Baja badge)
-  - Calculo: usar promedio de propiedades similares en properties.json (filtrar por barrio + tipo + rango superficie ±20%)
-- [ ] **Comparables** (seccion abajo del resultado):
-  - 3-5 propiedades similares de properties.json
-  - Por cada una: titulo, direccion, precio, superficie, precio/m2
-  - "Basado en X propiedades similares en la zona"
-- [ ] **Generar PDF** (simulado):
-  - Preview estilo informe profesional: logo, datos propiedad, estimacion, comparables, disclaimer
-  - Boton "Descargar informe" (toast "PDF generado")
-- [ ] Accesible desde navbar o como seccion en la landing
+- [x] **Formulario de tasacion**: barrio (dropdown neighborhoods.json), direccion, tipo (departamento/casa/PH/oficina/local/terreno), superficie total + cubierta, antiguedad, estado (6 niveles A estrenar→A refaccionar), dormitorios/banos/cocheras, amenities (chips multi-select). Campos condicionales por tipo (terreno oculta cubierta/estado/ambientes; no-residencial oculta dormitorios). Validacion + boton "Tasar propiedad" con spinner (delay 700ms)
+- [x] **Resultado de tasacion**: valor central animado (count-up) + rango min-max con barra, precio/m2, badge de confianza Alta/Media/Baja + nota, blend datos-comparables vs modelo-de-zona. Panel `bg-primary` con gotcha de dark-mode resuelto (primary-contrast + color-mix, no `text-gold`)
+- [x] **Motor de tasacion** (`data/mockValuation.js`, funciones puras): modelo hedonico (base $/m² por barrio × tipo × estado × antiguedad × amenities × cochera) blendeado con valor de comparables ponderado por similaridad. Solo comparables SALE en USD (rent es ARS mensual, otra escala). Confianza derivada de comparables fuertes (mismo barrio+tipo). Verificado vs datos reales: Palermo 187k (real 189k), Villa Crespo 75k (real 74.5k), terreno S.Barbara 103k (real 98k)
+- [x] **Comparables**: grid de cards (hasta 5) con foto, titulo, direccion, precio, superficie, $/m², % match y tags mismo-barrio/mismo-tipo; "Basado en X propiedades similares en la zona"
+- [x] **Generar PDF** (simulado): modal con informe profesional (membrete Terranova + logo, N° ref deterministico, fecha, ficha de la propiedad, estimacion + rango + confianza, tabla de comparables, disclaimer). Boton "Descargar informe" → toast "Informe PDF generado"
+- [x] Accesible desde navbar ("Tasador", icono Gauge) y como seccion `#valuation` en la landing (bg-surface-alt)
 
-**Criterio de exito:** Formulario de tasacion → estimacion con comparables → preview PDF. Calculo basado en datos reales del mock.
+**Criterio de exito:** Formulario de tasacion → estimacion con comparables → preview PDF. Calculo basado en datos reales del mock. ✅ Build OK (1911 modulos). Motor verificado contra los 8 sale listings reales; dev server transforma los 2 modulos nuevos sin errores. Dark/light contemplado (panel primary invertido).
 
 ---
 

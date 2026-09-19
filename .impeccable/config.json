@@ -11,6 +11,24 @@
         ],
         "createdAt": "2026-09-12T14:48:12.404Z",
         "reason": "intentional gold/silver/bronze medal badges in Top-3 ranking: dark -800/-950 text on light medal colors, high contrast and readable"
+      },
+      {
+        "rule": "gradient-text",
+        "value": "*",
+        "files": [
+          "apps/hoteleria/src/components/HeroCarousel.jsx"
+        ],
+        "createdAt": "2026-09-19T14:37:05.052Z",
+        "reason": "pre-existing hero heading gradient; H19 scope says keep current texts/CTAs unchanged, task is video background only"
+      },
+      {
+        "rule": "ai-color-palette",
+        "value": "*",
+        "files": [
+          "apps/hoteleria/src/components/admin/services/ServiceRequestsMonitor.jsx"
+        ],
+        "createdAt": "2026-09-19T16:59:49.490Z",
+        "reason": "pre-existing semantic status palette (pending=amber/assigned=blue/in-progress=purple/completed=green/urgent=red), consistent across StatsBar + serviceTypeColors; not introduced by H22"
       }
     ]
   }

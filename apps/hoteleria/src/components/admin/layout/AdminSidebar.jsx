@@ -13,7 +13,8 @@ import {
   Compass,
   CalendarRange,
   CalendarDays,
-  Megaphone
+  Megaphone,
+  Users
 } from 'lucide-react'
 import { useAdmin } from '../../../context/AdminContext'
 
@@ -28,7 +29,8 @@ const navItems = [
   { id: 'services', label: 'Service Requests', icon: Bell },
   { id: 'excursions', label: 'Excursiones', icon: Compass },
   { id: 'events', label: 'Actividades', icon: CalendarDays },
-  { id: 'news', label: 'Noticias y avisos', icon: Megaphone }
+  { id: 'news', label: 'Noticias y avisos', icon: Megaphone },
+  { id: 'users', label: 'Usuarios y roles', icon: Users }
 ]
 
 export default function AdminSidebar({ onExit, isDark }) {
@@ -43,7 +45,7 @@ export default function AdminSidebar({ onExit, isDark }) {
             <Hotel className="w-6 h-6 text-primary-contrast" />
           </div>
           <div>
-            <h1 className="font-bold text-text">Hotel Luxury</h1>
+            <h1 className="font-bold text-text">Villa Serena</h1>
             <p className="text-xs text-muted">Admin Panel</p>
           </div>
         </div>

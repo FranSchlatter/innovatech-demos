@@ -43,6 +43,7 @@ export default function LoginScreen({ onLogin }) {
             <div className="w-16 h-16 bg-accent/15 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <User className="w-8 h-8 text-accent" />
             </div>
+            <p className="text-xs font-semibold tracking-[0.2em] uppercase text-accent mb-1">Villa Serena</p>
             <h1 className="text-2xl font-bold mb-1">Guest Portal</h1>
             <p className="text-sm text-muted">Sign in to manage your stay</p>
           </div>

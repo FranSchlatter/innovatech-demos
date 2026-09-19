@@ -399,76 +399,122 @@ fecha+hora). Usa el modelo compartido `data/recurrence.js` (mismo que eventos H1
 
 ---
 
-## H18: Usuarios y roles (admin)
+## H18: Usuarios y roles (admin) ✅
 **Esfuerzo:** Muy Alto (3-4 hrs)
-**Archivos:** Nuevo: admin/users/UserManagement.jsx, data/mockUsers.js, contexto de rol
+**Archivos:** Nuevo: admin/users/UserManagement.jsx, data/mockUsers.js, hooks/useUsers.js
 
-- [ ] mockUsers.js: 8-10 usuarios mock con: id, name, email, role (admin/front-desk/housekeeping/maintenance/f&b/concierge), avatar, status (active/inactive), lastLogin, permissions[]
-- [ ] UserManagement.jsx:
-  - Tabla de usuarios con avatar, nombre, email, rol (badge color), estado, ultimo login
-  - Boton "Agregar usuario": modal con nombre, email, rol (dropdown), permisos (checklist)
-  - Click en usuario: modal detalle con edicion de rol y permisos
-  - Toggle activar/desactivar usuario
-  - Filtro por rol
-- [ ] Vista por rol: panel informativo que muestra "Que ve cada rol"
-  - Admin: ve todo
-  - Front-desk: Dashboard, Rooms, Calendario, Services
-  - Housekeeping: solo Housekeeping + Dashboard limitado
-  - Maintenance: solo Service Requests tipo maintenance
-  - F&B: solo orders de restaurante (cuando exista)
-- [ ] Agregar a sidebar con icono Users
-- [ ] Persistir en localStorage
+- [x] mockUsers.js: 9 usuarios mock (id, name, email, role, avatar, status active/inactive, lastLogin, permissions[]). Config `ROLES` (6: admin/front-desk/housekeeping/maintenance/fnb/concierge) con label/icon/color (paleta estándar Tailwind)/descripción/`defaultAreas`, y `AREAS` (los 12 módulos del sidebar). Helpers `getRole`, `getDefaultAreas`, `initials`, `timeAgo`, `isValidEmail`. `lastLogin` relativo a load
+- [x] useUsers.js: hook CRUD con persistencia localStorage (key `hotel-users`) + sync custom/storage events (patrón useNews). addUser/updateUser/deleteUser/toggleUserStatus/resetUsers
+- [x] UserManagement.jsx (tabs Usuarios / Permisos por rol):
+  - Tabla responsive (real `<table>` en md+, cards en mobile): avatar con iniciales+color por rol, nombre, email, badge de rol, nº de módulos, estado, último acceso relativo, acciones
+  - KPIs (usuarios/activos/inactivos/roles) + filtros: búsqueda por nombre/email, pills por rol, pills por estado
+  - Modal "Agregar usuario" / editar (reusado): nombre, email (validación + email duplicado), rol (pills, al elegir carga preset de módulos), permisos (checklist de 12 módulos con Todos/Ninguno/Preset), toggle de estado en edición
+  - Click en fila abre editar; toggle activar/desactivar; eliminar con diálogo de confirmación
+  - Guard: no se puede eliminar ni desactivar al único admin activo (evita auto-lockout)
+- [x] Vista "Permisos por rol": matriz rol×módulo con checks + cards por rol (descripción, módulos accesibles como chips, nº de usuarios)
+- [x] Agregado a sidebar (icono Users) + case en AdminLayout + viewTitle en AdminHeader
+- [x] Persistencia en localStorage
 
-**Criterio de exito:** CRUD de usuarios funcional. Vista clara de permisos por rol.
+**Detalle técnico:** los roles son plantillas — al crear un usuario se precargan los `defaultAreas`
+del rol y después se editan por persona (el checklist de permisos es independiente del rol). El
+"acceso por rol" documentado se modela como `defaultAreas` y se muestra tanto en la matriz como en
+las cards. Gotcha respetado: los colores de rol/estado usan la **paleta estándar de Tailwind**
+(violet/blue/emerald/amber/rose/cyan con /alpha, que sí soporta alpha), NO los tokens del theme
+(`bg-primary/10` sería no-op silencioso); las superficies del theme usan fills sólidos
+(`bg-surface`/`bg-bg`/`bg-primary`) y `hover:opacity-90`. Se evitó `bg-surface-alt` (no existe en
+hotelería). Validado: build OK (1911 módulos), dev boot OK (HTTP 200), test de helpers PASS
+(initials/email/timeAgo, 10/10).
+
+**Criterio de exito:** CRUD de usuarios funcional. Vista clara de permisos por rol. ✅
 
 ---
 
-## H19: Hero con video de fondo
+## H19: Hero con video de fondo ✅
 **Esfuerzo:** Bajo-Medio (1 hr)
 **Archivos:** HeroCarousel.jsx
 
-- [ ] Reemplazar carrusel de imagenes con video de fondo
-- [ ] Video: usar un stock video de hotel/resort de Pexels (URL directa al .mp4)
-- [ ] Video autoplay, muted, loop, object-fit cover
-- [ ] Mantener overlay gradiente para legibilidad del texto
-- [ ] Mantener los CTAs y textos actuales
-- [ ] Fallback: si video no carga, mostrar imagen estatica
-- [ ] Mobile: considerar poster image en vez de video (performance)
-- [ ] Opcional: mantener opcion de volver al carrusel con un toggle
+- [x] Reemplazar imagen de fondo con video de fondo
+- [x] Video: stock de Pexels "Aerial View Of Beautiful Resort" (Tom Fisk, id 2169880) — URL directa al .mp4 verificada (sin hotlink protection, carga desde cualquier origen)
+- [x] Video autoplay, muted, loop, playsInline, object-cover
+- [x] Mantener overlay gradiente (doble: horizontal + vertical) para legibilidad del texto
+- [x] Mantener los CTAs y textos actuales (badge, heading, subtitle, features, floating stats, scroll)
+- [x] Fallback real: `onError` en el video → cae a la imagen estatica (poster). Verificado bloqueando el CDN
+- [x] Mobile (`max-width:767px`): no carga el video, muestra poster (performance)
+- [x] `prefers-reduced-motion`: respeta y hace default a imagen
+- [x] Toggle Video/Foto (esquina inferior derecha, con icono + aria-label) persistido en localStorage (`hotel-hero-mode`)
 
-**Criterio de exito:** Hero con video de fondo fluido. Texto legible. Fallback funcional.
+**Detalle técnico:** el poster (misma imagen Unsplash de antes) se renderiza SIEMPRE debajo del
+video, así nunca hay frame vacío mientras bufferea, en mobile, en reduced-motion o en error. El
+video se monta solo en desktop sin reduced-motion y hace fade-in (`opacity` + `transition`) recién
+al `onCanPlay`. Escala de calidad por viewport via `matchMedia` (1080p en ≥1280px, 720p en 768–1279px)
+para no mandar 1080p a una tablet. Autoplay muteado con `play().catch()` → si el navegador lo rechaza,
+cae al poster en vez de quedar congelado. El toggle deja re-intentar el video tras un error. Se
+mantiene el parallax de scale-in (Framer Motion) sobre el contenedor de media. Gotcha evitado:
+`fetchPriority` NO existe en React 18.3 (soporte real desde React 19) → dispara warning de consola;
+se quitó (el poster ya usa `loading="eager"`). Validado en browser real (playwright-core + Chrome del
+sistema): video autoplaying/loop/muted con `currentTime` avanzando, texto legible sobre el gradiente,
+toggle → foto persiste tras reload, mobile sin video (solo poster), fallback con CDN bloqueado
+muestra poster, **consola sin errores**. Build OK (1911 módulos).
+
+**Criterio de exito:** Hero con video de fondo fluido. Texto legible. Fallback funcional. ✅
 
 ---
 
-## H20: Nombre real + branding
+## H20: Nombre real + branding ✅
 **Esfuerzo:** Bajo (30 min)
-**Archivos:** index.html, App.jsx, AdminSidebar.jsx, HeroCarousel.jsx, HotelContactSection.jsx, GuestPortal.jsx
+**Archivos:** index.html, App.jsx, AdminSidebar.jsx, LoginScreen.jsx, BookingForm.jsx, HotelAbout.jsx, HotelContactSection.jsx, GuestPortal.jsx, mockUsers.js, mockStaff.js, UserManagement.jsx, shared-ui/Footer.jsx
 
-- [ ] Elegir nombre de hotel real (sugerir opciones al owner)
-- [ ] Reemplazar "Hotel Luxury" / "Hotel Admin" en todos los archivos
-- [ ] Actualizar title en index.html
-- [ ] Actualizar textos en hero, about, contact, portal, admin sidebar
-- [ ] Verificar que no quede ningun "Hotel Luxury" hardcodeado
+- [x] Nombre elegido por el owner: **Villa Serena** (encaja con el estilo "Editorial Riviera" costero)
+- [x] Reemplazar "Hotel Luxury" en todos los archivos visibles
+- [x] Actualizar title + meta description en index.html ("Villa Serena · Hotel Boutique & Spa")
+- [x] Actualizar textos: hero (navbar brand), about (intro con nombre), contact (email), portal (login + WiFi), admin sidebar
+- [x] Emails `@hotelluxury.com` → `@villaserena.com` (9 users + 8 staff + contacto + concierge + placeholder)
+- [x] WiFi `Hotel_Luxury_Guest` → `VillaSerena_Guest`
+- [x] Verificado: `grep` sin "Hotel Luxury"/"hotelluxury" en `src/`
 
-**Criterio de exito:** Nombre consistente en toda la app. Ningun "Hotel Luxury" restante.
+**Detalle técnico:** el `<Footer>` de `shared-ui` **hardcodeaba** "Hotel Luxury" en el copyright
+(bug: se veía en TODAS las apps incluida inmobiliaria) → ahora usa el prop `{brand}` que cada app
+ya le pasa. En `LoginScreen` se agregó el nombre del hotel como eyebrow (uppercase tracking) sobre
+"Guest Portal". **NO** se cambiaron las storage keys internas `hotel-luxury-guest-checkin/requests`
+(no son visibles y renombrarlas descartaría la persistencia ya guardada). "luxury" como adjetivo
+descriptivo (Luxury Bathroom, timeless luxury, etc.) se dejó — es copy de posicionamiento, no marca.
+Build OK (1911 módulos).
+
+**Criterio de exito:** Nombre consistente en toda la app. Ningun "Hotel Luxury" restante. ✅
 
 ---
 
-## H21: Inventory — Mas metricas
+## H21: Inventory — Mas metricas ✅
 **Esfuerzo:** Medio (1.5 hrs)
-**Archivos:** InventoryManagement.jsx
+**Archivos:** InventoryManagement.jsx, mockInventory.js
 
-- [ ] Nueva seccion: "Tendencias" con:
-  - Grafico de consumo por categoria (Linens/Amenities/Minibar/Cleaning) — barras o dona CSS
-  - Top 5 items mas consumidos (por restocks)
-  - Costo total por categoria por mes (calculado)
-  - Items que nunca se restockearon (posibles obsoletos)
-- [ ] Alertas de reposicion automatica:
-  - Si un item llego a minStock 3+ veces en el ultimo mes, sugerir aumentar minStock
-  - Card de sugerencia con boton "Ajustar minimo"
-- [ ] Agregar columna "Consumo mensual" a las cards existentes
+- [x] Tab switcher Inventory / **Trends** (patrón de otros módulos)
+- [x] Nueva seccion "Trends" con:
+  - Gráfico de consumo por categoría (barras horizontales con color + costo + share %)
+  - Top 5 items más consumidos (por volumen 90d, con medallas oro/plata/bronce)
+  - Costo total por categoría por mes (calculado) + KPI de gasto mensual total
+  - Items que nunca se restockearon (posibles obsoletos) + capital inmovilizado
+- [x] Alertas de reposición automática:
+  - Si un item llegó a minStock 3+ veces en el último mes → sugerir aumentar minStock
+  - Card de sugerencia con botón "Set min N" → aplica `updateInventory` (persiste) y marca "Adjusted"
+- [x] Columna "Consumo mensual" (`~N u/mo`) en las cards existentes (obsoletos muestran "No usage")
 
-**Criterio de exito:** Seccion de tendencias con datos calculados. Sugerencias de ajuste de stock.
+**Detalle técnico:** las métricas se derivan de un modelo **determinístico seedeado por el `id`**
+del ítem (`getItemConsumption` / `getInventoryAnalytics` en `mockInventory.js`, PRNG `mulberry32`
++ hash FNV, mismo patrón que H10/H17). **Correctitud clave:** `useAdminData` persiste `inventory`
+en localStorage, así que las métricas NO dependen del stock mutable — solo de la identidad estática
+(id/categoría/min/max/costo), inmune a saves viejos. `CATEGORY_DEMAND` da turnover por categoría
+(minibar rápido, linens lento); las low-stock hits ≈ refills/mes. La sugerencia gatea con
+`lowStockHits30>=3 && minStock < recommendedMin` (recommendedMin ≈ ½ mes de demanda, capado a max-1),
+así aplicarla sube el minStock y la sugerencia desaparece de forma estable/persistente. Se agregaron
+2 ítems legacy (Cigarette Packs, Guest Sewing Kits, `restockHistory: []`) para poblar "obsoletos".
+Fix de correctitud extra: `InventoryCard` pasó a `forwardRef` para que el `AnimatePresence
+mode="popLayout"` le pase el ref (eliminó un warning de consola preexistente).
+Validado: test de lógica (determinismo, 3 sugerencias, 2 obsoletos, top5, categorías positivas) PASS;
+build OK (1911 módulos); **browser real (Chrome/playwright): las 5 secciones renderizan, chip de
+consumo visible, "Set min" → "Adjusted" persiste, consola SIN errores**.
+
+**Criterio de exito:** Seccion de tendencias con datos calculados. Sugerencias de ajuste de stock. ✅
 
 ---
 
@@ -476,13 +522,30 @@ fecha+hora). Usa el modelo compartido `data/recurrence.js` (mismo que eventos H1
 **Esfuerzo:** Bajo-Medio (1 hr)
 **Archivos:** ServiceRequestsMonitor.jsx, InboxManagement.jsx
 
-- [ ] En cada RequestCard, agregar boton "Escribir al huesped" (icono MessageSquare)
-- [ ] Al click: navegar a Bandeja IA con la conversacion de este huesped preseleccionada
-- [ ] Si no existe conversacion para este huesped, crear una nueva automaticamente
-- [ ] El input de texto (de H4) se focus automaticamente
-- [ ] Pre-fill del input con template relevante: "Hola [nombre], respecto a su solicitud de [tipo servicio]..."
+- [x] En cada RequestCard, agregar boton "Escribir al huesped" (icono MessageSquare)
+- [x] Al click: navegar a Bandeja IA con la conversacion de este huesped preseleccionada
+- [x] Si no existe conversacion para este huesped, crear una nueva automaticamente
+- [x] El input de texto (de H4) se focus automaticamente
+- [x] Pre-fill del input con template relevante: "Hola [nombre], respecto a su solicitud de [tipo servicio]..."
 
-**Criterio de exito:** Boton en cada request que lleva directo a la conversacion del huesped en Bandeja IA.
+**Implementacion:** El handoff entre vistas viaja por `AdminContext` con un `inboxTarget`
+(`openInboxWithTarget` fija target + `currentView='inbox'`; `consumeInboxTarget` lo limpia).
+`ServiceRequestsMonitor` pone el boton en TODA RequestCard (tambien completadas) y despacha el
+target `{requestId, guestName, roomNumber, type, description, nonce}` (el `nonce` garantiza objeto
+fresco → reclicks re-disparan). `InboxManagement` consume el target en un effect: busca conversacion
+existente por nombre de huesped y, si no hay (los guests de las SR no coinciden con los de
+mockConversations), crea un hilo sintetico con canal nuevo `service` (icono ConciergeBell), seedeado
+con el pedido como mensaje `guest` (da contexto + badge de no-leido via `pendingCount`). Luego
+preselecciona el hilo, pre-llena el template (`Hola <nombre>, respecto a su solicitud de <tipo>, `),
+cierra templates y focus con caret al final. Helpers puros extraidos a `data/admin/serviceThreads.js`
+(`serviceConvId` da id estable `SVC-<room>-<slug>` → mismo huesped+hab reusa hilo, nunca duplica).
+Persistencia: hilos sinteticos en `hotel-admin-inbox-service-threads`; las respuestas reusan el
+mecanismo de H4 (`extraMessages` keyed por conv.id) bajo `hotel-admin-inbox`.
+Validado: **test de logica 18/18 PASS** (`scripts/test-service-threads.mjs`: id estable/slug,
+dedup find-or-create, match de conv existente, shape del seed, template); **build OK (1912 modulos)**;
+dev server transforma los 4 modulos tocados con 200 (sin errores de transform).
+
+**Criterio de exito:** Boton en cada request que lleva directo a la conversacion del huesped en Bandeja IA. ✅
 
 ---
 

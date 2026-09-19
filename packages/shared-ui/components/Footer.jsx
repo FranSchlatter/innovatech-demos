@@ -66,7 +66,7 @@ export default function Footer({ brand = 'InnovaTech', currentYear = new Date().
         </div>
 
         <div className="border-t border-border pt-8 text-center text-muted text-sm">
-          <p>© {currentYear} Hotel Luxury. Made with <Heart className="w-4 h-4 inline text-accent" /> by innovatech.</p>
+          <p>© {currentYear} {brand}. Made with <Heart className="w-4 h-4 inline text-accent" /> by innovatech.</p>
         </div>
       </div>
     </footer>

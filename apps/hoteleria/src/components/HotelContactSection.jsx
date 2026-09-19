@@ -35,8 +35,8 @@ export default function HotelContactSection() {
     {
       icon: Mail,
       label: 'Email Us',
-      value: 'reservations@hotelluxury.com',
-      href: 'mailto:reservations@hotelluxury.com',
+      value: 'reservations@villaserena.com',
+      href: 'mailto:reservations@villaserena.com',
       description: 'Quick Response'
     },
     {

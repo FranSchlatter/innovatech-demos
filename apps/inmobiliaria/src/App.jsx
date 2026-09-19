@@ -9,6 +9,7 @@ import AboutSection from './components/AboutSection'
 import FeaturedProperties from './components/FeaturedProperties'
 import ServicesSection from './components/ServicesSection'
 import MortgageCalculator from './components/MortgageCalculator'
+import PropertyValuation from './components/PropertyValuation'
 import WhyChooseUs from './components/WhyChooseUs'
 import AgentsSection from './components/AgentsSection'
 import TestimonialsSection from './components/TestimonialsSection'
@@ -19,7 +20,7 @@ import ScheduleVisitForm from './pages/ScheduleVisitForm'
 import AdminLayout from './components/admin/layout/AdminLayout'
 import ClientPortal from './components/ClientPortal'
 import GuidedTour from '@shared-ui/components/GuidedTour'
-import { Compass } from 'lucide-react'
+import { Compass, Gauge } from 'lucide-react'
 import './styles.css'
 
 const BRAND = 'Terranova'
@@ -70,6 +71,7 @@ export default function App() {
     { name: 'Propiedades', href: '#properties', onClick: () => goToListings() },
     { name: 'Servicios', href: '#services', onClick: () => handleNavClick('services') },
     { name: 'Calculadora', href: '#calculator', onClick: () => handleNavClick('calculator') },
+    { name: 'Tasador', href: '#valuation', onClick: () => handleNavClick('valuation'), icon: Gauge },
     { name: 'Contacto', href: '#contact', onClick: () => handleNavClick('contact') },
     { name: 'Recorrido', href: '#tour', onClick: startTour, icon: Compass },
     { name: 'Mi Portal', href: '#portal', onClick: () => setViewMode('client-portal'), icon: User },
@@ -184,6 +186,10 @@ export default function App() {
 
       <section id="calculator">
         <MortgageCalculator />
+      </section>
+
+      <section id="valuation" className="bg-surface-alt">
+        <PropertyValuation />
       </section>
 
       <section id="agents">

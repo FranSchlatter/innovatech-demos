@@ -12,6 +12,7 @@ import ServiceRequestsMonitor from '../services/ServiceRequestsMonitor'
 import ExcursionsManagement from '../excursions/ExcursionsManagement'
 import EventsManagement from '../events/EventsManagement'
 import NewsManagement from '../news/NewsManagement'
+import UserManagement from '../users/UserManagement'
 import { useAdmin } from '../../../context/AdminContext'
 
 function AdminContent({ isDark, toggleTheme, onExit }) {
@@ -41,6 +42,8 @@ function AdminContent({ isDark, toggleTheme, onExit }) {
         return <EventsManagement />
       case 'news':
         return <NewsManagement />
+      case 'users':
+        return <UserManagement />
       default:
         return <AdminDashboard />
     }

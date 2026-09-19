@@ -22,8 +22,8 @@ export default function HotelAbout() {
             A Sanctuary of Elegance & Tranquility
           </h1>
           <p className="text-lg text-muted leading-relaxed">
-            Nestled in the heart of the city, our hotel embodies timeless luxury and contemporary 
-            comfort. Every detail has been carefully curated to create an unforgettable experience 
+            Nestled steps from the ocean, Villa Serena embodies timeless luxury and contemporary
+            comfort. Every detail has been carefully curated to create an unforgettable experience
             for our distinguished guests.
           </p>
         </motion.div>
@@ -41,7 +41,7 @@ export default function HotelAbout() {
             >
               <img
                 src={images[0]}
-                alt="Hotel luxury"
+                alt="Villa Serena"
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
               />
             </motion.div>

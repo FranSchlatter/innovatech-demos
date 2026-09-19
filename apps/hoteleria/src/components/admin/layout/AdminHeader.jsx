@@ -12,7 +12,8 @@ const viewTitles = {
   services: 'Service Requests',
   excursions: 'Excursiones',
   events: 'Actividades y eventos',
-  news: 'Noticias y avisos'
+  news: 'Noticias y avisos',
+  users: 'Usuarios y roles'
 }
 
 export default function AdminHeader({ isDark, toggleTheme }) {

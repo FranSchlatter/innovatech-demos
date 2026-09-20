@@ -1,9 +1,12 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { User, Lock, Mail, Loader2, ArrowRight, ShieldCheck } from 'lucide-react'
+import { useTranslation } from '../i18n/LanguageProvider'
+import LanguageSwitch from './LanguageSwitch'
 
 // Simulated login for the guest portal demo. Any credentials are accepted.
 export default function LoginScreen({ onLogin }) {
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -31,6 +34,11 @@ export default function LoginScreen({ onLogin }) {
         <div className="absolute inset-0 bg-bg/85 backdrop-blur-sm" />
       </div>
 
+      {/* Language switch (available before login) */}
+      <div className="absolute top-4 right-4 z-10">
+        <LanguageSwitch />
+      </div>
+
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
@@ -43,15 +51,15 @@ export default function LoginScreen({ onLogin }) {
             <div className="w-16 h-16 bg-accent/15 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <User className="w-8 h-8 text-accent" />
             </div>
-            <p className="text-xs font-semibold tracking-[0.2em] uppercase text-accent mb-1">Villa Serena</p>
-            <h1 className="text-2xl font-bold mb-1">Guest Portal</h1>
-            <p className="text-sm text-muted">Sign in to manage your stay</p>
+            <p className="text-xs font-semibold tracking-[0.2em] uppercase text-accent mb-1">{t('portal.login.brand')}</p>
+            <h1 className="text-2xl font-bold mb-1">{t('portal.login.title')}</h1>
+            <p className="text-sm text-muted">{t('portal.login.subtitle')}</p>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="px-8 pb-8 space-y-4">
             <div>
-              <label className="text-sm text-muted mb-2 block">Email</label>
+              <label className="text-sm text-muted mb-2 block">{t('portal.login.emailLabel')}</label>
               <div className="relative">
                 <Mail className="w-5 h-5 text-muted absolute left-4 top-1/2 -translate-y-1/2" />
                 <input
@@ -59,14 +67,14 @@ export default function LoginScreen({ onLogin }) {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@email.com"
+                  placeholder={t('portal.login.emailPlaceholder')}
                   className="w-full pl-12 pr-4 py-3 bg-bg rounded-xl border-2 border-border focus:border-accent outline-none transition"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-sm text-muted mb-2 block">Password</label>
+              <label className="text-sm text-muted mb-2 block">{t('portal.login.passwordLabel')}</label>
               <div className="relative">
                 <Lock className="w-5 h-5 text-muted absolute left-4 top-1/2 -translate-y-1/2" />
                 <input
@@ -88,11 +96,11 @@ export default function LoginScreen({ onLogin }) {
               {isLoading ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Signing in...
+                  {t('portal.login.signingIn')}
                 </>
               ) : (
                 <>
-                  Sign In
+                  {t('portal.login.signIn')}
                   <ArrowRight className="w-5 h-5" />
                 </>
               )}
@@ -101,7 +109,7 @@ export default function LoginScreen({ onLogin }) {
             {/* Divider */}
             <div className="flex items-center gap-3 py-1">
               <div className="flex-1 h-px bg-border" />
-              <span className="text-xs text-muted">or continue with</span>
+              <span className="text-xs text-muted">{t('portal.login.orContinue')}</span>
               <div className="flex-1 h-px bg-border" />
             </div>
 
@@ -110,7 +118,7 @@ export default function LoginScreen({ onLogin }) {
               <button
                 type="button"
                 disabled
-                title="Coming soon"
+                title={t('portal.login.comingSoon')}
                 className="flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-border bg-bg text-muted opacity-60 cursor-not-allowed"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
@@ -119,25 +127,25 @@ export default function LoginScreen({ onLogin }) {
                   <path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84Z" />
                   <path fill="#EA4335" d="M12 4.75c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 1.4 14.97.5 12 .5A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 6.68 9.14 4.75 12 4.75Z" />
                 </svg>
-                <span className="text-sm font-medium">Google</span>
+                <span className="text-sm font-medium">{t('portal.login.google')}</span>
               </button>
               <button
                 type="button"
                 disabled
-                title="Coming soon"
+                title={t('portal.login.comingSoon')}
                 className="flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-border bg-bg text-muted opacity-60 cursor-not-allowed"
               >
                 <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M16.36 12.9c-.02-2.03 1.66-3.01 1.74-3.06-.95-1.39-2.42-1.58-2.94-1.6-1.25-.13-2.44.74-3.08.74-.63 0-1.61-.72-2.65-.7-1.36.02-2.62.79-3.32 2.01-1.42 2.46-.36 6.1 1.02 8.1.67.98 1.47 2.08 2.52 2.04 1.01-.04 1.39-.65 2.62-.65 1.22 0 1.57.65 2.64.63 1.09-.02 1.78-1 2.45-1.98.77-1.13 1.09-2.23 1.11-2.29-.02-.01-2.13-.82-2.15-3.25ZM14.4 6.9c.56-.68.94-1.63.83-2.57-.81.03-1.79.54-2.37 1.22-.52.6-.97 1.56-.85 2.48.9.07 1.83-.46 2.39-1.13Z" />
                 </svg>
-                <span className="text-sm font-medium">Apple</span>
+                <span className="text-sm font-medium">{t('portal.login.apple')}</span>
               </button>
             </div>
 
             {/* Demo hint */}
             <p className="text-xs text-muted text-center flex items-center justify-center gap-1.5 pt-1">
               <ShieldCheck className="w-3.5 h-3.5" />
-              Demo mode — any credentials work
+              {t('portal.login.demoHint')}
             </p>
           </form>
         </div>

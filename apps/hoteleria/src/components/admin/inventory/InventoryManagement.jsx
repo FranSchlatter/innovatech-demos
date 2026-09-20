@@ -28,31 +28,33 @@ import {
   Check
 } from 'lucide-react'
 import { useAdminData } from '../../../hooks/useAdminData'
+import { useTranslation } from '../../../i18n/LanguageProvider'
 import { getInventoryAnalytics, getItemConsumption } from '../../../data/admin/mockInventory'
 
 const categoryConfig = {
-  linens: { icon: Shirt, color: 'bg-blue-500', label: 'Linens' },
-  amenities: { icon: Sparkles, color: 'bg-purple-500', label: 'Amenities' },
-  minibar: { icon: Wine, color: 'bg-amber-500', label: 'Minibar' },
-  cleaning: { icon: SprayCan, color: 'bg-green-500', label: 'Cleaning' }
+  linens: { icon: Shirt, color: 'bg-blue-500' },
+  amenities: { icon: Sparkles, color: 'bg-purple-500' },
+  minibar: { icon: Wine, color: 'bg-amber-500' },
+  cleaning: { icon: SprayCan, color: 'bg-green-500' }
 }
 
 const categoryFilters = [
-  { value: 'all', label: 'All Categories' },
-  { value: 'linens', label: 'Linens' },
-  { value: 'amenities', label: 'Amenities' },
-  { value: 'minibar', label: 'Minibar' },
-  { value: 'cleaning', label: 'Cleaning' }
+  { value: 'all', key: 'admin.inventory.filters.allCategories' },
+  { value: 'linens', key: 'admin.inventory.categories.linens' },
+  { value: 'amenities', key: 'admin.inventory.categories.amenities' },
+  { value: 'minibar', key: 'admin.inventory.categories.minibar' },
+  { value: 'cleaning', key: 'admin.inventory.categories.cleaning' }
 ]
 
 const stockFilters = [
-  { value: 'all', label: 'All Stock Levels' },
-  { value: 'low', label: 'Low Stock' },
-  { value: 'normal', label: 'Normal' },
-  { value: 'high', label: 'Well Stocked' }
+  { value: 'all', key: 'admin.inventory.filters.allStockLevels' },
+  { value: 'low', key: 'admin.inventory.filters.low' },
+  { value: 'normal', key: 'admin.inventory.filters.normal' },
+  { value: 'high', key: 'admin.inventory.filters.high' }
 ]
 
 function StockLevelBar({ current, min, max }) {
+  const { t } = useTranslation()
   const percentage = Math.min((current / max) * 100, 100)
   const isLow = current <= min
   const isVeryLow = current < min * 0.5
@@ -76,13 +78,14 @@ function StockLevelBar({ current, min, max }) {
         />
       </div>
       {isLow && (
-        <p className="text-xs text-amber-500 mt-1">Min: {min}</p>
+        <p className="text-xs text-amber-500 mt-1">{t('admin.inventory.stock.min', { min })}</p>
       )}
     </div>
   )
 }
 
 function LowStockAlerts({ items, onRestock }) {
+  const { t } = useTranslation()
   if (items.length === 0) {
     return (
       <div className="bg-green-500/10 rounded-xl p-4 border border-green-500/20">
@@ -91,8 +94,8 @@ function LowStockAlerts({ items, onRestock }) {
             <TrendingUp className="w-5 h-5 text-green-500" />
           </div>
           <div>
-            <p className="font-medium text-green-600 dark:text-green-400">All Stock Levels OK</p>
-            <p className="text-sm text-muted">No items need restocking</p>
+            <p className="font-medium text-green-600 dark:text-green-400">{t('admin.inventory.alerts.allOkTitle')}</p>
+            <p className="text-sm text-muted">{t('admin.inventory.alerts.allOkSubtitle')}</p>
           </div>
         </div>
       </div>
@@ -108,9 +111,9 @@ function LowStockAlerts({ items, onRestock }) {
           </div>
           <div>
             <p className="font-medium text-amber-600 dark:text-amber-400">
-              {items.length} Items Low on Stock
+              {t('admin.inventory.alerts.lowTitle', { count: items.length })}
             </p>
-            <p className="text-sm text-muted">Immediate attention required</p>
+            <p className="text-sm text-muted">{t('admin.inventory.alerts.lowSubtitle')}</p>
           </div>
         </div>
       </div>
@@ -129,7 +132,7 @@ function LowStockAlerts({ items, onRestock }) {
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-text truncate">{item.name}</p>
                   <p className="text-xs text-red-500">
-                    Need +{deficit} {item.unit}
+                    {t('admin.inventory.alerts.need', { deficit, unit: item.unit })}
                   </p>
                 </div>
               </div>
@@ -139,7 +142,7 @@ function LowStockAlerts({ items, onRestock }) {
                   hover:bg-amber-600 transition-colors flex items-center gap-1 whitespace-nowrap"
               >
                 <Plus className="w-3 h-3" />
-                Restock
+                {t('admin.inventory.alerts.restock')}
               </button>
             </div>
           )
@@ -150,13 +153,13 @@ function LowStockAlerts({ items, onRestock }) {
 }
 
 function InventoryStats({ inventory }) {
+  const { t } = useTranslation()
   const stats = useMemo(() => {
     const totalItems = inventory.length
     const lowStock = inventory.filter(i => i.currentStock <= i.minStock).length
     const totalValue = inventory.reduce((sum, i) => sum + (i.currentStock * i.costPerUnit), 0)
     const categoryStats = Object.entries(categoryConfig).map(([key, config]) => ({
       category: key,
-      label: config.label,
       count: inventory.filter(i => i.category === key).length,
       color: config.color
     }))
@@ -173,7 +176,7 @@ function InventoryStats({ inventory }) {
           </div>
           <div>
             <p className="text-2xl font-bold text-text">{stats.totalItems}</p>
-            <p className="text-xs text-muted">Total Items</p>
+            <p className="text-xs text-muted">{t('admin.inventory.stats.totalItems')}</p>
           </div>
         </div>
       </div>
@@ -185,7 +188,7 @@ function InventoryStats({ inventory }) {
           </div>
           <div>
             <p className="text-2xl font-bold text-amber-500">{stats.lowStock}</p>
-            <p className="text-xs text-muted">Low Stock</p>
+            <p className="text-xs text-muted">{t('admin.inventory.stats.lowStock')}</p>
           </div>
         </div>
       </div>
@@ -197,7 +200,7 @@ function InventoryStats({ inventory }) {
           </div>
           <div>
             <p className="text-2xl font-bold text-text">${stats.totalValue.toLocaleString()}</p>
-            <p className="text-xs text-muted">Total Value</p>
+            <p className="text-xs text-muted">{t('admin.inventory.stats.totalValue')}</p>
           </div>
         </div>
       </div>
@@ -212,7 +215,7 @@ function InventoryStats({ inventory }) {
               <div
                 key={cat.category}
                 className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold text-white ${cat.color}`}
-                title={`${cat.label}: ${cat.count}`}
+                title={`${t(`admin.inventory.categories.${cat.category}`)}: ${cat.count}`}
               >
                 {cat.count}
               </div>
@@ -225,6 +228,7 @@ function InventoryStats({ inventory }) {
 }
 
 const InventoryCard = forwardRef(function InventoryCard({ item, onRestock, onViewHistory }, ref) {
+  const { t } = useTranslation()
   const config = categoryConfig[item.category]
   const Icon = config?.icon || Box
   const isLow = item.currentStock <= item.minStock
@@ -236,10 +240,10 @@ const InventoryCard = forwardRef(function InventoryCard({ item, onRestock, onVie
     const diffMs = now - date
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
 
-    if (diffDays === 0) return 'Today'
-    if (diffDays === 1) return 'Yesterday'
-    if (diffDays < 7) return `${diffDays} days ago`
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`
+    if (diffDays === 0) return t('admin.inventory.timeAgo.today')
+    if (diffDays === 1) return t('admin.inventory.timeAgo.yesterday')
+    if (diffDays < 7) return t('admin.inventory.timeAgo.daysAgo', { days: diffDays })
+    if (diffDays < 30) return t('admin.inventory.timeAgo.weeksAgo', { weeks: Math.floor(diffDays / 7) })
     return date.toLocaleDateString()
   }
 
@@ -267,7 +271,7 @@ const InventoryCard = forwardRef(function InventoryCard({ item, onRestock, onVie
         </div>
         {isLow && (
           <span className="px-2 py-0.5 bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs rounded-full font-medium">
-            Low
+            {t('admin.inventory.card.low')}
           </span>
         )}
       </div>
@@ -289,7 +293,7 @@ const InventoryCard = forwardRef(function InventoryCard({ item, onRestock, onVie
         </div>
         <div className="flex items-center gap-1 text-muted">
           <DollarSign className="w-3 h-3" />
-          <span>${item.costPerUnit.toFixed(2)}/{item.unit}</span>
+          <span>{t('admin.inventory.card.perUnit', { cost: item.costPerUnit.toFixed(2), unit: item.unit })}</span>
         </div>
       </div>
 
@@ -297,20 +301,20 @@ const InventoryCard = forwardRef(function InventoryCard({ item, onRestock, onVie
       <div className="flex items-center justify-between gap-2 text-xs text-muted mb-3">
         <div className="flex items-center gap-1 min-w-0">
           <History className="w-3 h-3 flex-shrink-0" />
-          <span className="truncate">Restocked {timeAgo(item.lastRestocked)}</span>
+          <span className="truncate">{t('admin.inventory.card.restockedAgo', { ago: timeAgo(item.lastRestocked) })}</span>
         </div>
         {consumption.neverRestocked ? (
-          <span className="flex items-center gap-1 text-muted whitespace-nowrap" title="No consumption recorded — possibly obsolete">
+          <span className="flex items-center gap-1 text-muted whitespace-nowrap" title={t('admin.inventory.card.noUsageTitle')}>
             <Archive className="w-3 h-3" />
-            No usage
+            {t('admin.inventory.card.noUsage')}
           </span>
         ) : (
           <span
             className="flex items-center gap-1 text-primary whitespace-nowrap font-medium"
-            title="Estimated monthly consumption"
+            title={t('admin.inventory.card.monthlyConsumptionTitle')}
           >
             <TrendingDown className="w-3 h-3" />
-            ~{consumption.monthlyConsumption} {item.unit}/mo
+            {t('admin.inventory.card.monthlyConsumption', { value: consumption.monthlyConsumption, unit: item.unit })}
           </span>
         )}
       </div>
@@ -323,7 +327,7 @@ const InventoryCard = forwardRef(function InventoryCard({ item, onRestock, onVie
             text-text hover:bg-surface transition-colors flex items-center justify-center gap-1"
         >
           <History className="w-3 h-3" />
-          History
+          {t('admin.inventory.card.history')}
         </button>
         <button
           onClick={() => onRestock(item)}
@@ -331,7 +335,7 @@ const InventoryCard = forwardRef(function InventoryCard({ item, onRestock, onVie
             hover:opacity-90 transition-opacity flex items-center justify-center gap-1"
         >
           <ArrowUpCircle className="w-3 h-3" />
-          Restock
+          {t('admin.inventory.card.restock')}
         </button>
       </div>
     </motion.div>
@@ -339,6 +343,7 @@ const InventoryCard = forwardRef(function InventoryCard({ item, onRestock, onVie
 })
 
 function RestockModal({ item, onClose, onRestock }) {
+  const { t } = useTranslation()
   const [quantity, setQuantity] = useState('')
   const [restockedBy, setRestockedBy] = useState('')
 
@@ -374,7 +379,7 @@ function RestockModal({ item, onClose, onRestock }) {
               <ArrowUpCircle className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-semibold text-text">Restock Item</h3>
+              <h3 className="font-semibold text-text">{t('admin.inventory.restockModal.title')}</h3>
               <p className="text-sm text-muted">{item.name}</p>
             </div>
           </div>
@@ -391,15 +396,15 @@ function RestockModal({ item, onClose, onRestock }) {
           {/* Current Stock Info */}
           <div className="bg-bg rounded-lg p-3">
             <div className="flex justify-between text-sm mb-2">
-              <span className="text-muted">Current Stock</span>
+              <span className="text-muted">{t('admin.inventory.restockModal.currentStock')}</span>
               <span className="font-medium text-text">{item.currentStock} {item.unit}</span>
             </div>
             <div className="flex justify-between text-sm mb-2">
-              <span className="text-muted">Minimum Stock</span>
+              <span className="text-muted">{t('admin.inventory.restockModal.minStock')}</span>
               <span className="font-medium text-amber-500">{item.minStock} {item.unit}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted">Maximum Stock</span>
+              <span className="text-muted">{t('admin.inventory.restockModal.maxStock')}</span>
               <span className="font-medium text-text">{item.maxStock} {item.unit}</span>
             </div>
           </div>
@@ -407,14 +412,14 @@ function RestockModal({ item, onClose, onRestock }) {
           {/* Quantity Input */}
           <div>
             <label className="block text-sm font-medium text-text mb-2">
-              Quantity to Add
+              {t('admin.inventory.restockModal.quantityToAdd')}
             </label>
             <div className="relative">
               <input
                 type="number"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
-                placeholder={`Suggested: ${suggestedQuantity}`}
+                placeholder={t('admin.inventory.restockModal.suggested', { value: suggestedQuantity })}
                 min="1"
                 max={item.maxStock - item.currentStock}
                 className="w-full px-4 py-2 bg-bg border border-border rounded-lg text-text
@@ -429,20 +434,20 @@ function RestockModal({ item, onClose, onRestock }) {
               onClick={() => setQuantity(suggestedQuantity.toString())}
               className="mt-2 text-xs text-primary hover:underline"
             >
-              Fill to max ({suggestedQuantity} {item.unit})
+              {t('admin.inventory.restockModal.fillToMax', { value: suggestedQuantity, unit: item.unit })}
             </button>
           </div>
 
           {/* Restocked By */}
           <div>
             <label className="block text-sm font-medium text-text mb-2">
-              Restocked By
+              {t('admin.inventory.restockModal.restockedBy')}
             </label>
             <input
               type="text"
               value={restockedBy}
               onChange={(e) => setRestockedBy(e.target.value)}
-              placeholder="Enter name (optional)"
+              placeholder={t('admin.inventory.restockModal.enterName')}
               className="w-full px-4 py-2 bg-bg border border-border rounded-lg text-text
                 placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
@@ -452,7 +457,7 @@ function RestockModal({ item, onClose, onRestock }) {
           {quantity && (
             <div className="bg-green-500/10 rounded-lg p-3 border border-green-500/20">
               <p className="text-sm text-green-600 dark:text-green-400">
-                New stock level: <strong>{item.currentStock + parseInt(quantity || 0)} {item.unit}</strong>
+                {t('admin.inventory.restockModal.newLevel')} <strong>{item.currentStock + parseInt(quantity || 0)} {item.unit}</strong>
               </p>
             </div>
           )}
@@ -465,7 +470,7 @@ function RestockModal({ item, onClose, onRestock }) {
               className="flex-1 px-4 py-2 bg-bg border border-border rounded-lg text-text
                 font-medium hover:bg-surface transition-colors"
             >
-              Cancel
+              {t('common.actions.cancel')}
             </button>
             <button
               type="submit"
@@ -473,7 +478,7 @@ function RestockModal({ item, onClose, onRestock }) {
               className="flex-1 px-4 py-2 bg-primary text-primary-contrast rounded-lg font-medium
                 hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Confirm Restock
+              {t('admin.inventory.restockModal.confirm')}
             </button>
           </div>
         </form>
@@ -483,6 +488,7 @@ function RestockModal({ item, onClose, onRestock }) {
 }
 
 function HistoryModal({ item, onClose }) {
+  const { t } = useTranslation()
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -505,7 +511,7 @@ function HistoryModal({ item, onClose }) {
               <History className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-semibold text-text">Restock History</h3>
+              <h3 className="font-semibold text-text">{t('admin.inventory.historyModal.title')}</h3>
               <p className="text-sm text-muted">{item.name}</p>
             </div>
           </div>
@@ -530,7 +536,7 @@ function HistoryModal({ item, onClose }) {
                     <p className="text-sm font-medium text-text">
                       +{entry.quantity} {item.unit}
                     </p>
-                    <p className="text-xs text-muted">by {entry.by}</p>
+                    <p className="text-xs text-muted">{t('admin.inventory.historyModal.by', { name: entry.by })}</p>
                   </div>
                   <p className="text-xs text-muted">
                     {new Date(entry.date).toLocaleDateString()}
@@ -539,7 +545,7 @@ function HistoryModal({ item, onClose }) {
               ))}
             </div>
           ) : (
-            <p className="text-center text-muted py-8">No restock history available</p>
+            <p className="text-center text-muted py-8">{t('admin.inventory.historyModal.empty')}</p>
           )}
         </div>
 
@@ -550,7 +556,7 @@ function HistoryModal({ item, onClose }) {
             className="w-full px-4 py-2 bg-bg border border-border rounded-lg text-text
               font-medium hover:bg-surface transition-colors"
           >
-            Close
+            {t('common.actions.close')}
           </button>
         </div>
       </motion.div>
@@ -569,6 +575,7 @@ function TrendCard({ children, className = '' }) {
 }
 
 function ReorderSuggestions({ suggestions, adjustedIds, onAdjust }) {
+  const { t } = useTranslation()
   if (suggestions.length === 0) return null
 
   return (
@@ -578,9 +585,9 @@ function ReorderSuggestions({ suggestions, adjustedIds, onAdjust }) {
           <Lightbulb className="w-5 h-5 text-amber-500" />
         </div>
         <div>
-          <h3 className="font-semibold text-text">Reorder point suggestions</h3>
+          <h3 className="font-semibold text-text">{t('admin.inventory.trends.reorderTitle')}</h3>
           <p className="text-sm text-muted">
-            Items that hit their minimum 3+ times this month — consider a higher floor
+            {t('admin.inventory.trends.reorderSubtitle')}
           </p>
         </div>
       </div>
@@ -603,11 +610,11 @@ function ReorderSuggestions({ suggestions, adjustedIds, onAdjust }) {
                 <p className="text-sm font-medium text-text truncate">{s.name}</p>
                 <p className="text-xs text-muted flex items-center gap-1.5 flex-wrap">
                   <span className="text-amber-600 dark:text-amber-400 font-medium">
-                    {s.hits}× low this month
+                    {t('admin.inventory.trends.lowThisMonth', { hits: s.hits })}
                   </span>
                   <span>·</span>
                   <span className="inline-flex items-center gap-1">
-                    min {s.currentMin}
+                    {t('admin.inventory.trends.minFromTo', { from: s.currentMin })}
                     <ArrowUp className="w-3 h-3 rotate-45" />
                     <strong className="text-text">{s.suggestedMin}</strong> {s.unit}
                   </span>
@@ -616,7 +623,7 @@ function ReorderSuggestions({ suggestions, adjustedIds, onAdjust }) {
               {done ? (
                 <span className="px-3 py-1.5 text-xs font-medium text-green-600 dark:text-green-400 flex items-center gap-1 whitespace-nowrap">
                   <Check className="w-3.5 h-3.5" />
-                  Adjusted
+                  {t('admin.inventory.trends.adjusted')}
                 </span>
               ) : (
                 <button
@@ -625,7 +632,7 @@ function ReorderSuggestions({ suggestions, adjustedIds, onAdjust }) {
                     hover:bg-amber-600 transition-colors flex items-center gap-1 whitespace-nowrap"
                 >
                   <ArrowUp className="w-3 h-3" />
-                  Set min {s.suggestedMin}
+                  {t('admin.inventory.trends.setMin', { value: s.suggestedMin })}
                 </button>
               )}
             </div>
@@ -637,14 +644,15 @@ function ReorderSuggestions({ suggestions, adjustedIds, onAdjust }) {
 }
 
 function CategoryConsumptionChart({ byCategory, totalMonthlyCost }) {
+  const { t } = useTranslation()
   const maxConsumption = Math.max(...byCategory.map(c => c.monthlyConsumption), 1)
 
   return (
     <TrendCard>
       <div className="flex items-center gap-2 mb-4">
         <Layers className="w-5 h-5 text-primary" />
-        <h3 className="font-semibold text-text">Consumption by category</h3>
-        <span className="ml-auto text-xs text-muted">last 30 days</span>
+        <h3 className="font-semibold text-text">{t('admin.inventory.trends.byCategoryTitle')}</h3>
+        <span className="ml-auto text-xs text-muted">{t('admin.inventory.trends.last30days')}</span>
       </div>
 
       <div className="space-y-4">
@@ -663,7 +671,7 @@ function CategoryConsumptionChart({ byCategory, totalMonthlyCost }) {
                   <span className={`p-1 rounded ${config?.color || 'bg-gray-500'}`}>
                     <Icon className="w-3 h-3 text-white" />
                   </span>
-                  {config?.label || cat.category}
+                  {t(`admin.inventory.categories.${cat.category}`)}
                 </span>
                 <span className="text-muted">
                   <strong className="text-text">{cat.monthlyConsumption.toLocaleString()}</strong> u
@@ -688,7 +696,7 @@ function CategoryConsumptionChart({ byCategory, totalMonthlyCost }) {
       </div>
 
       <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
-        <span className="text-sm text-muted">Total monthly spend</span>
+        <span className="text-sm text-muted">{t('admin.inventory.trends.totalMonthlySpend')}</span>
         <span className="text-lg font-bold text-text">${totalMonthlyCost.toLocaleString()}</span>
       </div>
     </TrendCard>
@@ -698,14 +706,15 @@ function CategoryConsumptionChart({ byCategory, totalMonthlyCost }) {
 const medalColor = ['bg-amber-400', 'bg-gray-300', 'bg-amber-600']
 
 function TopConsumedList({ items }) {
+  const { t } = useTranslation()
   const maxVolume = Math.max(...items.map(i => i.restockVolume90), 1)
 
   return (
     <TrendCard>
       <div className="flex items-center gap-2 mb-4">
         <Trophy className="w-5 h-5 text-primary" />
-        <h3 className="font-semibold text-text">Top consumed</h3>
-        <span className="ml-auto text-xs text-muted">by 90-day volume</span>
+        <h3 className="font-semibold text-text">{t('admin.inventory.trends.topConsumedTitle')}</h3>
+        <span className="ml-auto text-xs text-muted">{t('admin.inventory.trends.by90dayVolume')}</span>
       </div>
 
       <div className="space-y-3">
@@ -746,19 +755,20 @@ function TopConsumedList({ items }) {
 }
 
 function ObsoleteItems({ items }) {
+  const { t } = useTranslation()
   const tiedUp = items.reduce((s, i) => s + i.tiedUpValue, 0)
 
   return (
     <TrendCard>
       <div className="flex items-center gap-2 mb-4">
         <Archive className="w-5 h-5 text-primary" />
-        <h3 className="font-semibold text-text">Possibly obsolete</h3>
-        <span className="ml-auto text-xs text-muted">never restocked</span>
+        <h3 className="font-semibold text-text">{t('admin.inventory.trends.obsoleteTitle')}</h3>
+        <span className="ml-auto text-xs text-muted">{t('admin.inventory.trends.neverRestocked')}</span>
       </div>
 
       {items.length === 0 ? (
         <p className="text-sm text-muted py-4 text-center">
-          Every item has restock activity — nothing looks obsolete.
+          {t('admin.inventory.trends.obsoleteEmpty')}
         </p>
       ) : (
         <>
@@ -788,7 +798,7 @@ function ObsoleteItems({ items }) {
             })}
           </div>
           <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
-            <span className="text-sm text-muted">Capital tied up</span>
+            <span className="text-sm text-muted">{t('admin.inventory.trends.capitalTiedUp')}</span>
             <span className="text-lg font-bold text-text">${tiedUp.toLocaleString()}</span>
           </div>
         </>
@@ -798,6 +808,7 @@ function ObsoleteItems({ items }) {
 }
 
 function TrendsView({ inventory, onAdjustMin }) {
+  const { t } = useTranslation()
   const analytics = useMemo(() => getInventoryAnalytics(inventory), [inventory])
   const [adjustedIds, setAdjustedIds] = useState(new Set())
 
@@ -817,7 +828,7 @@ function TrendsView({ inventory, onAdjustMin }) {
             </div>
             <div>
               <p className="text-2xl font-bold text-text">${analytics.totalMonthlyCost.toLocaleString()}</p>
-              <p className="text-xs text-muted">Monthly spend</p>
+              <p className="text-xs text-muted">{t('admin.inventory.trends.monthlySpend')}</p>
             </div>
           </div>
         </div>
@@ -828,7 +839,7 @@ function TrendsView({ inventory, onAdjustMin }) {
             </div>
             <div>
               <p className="text-2xl font-bold text-text">{analytics.totalMonthlyConsumption.toLocaleString()}</p>
-              <p className="text-xs text-muted">Units / month</p>
+              <p className="text-xs text-muted">{t('admin.inventory.trends.unitsPerMonth')}</p>
             </div>
           </div>
         </div>
@@ -839,7 +850,7 @@ function TrendsView({ inventory, onAdjustMin }) {
             </div>
             <div>
               <p className="text-2xl font-bold text-amber-500">{analytics.suggestions.length}</p>
-              <p className="text-xs text-muted">Reorder alerts</p>
+              <p className="text-xs text-muted">{t('admin.inventory.trends.reorderAlerts')}</p>
             </div>
           </div>
         </div>
@@ -850,7 +861,7 @@ function TrendsView({ inventory, onAdjustMin }) {
             </div>
             <div>
               <p className="text-2xl font-bold text-text">{analytics.obsolete.length}</p>
-              <p className="text-xs text-muted">Possibly obsolete</p>
+              <p className="text-xs text-muted">{t('admin.inventory.trends.possiblyObsolete')}</p>
             </div>
           </div>
         </div>
@@ -876,6 +887,7 @@ function TrendsView({ inventory, onAdjustMin }) {
 }
 
 export default function InventoryManagement() {
+  const { t } = useTranslation()
   const { inventory, restockItem, updateInventory } = useAdminData()
   const [view, setView] = useState('inventory') // 'inventory' | 'trends'
   const [categoryFilter, setCategoryFilter] = useState('all')
@@ -930,9 +942,9 @@ export default function InventoryManagement() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold text-text">Inventory Management</h2>
+          <h2 className="text-xl font-bold text-text">{t('admin.inventory.title')}</h2>
           <p className="text-sm text-muted">
-            {view === 'inventory' ? `${filteredInventory.length} items` : 'Consumption trends & reorder insights'}
+            {view === 'inventory' ? t('admin.inventory.itemsCount', { count: filteredInventory.length }) : t('admin.inventory.trendsSubtitle')}
           </p>
         </div>
 
@@ -947,7 +959,7 @@ export default function InventoryManagement() {
             }`}
           >
             <Package className="w-4 h-4" />
-            Inventory
+            {t('admin.inventory.tabs.inventory')}
           </button>
           <button
             onClick={() => setView('trends')}
@@ -958,7 +970,7 @@ export default function InventoryManagement() {
             }`}
           >
             <LineChart className="w-4 h-4" />
-            Trends
+            {t('admin.inventory.tabs.trends')}
           </button>
         </div>
       </div>
@@ -984,7 +996,7 @@ export default function InventoryManagement() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
             <input
               type="text"
-              placeholder="Search items, SKUs, locations..."
+              placeholder={t('admin.inventory.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-bg border border-border rounded-lg
@@ -1003,7 +1015,7 @@ export default function InventoryManagement() {
             >
               {categoryFilters.map(filter => (
                 <option key={filter.value} value={filter.value}>
-                  {filter.label}
+                  {t(filter.key)}
                 </option>
               ))}
             </select>
@@ -1016,7 +1028,7 @@ export default function InventoryManagement() {
             >
               {stockFilters.map(filter => (
                 <option key={filter.value} value={filter.value}>
-                  {filter.label}
+                  {t(filter.key)}
                 </option>
               ))}
             </select>
@@ -1046,9 +1058,9 @@ export default function InventoryManagement() {
           className="text-center py-12"
         >
           <Package className="w-12 h-12 mx-auto text-muted mb-4" />
-          <h3 className="text-lg font-medium text-text mb-2">No items found</h3>
+          <h3 className="text-lg font-medium text-text mb-2">{t('admin.inventory.empty.title')}</h3>
           <p className="text-sm text-muted">
-            Try adjusting your search or filters
+            {t('admin.inventory.empty.subtitle')}
           </p>
         </motion.div>
       )}

@@ -2,7 +2,81 @@ import { motion } from 'framer-motion'
 import { Menu, X, Sun, Moon } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
-export default function Navbar({ brand = 'InnovaTech', toggleTheme, isDark, links = [], topOffset = 0 }) {
+function LanguageToggle({ language, languages, onLanguageChange, className = '' }) {
+  if (!onLanguageChange || !languages?.length) return null
+  return (
+    <div
+      role="group"
+      aria-label="Language"
+      className={`flex items-center gap-0.5 rounded-lg bg-surface p-0.5 ${className}`}
+    >
+      {languages.map((lang) => {
+        const active = lang.code === language
+        return (
+          <button
+            key={lang.code}
+            onClick={() => onLanguageChange(lang.code)}
+            aria-pressed={active}
+            title={lang.name}
+            className={`px-2 py-1 rounded-md text-xs font-semibold transition-colors ${
+              active
+                ? 'bg-primary text-primary-contrast'
+                : 'text-muted hover:text-primary'
+            }`}
+          >
+            {lang.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+// Optional display-currency selector (H25). Rendered only when the host app wires
+// the props, so the other apps keep an unchanged navbar.
+function CurrencyToggle({ currency, currencies, onCurrencyChange, className = '' }) {
+  if (!onCurrencyChange || !currencies?.length) return null
+  return (
+    <div
+      role="group"
+      aria-label="Currency"
+      className={`flex items-center gap-0.5 rounded-lg bg-surface p-0.5 ${className}`}
+    >
+      {currencies.map((cur) => {
+        const active = cur.code === currency
+        return (
+          <button
+            key={cur.code}
+            onClick={() => onCurrencyChange(cur.code)}
+            aria-pressed={active}
+            title={cur.name}
+            className={`px-2 py-1 rounded-md text-xs font-semibold transition-colors ${
+              active
+                ? 'bg-primary text-primary-contrast'
+                : 'text-muted hover:text-primary'
+            }`}
+          >
+            {cur.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+export default function Navbar({
+  brand = 'InnovaTech',
+  toggleTheme,
+  isDark,
+  links = [],
+  topOffset = 0,
+  language,
+  languages,
+  onLanguageChange,
+  currency,
+  currencies,
+  onCurrencyChange,
+}) {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
@@ -54,6 +128,16 @@ export default function Navbar({ brand = 'InnovaTech', toggleTheme, isDark, link
               {link.name}
             </a>
           ))}
+          <CurrencyToggle
+            currency={currency}
+            currencies={currencies}
+            onCurrencyChange={onCurrencyChange}
+          />
+          <LanguageToggle
+            language={language}
+            languages={languages}
+            onLanguageChange={onLanguageChange}
+          />
           <button
             onClick={toggleTheme}
             className="p-2 rounded-lg bg-surface hover:bg-primary hover:text-primary-contrast transition-colors"
@@ -99,15 +183,30 @@ export default function Navbar({ brand = 'InnovaTech', toggleTheme, isDark, link
                 {link.name}
               </a>
             ))}
-            <div className="pt-2 border-t border-border">
+            <div className="pt-2 border-t border-border flex items-center gap-2">
               <button
                 onClick={toggleTheme}
-                className="p-2 rounded-lg bg-bg hover:bg-primary hover:text-primary-contrast transition-colors w-full flex items-center justify-center gap-2"
+                className="p-2 rounded-lg bg-bg hover:bg-primary hover:text-primary-contrast transition-colors flex-1 flex items-center justify-center gap-2"
               >
                 {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                 <span className="text-sm font-medium">{isDark ? 'Light Mode' : 'Dark Mode'}</span>
               </button>
+              <LanguageToggle
+                language={language}
+                languages={languages}
+                onLanguageChange={onLanguageChange}
+              />
             </div>
+            {onCurrencyChange && currencies?.length > 0 && (
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-sm font-medium text-muted">{currency}</span>
+                <CurrencyToggle
+                  currency={currency}
+                  currencies={currencies}
+                  onCurrencyChange={onCurrencyChange}
+                />
+              </div>
+            )}
           </div>
         </motion.div>
       )}

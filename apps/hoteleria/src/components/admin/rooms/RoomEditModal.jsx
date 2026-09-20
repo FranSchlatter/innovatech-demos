@@ -21,26 +21,29 @@ import {
   Mountain
 } from 'lucide-react'
 import StatusBadge from '../shared/StatusBadge'
+import { useTranslation } from '../../../i18n/LanguageProvider'
 
+// Room status option values (labels resolved via admin.rooms.edit.statuses.<value>).
 const roomStatuses = [
-  { value: 'available', label: 'Available' },
-  { value: 'occupied', label: 'Occupied' },
-  { value: 'cleaning', label: 'Cleaning' },
-  { value: 'maintenance', label: 'Maintenance' }
+  { value: 'available' },
+  { value: 'occupied' },
+  { value: 'cleaning' },
+  { value: 'maintenance' }
 ]
 
 // Canonical amenity list (with icons) shown as a toggleable checklist.
+// Labels resolved at render via admin.rooms.edit.amenityLabels.<id>.
 const AMENITY_DEFS = [
-  { id: 'wifi', label: 'WiFi', icon: Wifi, keywords: ['wifi'] },
-  { id: 'ac', label: 'Air Conditioning', icon: Wind, keywords: ['aire', 'ac'] },
-  { id: 'tv', label: 'Smart TV', icon: Tv, keywords: ['tv'] },
-  { id: 'minibar', label: 'Minibar', icon: Wine, keywords: ['mini bar', 'minibar', 'nevera'] },
-  { id: 'balcony', label: 'Balcony / Terrace', icon: Trees, keywords: ['balcón', 'balcon', 'terraza'] },
-  { id: 'safe', label: 'Safe', icon: Lock, keywords: ['caja'] },
-  { id: 'bathtub', label: 'Bathtub / Jacuzzi', icon: Bath, keywords: ['bañera', 'jacuzzi', 'hidromasaje', 'spa'] },
-  { id: 'coffee', label: 'Coffee Machine', icon: Coffee, keywords: ['nespresso', 'café', 'coffee'] },
-  { id: 'desk', label: 'Work Desk', icon: Briefcase, keywords: ['escritorio'] },
-  { id: 'view', label: 'Premium View', icon: Mountain, keywords: ['vista', 'océano', 'mar', 'panorám', 'panoram'] }
+  { id: 'wifi', icon: Wifi, keywords: ['wifi'] },
+  { id: 'ac', icon: Wind, keywords: ['aire', 'ac'] },
+  { id: 'tv', icon: Tv, keywords: ['tv'] },
+  { id: 'minibar', icon: Wine, keywords: ['mini bar', 'minibar', 'nevera'] },
+  { id: 'balcony', icon: Trees, keywords: ['balcón', 'balcon', 'terraza'] },
+  { id: 'safe', icon: Lock, keywords: ['caja'] },
+  { id: 'bathtub', icon: Bath, keywords: ['bañera', 'jacuzzi', 'hidromasaje', 'spa'] },
+  { id: 'coffee', icon: Coffee, keywords: ['nespresso', 'café', 'coffee'] },
+  { id: 'desk', icon: Briefcase, keywords: ['escritorio'] },
+  { id: 'view', icon: Mountain, keywords: ['vista', 'océano', 'mar', 'panorám', 'panoram'] }
 ]
 
 // Loose match against the room's raw (Spanish) amenity strings for pre-selection.
@@ -58,17 +61,18 @@ const deriveAmenities = (room) => {
   return AMENITY_DEFS.filter((a) => matchAmenity(raw, a.keywords)).map((a) => a.id)
 }
 
-const relTime = (iso) => {
+const relTime = (iso, t) => {
   const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000)
-  if (mins < 1) return 'just now'
-  if (mins < 60) return `${mins}m ago`
+  if (mins < 1) return t('admin.rooms.edit.relTime.justNow')
+  if (mins < 60) return t('admin.rooms.edit.relTime.minutesAgo', { count: mins })
   const h = Math.round(mins / 60)
-  if (h < 24) return `${h}h ago`
+  if (h < 24) return t('admin.rooms.edit.relTime.hoursAgo', { count: h })
   const d = Math.round(h / 24)
-  return `${d}d ago`
+  return t('admin.rooms.edit.relTime.daysAgo', { count: d })
 }
 
 export default function RoomEditModal({ room, isOpen, onClose, onSave, staff = [] }) {
+  const { t } = useTranslation()
   const [formData, setFormData] = useState({
     status: '',
     price: 0,
@@ -110,7 +114,9 @@ export default function RoomEditModal({ room, isOpen, onClose, onSave, staff = [
     const entries = []
     const stamp = new Date().toISOString()
     if (formData.status !== room.status) {
-      const label = roomStatuses.find((s) => s.value === formData.status)?.label || formData.status
+      const label = roomStatuses.some((s) => s.value === formData.status)
+        ? t(`admin.rooms.edit.statuses.${formData.status}`)
+        : formData.status
       entries.push({ text: `Status changed to ${label} by Admin`, at: stamp })
     }
     if (Number(formData.price) !== room.price) {
@@ -184,8 +190,8 @@ export default function RoomEditModal({ room, isOpen, onClose, onSave, staff = [
                   <BedDouble className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-text">Edit Room</h2>
-                  <p className="text-sm text-muted">Room {room.roomNumber} · <span className="capitalize">{room.type}</span></p>
+                  <h2 className="text-lg font-bold text-text">{t('admin.rooms.edit.title')}</h2>
+                  <p className="text-sm text-muted">{t('admin.rooms.edit.subtitle', { room: room.roomNumber })} · <span className="capitalize">{room.type}</span></p>
                 </div>
               </div>
               <button
@@ -202,22 +208,22 @@ export default function RoomEditModal({ room, isOpen, onClose, onSave, staff = [
               <div className="bg-bg rounded-lg p-4">
                 <div className="grid grid-cols-3 gap-4 text-sm">
                   <div>
-                    <span className="text-muted">Type</span>
+                    <span className="text-muted">{t('admin.rooms.edit.type')}</span>
                     <p className="font-medium text-text capitalize">{room.type}</p>
                   </div>
                   <div>
-                    <span className="text-muted">Floor</span>
+                    <span className="text-muted">{t('admin.rooms.edit.floor')}</span>
                     <p className="font-medium text-text">{room.floor}</p>
                   </div>
                   <div>
-                    <span className="text-muted">Capacity</span>
-                    <p className="font-medium text-text">{room.capacity} guests</p>
+                    <span className="text-muted">{t('admin.rooms.edit.capacity')}</span>
+                    <p className="font-medium text-text">{t('admin.rooms.capacityGuests', { count: room.capacity })}</p>
                   </div>
                 </div>
                 {room.currentGuest && (
                   <div className="mt-4 pt-4 border-t border-border flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 text-blue-500" />
-                    <span className="text-sm text-muted">Current Guest:</span>
+                    <span className="text-sm text-muted">{t('admin.rooms.edit.currentGuest')}</span>
                     <span className="text-sm font-medium text-text">{room.currentGuest}</span>
                   </div>
                 )}
@@ -225,7 +231,7 @@ export default function RoomEditModal({ room, isOpen, onClose, onSave, staff = [
 
               {/* Gallery */}
               <div>
-                <label className="block text-sm font-medium text-text mb-2">Gallery</label>
+                <label className="block text-sm font-medium text-text mb-2">{t('admin.rooms.edit.gallery')}</label>
                 <div className="flex gap-2 flex-wrap">
                   {gallery.map((src, i) => (
                     <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-border">
@@ -234,18 +240,18 @@ export default function RoomEditModal({ room, isOpen, onClose, onSave, staff = [
                   ))}
                   <button
                     type="button"
-                    title="Upload more (demo)"
+                    title={t('admin.rooms.edit.uploadMore')}
                     className="w-20 h-20 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center text-muted hover:border-primary hover:text-primary transition-colors"
                   >
                     <ImagePlus className="w-5 h-5" />
-                    <span className="text-[10px] mt-1">Upload</span>
+                    <span className="text-[10px] mt-1">{t('admin.rooms.edit.upload')}</span>
                   </button>
                 </div>
               </div>
 
               {/* Status */}
               <div>
-                <label className="block text-sm font-medium text-text mb-3">Room Status</label>
+                <label className="block text-sm font-medium text-text mb-3">{t('admin.rooms.edit.roomStatus')}</label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {roomStatuses.map((status) => (
                     <button
@@ -267,7 +273,7 @@ export default function RoomEditModal({ room, isOpen, onClose, onSave, staff = [
               {/* Price + Manager */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-text mb-2">Price / night</label>
+                  <label className="block text-sm font-medium text-text mb-2">{t('admin.rooms.edit.pricePerNight')}</label>
                   <div className="flex items-center gap-2 px-3 py-2 bg-bg border border-border rounded-lg focus-within:ring-2 focus-within:ring-primary/50">
                     <DollarSign className="w-4 h-4 text-muted" />
                     <input
@@ -277,19 +283,19 @@ export default function RoomEditModal({ room, isOpen, onClose, onSave, staff = [
                       onChange={(e) => setFormData((prev) => ({ ...prev, price: e.target.value }))}
                       className="flex-1 bg-transparent focus:outline-none text-sm text-text"
                     />
-                    <span className="text-xs text-muted">/night</span>
+                    <span className="text-xs text-muted">{t('admin.rooms.edit.perNight')}</span>
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-text mb-2 flex items-center gap-1.5">
-                    <UserCog className="w-4 h-4 text-muted" /> Assigned manager
+                    <UserCog className="w-4 h-4 text-muted" /> {t('admin.rooms.edit.assignedManager')}
                   </label>
                   <select
                     value={formData.managerId}
                     onChange={(e) => setFormData((prev) => ({ ...prev, managerId: e.target.value }))}
                     className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
                   >
-                    <option value="">Unassigned</option>
+                    <option value="">{t('admin.rooms.edit.unassigned')}</option>
                     {staff.map((s) => (
                       <option key={s.id} value={s.id}>
                         {s.name} · {s.role}
@@ -301,11 +307,11 @@ export default function RoomEditModal({ room, isOpen, onClose, onSave, staff = [
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-medium text-text mb-2">Description</label>
+                <label className="block text-sm font-medium text-text mb-2">{t('admin.rooms.edit.description')}</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-                  placeholder="Room description shown to guests…"
+                  placeholder={t('admin.rooms.edit.descriptionPlaceholder')}
                   rows={2}
                   className="w-full px-4 py-3 bg-bg border border-border rounded-lg text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all resize-none text-sm"
                 />
@@ -314,7 +320,7 @@ export default function RoomEditModal({ room, isOpen, onClose, onSave, staff = [
               {/* Amenities checklist */}
               <div>
                 <label className="block text-sm font-medium text-text mb-3">
-                  Amenities <span className="text-muted font-normal">({formData.amenityIds.length} selected)</span>
+                  {t('admin.rooms.edit.amenities')} <span className="text-muted font-normal">{t('admin.rooms.edit.amenitiesSelected', { count: formData.amenityIds.length })}</span>
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {AMENITY_DEFS.map((a) => {
@@ -332,7 +338,7 @@ export default function RoomEditModal({ room, isOpen, onClose, onSave, staff = [
                         }`}
                       >
                         <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-primary' : ''}`} />
-                        <span className="truncate">{a.label}</span>
+                        <span className="truncate">{t(`admin.rooms.edit.amenityLabels.${a.id}`)}</span>
                       </button>
                     )
                   })}
@@ -341,11 +347,11 @@ export default function RoomEditModal({ room, isOpen, onClose, onSave, staff = [
 
               {/* Internal notes */}
               <div>
-                <label className="block text-sm font-medium text-text mb-2">Internal notes</label>
+                <label className="block text-sm font-medium text-text mb-2">{t('admin.rooms.edit.internalNotes')}</label>
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
-                  placeholder="Notes for staff (not shown to guests)…"
+                  placeholder={t('admin.rooms.edit.internalNotesPlaceholder')}
                   rows={2}
                   className="w-full px-4 py-3 bg-bg border border-border rounded-lg text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all resize-none text-sm"
                 />
@@ -354,16 +360,16 @@ export default function RoomEditModal({ room, isOpen, onClose, onSave, staff = [
               {/* Change history */}
               <div>
                 <label className="block text-sm font-medium text-text mb-2 flex items-center gap-1.5">
-                  <History className="w-4 h-4 text-muted" /> Change history
+                  <History className="w-4 h-4 text-muted" /> {t('admin.rooms.edit.changeHistory')}
                 </label>
                 {history.length === 0 ? (
-                  <p className="text-sm text-muted bg-bg rounded-lg p-3">No changes recorded yet.</p>
+                  <p className="text-sm text-muted bg-bg rounded-lg p-3">{t('admin.rooms.edit.noHistory')}</p>
                 ) : (
                   <ul className="space-y-1.5">
                     {history.slice(0, 3).map((h, i) => (
                       <li key={i} className="flex items-center justify-between gap-2 text-sm bg-bg rounded-lg px-3 py-2">
                         <span className="text-text truncate">{h.text}</span>
-                        <span className="text-xs text-muted whitespace-nowrap">{relTime(h.at)}</span>
+                        <span className="text-xs text-muted whitespace-nowrap">{relTime(h.at, t)}</span>
                       </li>
                     ))}
                   </ul>
@@ -378,7 +384,7 @@ export default function RoomEditModal({ room, isOpen, onClose, onSave, staff = [
                 onClick={onClose}
                 className="px-4 py-2 text-sm font-medium text-text hover:bg-bg rounded-lg transition-colors"
               >
-                Cancel
+                {t('common.actions.cancel')}
               </button>
               <button
                 onClick={handleSubmit}
@@ -386,7 +392,7 @@ export default function RoomEditModal({ room, isOpen, onClose, onSave, staff = [
                 className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-contrast text-sm font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Save className="w-4 h-4" />
-                {saving ? 'Saving...' : 'Save Changes'}
+                {saving ? t('common.actions.saving') : t('admin.rooms.edit.saveChanges')}
               </button>
             </div>
           </motion.div>

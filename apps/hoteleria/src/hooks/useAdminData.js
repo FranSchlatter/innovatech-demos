@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
-import { mockReservations, getTodayCheckIns, getTodayCheckOuts, getActiveReservations } from '../data/admin/mockReservations'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { mockServiceRequests, getPendingRequests, getActiveRequests } from '../data/admin/mockServiceRequests'
 import { mockHousekeepingTasks, getPendingTasks as getPendingHKTasks, getCompletedTodayTasks } from '../data/admin/mockHousekeeping'
 import { mockInventory, getLowStockItems } from '../data/admin/mockInventory'
 import { mockStaff, getOnDutyStaff } from '../data/admin/mockStaff'
 import rooms from '@shared-data/rooms.json'
+import { useReservations } from './useReservations'
 
 const STORAGE_KEY = 'hotel-admin-data'
 
@@ -66,20 +66,33 @@ const generateRoomStatuses = (roomsData, reservationsData, overrides = {}) => {
 }
 
 export function useAdminData() {
+  // Reservations now live in the shared, event-synced store (H26) so Dashboard,
+  // Calendar, Reception and the Guest Portal all see the same data live.
+  const resStore = useReservations()
+  const reservations = resStore.reservations
+
+  // Everything else (service requests, housekeeping, inventory, room overrides)
+  // stays owned here and persisted to `hotel-admin-data`.
   const [data, setData] = useState({
-    reservations: mockReservations,
     serviceRequests: mockServiceRequests,
     housekeepingTasks: mockHousekeepingTasks,
     inventory: mockInventory,
     staff: mockStaff,
-    roomOverrides: {},
-    rooms: generateRoomStatuses(rooms, mockReservations)
+    roomOverrides: {}
   })
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  // Load from localStorage on mount
+  // Rooms are derived from the live reservations + persisted overrides, so a
+  // check-in in any surface immediately flips the relevant room to "occupied".
+  const roomsState = useMemo(
+    () => generateRoomStatuses(rooms, reservations, data.roomOverrides),
+    [reservations, data.roomOverrides]
+  )
+
+  // Load from localStorage on mount (reservations are excluded — they come from
+  // the shared store now; any legacy reservations key is ignored).
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
@@ -87,14 +100,10 @@ export function useAdminData() {
         const parsed = JSON.parse(saved)
         setData(prev => ({
           ...prev,
-          ...parsed,
-          roomOverrides: parsed.roomOverrides || {},
-          // Always regenerate room statuses, then re-apply persisted overrides
-          rooms: generateRoomStatuses(
-            rooms,
-            parsed.reservations || mockReservations,
-            parsed.roomOverrides || {}
-          )
+          serviceRequests: parsed.serviceRequests || prev.serviceRequests,
+          housekeepingTasks: parsed.housekeepingTasks || prev.housekeepingTasks,
+          inventory: parsed.inventory || prev.inventory,
+          roomOverrides: parsed.roomOverrides || {}
         }))
       }
     } catch (err) {
@@ -102,11 +111,10 @@ export function useAdminData() {
     }
   }, [])
 
-  // Persist to localStorage on change
+  // Persist to localStorage on change (no reservations — those persist in the store).
   useEffect(() => {
     try {
       const toSave = {
-        reservations: data.reservations,
         serviceRequests: data.serviceRequests,
         housekeepingTasks: data.housekeepingTasks,
         inventory: data.inventory,
@@ -120,22 +128,22 @@ export function useAdminData() {
 
   // Calculate KPIs
   const getKPIs = useCallback(() => {
-    const totalRooms = data.rooms.length
-    const occupiedRooms = data.rooms.filter(r => r.status === 'occupied').length
-    const availableRooms = data.rooms.filter(r => r.status === 'available').length
-    const occupancyRate = Math.round((occupiedRooms / totalRooms) * 100)
+    const totalRooms = roomsState.length
+    const occupiedRooms = roomsState.filter(r => r.status === 'occupied').length
+    const availableRooms = roomsState.filter(r => r.status === 'available').length
+    const occupancyRate = totalRooms ? Math.round((occupiedRooms / totalRooms) * 100) : 0
 
-    const todayCheckIns = data.reservations.filter(r => {
-      const today = new Date().toISOString().split('T')[0]
-      return r.checkIn === today && r.status === 'confirmed'
-    })
+    const today = new Date().toISOString().split('T')[0]
 
-    const todayCheckOuts = data.reservations.filter(r => {
-      const today = new Date().toISOString().split('T')[0]
-      return r.checkOut === today && r.status === 'checked-in'
-    })
+    const todayCheckIns = reservations.filter(r =>
+      r.checkIn === today && r.status === 'confirmed'
+    )
 
-    const activeReservations = data.reservations.filter(
+    const todayCheckOuts = reservations.filter(r =>
+      r.checkOut === today && r.status === 'checked-in'
+    )
+
+    const activeReservations = reservations.filter(
       r => r.status === 'confirmed' || r.status === 'checked-in'
     )
 
@@ -144,17 +152,17 @@ export function useAdminData() {
     )
 
     // Calculate revenue
-    const todayRevenue = data.reservations
+    const todayRevenue = reservations
       .filter(r => r.status === 'checked-in' || r.status === 'checked-out')
-      .reduce((sum, r) => sum + r.totalAmount, 0)
+      .reduce((sum, r) => sum + (r.totalAmount || 0), 0)
 
     return {
       occupancyRate,
       totalRooms,
       occupiedRooms,
       availableRooms,
-      maintenanceRooms: data.rooms.filter(r => r.status === 'maintenance').length,
-      cleaningRooms: data.rooms.filter(r => r.status === 'cleaning').length,
+      maintenanceRooms: roomsState.filter(r => r.status === 'maintenance').length,
+      cleaningRooms: roomsState.filter(r => r.status === 'cleaning').length,
       todayCheckIns: todayCheckIns.length,
       todayCheckInsList: todayCheckIns,
       todayCheckOuts: todayCheckOuts.length,
@@ -166,29 +174,23 @@ export function useAdminData() {
       onDutyStaff: data.staff.filter(s => s.status === 'on-duty').length,
       todayRevenue
     }
-  }, [data])
+  }, [reservations, roomsState, data.serviceRequests, data.inventory, data.housekeepingTasks, data.staff])
 
-  // Update reservation
+  // Update reservation — delegates to the shared store. Status changes also
+  // record a timestamped history entry (used by the Reception timeline).
   const updateReservation = useCallback(async (id, updates) => {
     setLoading(true)
     try {
       await simulateApiDelay()
-      setData(prev => ({
-        ...prev,
-        reservations: prev.reservations.map(r =>
-          r.id === id ? { ...r, ...updates } : r
-        ),
-        rooms: generateRoomStatuses(
-          rooms,
-          prev.reservations.map(r => r.id === id ? { ...r, ...updates } : r)
-        )
-      }))
+      const { status, ...rest } = updates || {}
+      if (Object.keys(rest).length) resStore.updateReservation(id, rest)
+      if (status) resStore.setStatus(id, status, 'admin')
     } catch (err) {
       setError(err.message)
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [resStore])
 
   // Update service request
   const updateServiceRequest = useCallback(async (id, updates) => {
@@ -227,7 +229,8 @@ export function useAdminData() {
   }, [])
 
   // Merge arbitrary room fields (status, price, description, amenities, manager,
-  // notes, gallery, history…) and persist them as an override so edits survive refresh.
+  // notes, gallery, history…) and persist them as an override so edits survive
+  // refresh. Rooms recompute from overrides via the memo above.
   const updateRoom = useCallback(async (roomId, updates) => {
     setLoading(true)
     try {
@@ -237,10 +240,7 @@ export function useAdminData() {
         roomOverrides: {
           ...prev.roomOverrides,
           [roomId]: { ...(prev.roomOverrides[roomId] || {}), ...updates }
-        },
-        rooms: prev.rooms.map(r =>
-          r.id === roomId ? { ...r, ...updates } : r
-        )
+        }
       }))
     } catch (err) {
       setError(err.message)
@@ -298,22 +298,23 @@ export function useAdminData() {
     }
   }, [])
 
-  // Reset to initial data
+  // Reset to initial data (also resets the shared reservations store).
   const resetData = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY)
+    resStore.resetReservations()
     setData({
-      reservations: mockReservations,
       serviceRequests: mockServiceRequests,
       housekeepingTasks: mockHousekeepingTasks,
       inventory: mockInventory,
       staff: mockStaff,
-      roomOverrides: {},
-      rooms: generateRoomStatuses(rooms, mockReservations)
+      roomOverrides: {}
     })
-  }, [])
+  }, [resStore])
 
   return {
     ...data,
+    reservations,
+    rooms: roomsState,
     loading,
     error,
     getKPIs,
@@ -324,6 +325,9 @@ export function useAdminData() {
     updateRoomStatus,
     updateInventory,
     restockItem,
-    resetData
+    resetData,
+    // Direct access to the reservations store for surfaces that need richer
+    // actions (Reception check-in, Calendar) without going through the delay.
+    reservationsStore: resStore
   }
 }

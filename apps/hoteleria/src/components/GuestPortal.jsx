@@ -1,11 +1,17 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import LoginScreen from './LoginScreen'
+import LanguageSwitch from './LanguageSwitch'
+import CurrencySwitch from './CurrencySwitch'
 import GuestChat from './GuestChat'
-import CheckInFlow from './client/CheckInFlow'
+import CheckInStation from './client/checkin/CheckInStation'
 import DiningHub from './client/restaurant/DiningHub'
+import BeachPoolMap from './client/BeachPoolMap'
 import ExcursionBookingForm, { EXCURSIONS } from '../pages/ExcursionBookingForm'
 import { useLiveChat, peekLiveChat } from '../hooks/useLiveChat'
+import { useReservations } from '../hooks/useReservations'
+import { useTranslation } from '../i18n/LanguageProvider'
+import { useCurrency } from '../hooks/useCurrency'
 import {
   User,
   Calendar,
@@ -19,6 +25,7 @@ import {
   Sparkles,
   Dumbbell,
   Waves,
+  Umbrella,
   Car,
   Wifi,
   Coffee,
@@ -95,8 +102,8 @@ const MOCK_GUEST = {
   }
 }
 
-// H16 — persisted online check-in state (survives refresh)
-const CHECKIN_STORAGE_KEY = 'hotel-luxury-guest-checkin'
+// H26 — online check-in state now lives in the shared reservations store
+// (keyed by MOCK_GUEST.reservation.id) so reception can resume it. See below.
 
 // Available services for guests
 const ROOM_SERVICES = [
@@ -267,6 +274,12 @@ const SERVICE_SECTIONS = [
     description: 'Guided tours and adventures around the destination, booked to your room.'
   },
   {
+    id: 'beach-pool',
+    name: 'Beach & Pool',
+    icon: Umbrella,
+    description: 'Reserve a lounger, cabana or umbrella and order drinks to your spot.'
+  },
+  {
     id: 'amenities',
     name: 'Amenities',
     icon: Sparkles,
@@ -276,15 +289,12 @@ const SERVICE_SECTIONS = [
 
 const REQUESTS_STORAGE_KEY = 'hotel-luxury-guest-requests'
 
-// Short cancellation copy shown in the booking & request-detail modals.
-// Paid experiences carry a late-cancellation fee; complimentary ones just ask
-// guests to free up the slot if they can't make it.
-const cancellationCopy = (price) =>
-  price > 0
-    ? 'Free cancellation up to 24h before. Later cancellations or no-shows are charged 50% of the price.'
-    : 'Complimentary — no charge. Please cancel if you can\'t attend so another guest can take the slot.'
+// Cancellation copy shown in the booking & request-detail modals is resolved via
+// t() at render time (portal.cancellation.paid / .free) based on the price.
 
 export default function GuestPortal({ onExit }) {
+  const { t } = useTranslation()
+  const { format } = useCurrency()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
   const [guest] = useState(MOCK_GUEST)
@@ -296,15 +306,11 @@ export default function GuestPortal({ onExit }) {
       return []
     }
   })
-  // Online check-in (H16) — persisted so the checked-in state survives refresh
-  const [checkInData, setCheckInData] = useState(() => {
-    try {
-      const stored = localStorage.getItem(CHECKIN_STORAGE_KEY)
-      return stored ? JSON.parse(stored) : null
-    } catch {
-      return null
-    }
-  })
+  // Online check-in (H26) — state comes from the shared reservations store so the
+  // front desk sees the guest's progress and can resume it.
+  const resStore = useReservations()
+  const PORTAL_RES_ID = MOCK_GUEST.reservation.id
+  const storeRes = resStore.getReservation(PORTAL_RES_ID)
   const [showCheckIn, setShowCheckIn] = useState(false)
   const [showServiceModal, setShowServiceModal] = useState(null)
   const [showReservationModal, setShowReservationModal] = useState(null)
@@ -316,6 +322,7 @@ export default function GuestPortal({ onExit }) {
   const [showSuccessToast, setShowSuccessToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
   const [showDining, setShowDining] = useState(false)
+  const [showBeachMap, setShowBeachMap] = useState(false)
   const [showExcursions, setShowExcursions] = useState(false)
   const [excursionPreselect, setExcursionPreselect] = useState(null)
   const [servicesSection, setServicesSection] = useState('room-service')
@@ -328,7 +335,7 @@ export default function GuestPortal({ onExit }) {
   const autoReplyRef = useRef(null)
 
   const AUTO_REPLY_DELAY = 5000
-  const AUTO_REPLY_TEXT = 'Gracias por tu mensaje. Un agente del hotel se sumará a la conversación en breve. 🛎️'
+  const AUTO_REPLY_TEXT = t('portal.chat.autoReply')
 
   // Register the guest identity so the admin inbox can label the conversation.
   useEffect(() => {
@@ -375,25 +382,21 @@ export default function GuestPortal({ onExit }) {
     }
   }, [requests])
 
-  // Persist online check-in state (H16)
-  useEffect(() => {
-    try {
-      if (checkInData) localStorage.setItem(CHECKIN_STORAGE_KEY, JSON.stringify(checkInData))
-      else localStorage.removeItem(CHECKIN_STORAGE_KEY)
-    } catch {
-      // Ignore storage errors (e.g. private mode)
-    }
-  }, [checkInData])
+  // Effective reservation status comes from the shared store: once check-in is
+  // completed (online here, or by reception) the stay reads "checked-in".
+  const isCheckedIn = storeRes?.status === 'checked-in'
+  const canCheckIn = !storeRes || storeRes.status === 'confirmed'
 
-  // Effective reservation status: once the guest checks in online, the stay is
-  // "checked-in" regardless of the mock's original status.
-  const isCheckedIn = !!checkInData || guest.reservation.status === 'checked-in'
-  const canCheckIn = guest.reservation.status === 'confirmed' && !checkInData
-
-  const handleCheckInComplete = (data) => {
-    setCheckInData(data)
-    showToast('Check-in completed! Your digital key is ready.')
+  // Complete check-in from the portal (guest mode) → flip the shared reservation
+  // to checked-in and stamp the digital key. Reception sees it immediately.
+  const handleCheckInComplete = ({ station, room, digitalKey, keyCards, mobileKey }) => {
+    resStore.checkIn(PORTAL_RES_ID, { station, room, digitalKey, keyCards, mobileKey, by: 'guest' })
+    setShowCheckIn(false)
+    showToast(t('portal.toast.checkInComplete'))
   }
+
+  // Save partial online progress so the front desk can resume it at arrival.
+  const handleCheckInSave = (partial) => resStore.saveStation(PORTAL_RES_ID, partial, 'guest')
 
   const handleLogout = () => {
     setIsAuthenticated(false)
@@ -437,12 +440,12 @@ export default function GuestPortal({ onExit }) {
     setShowServiceModal(null)
     setServiceQuantity(1)
     setServiceNotes('')
-    showToast(`${service.name} requested successfully!`)
+    showToast(t('portal.toast.serviceRequested', { name: service.name }))
   }
 
   const handleCancelRequest = (requestId) => {
     setRequests(requests.filter(req => req.id !== requestId))
-    showToast('Request cancelled successfully')
+    showToast(t('portal.toast.requestCancelled'))
   }
 
   // Restaurant order (H7) → shows up as an active request in "My Stay".
@@ -464,7 +467,11 @@ export default function GuestPortal({ onExit }) {
       canCancel: true
     }
     setRequests((prev) => [newRequest, ...prev])
-    showToast(`Order #${order.number} sent to ${dineIn ? venue : 'the kitchen'}!`)
+    showToast(
+      dineIn
+        ? t('portal.toast.orderSentVenue', { number: order.number, venue })
+        : t('portal.toast.orderSentKitchen', { number: order.number })
+    )
   }
 
   // Dine-in table reservation (H7).
@@ -480,7 +487,7 @@ export default function GuestPortal({ onExit }) {
       canCancel: true
     }
     setRequests((prev) => [newRequest, ...prev])
-    showToast(`Table booked at ${booking.venue}!`)
+    showToast(t('portal.toast.tableBooked', { venue: booking.venue }))
   }
 
   // Waiter call (H7) — an immediate, non-cancellable request.
@@ -533,7 +540,46 @@ export default function GuestPortal({ onExit }) {
     setShowReservationModal(null)
     setReservationDate('')
     setReservationTime('')
-    showToast(`${amenity.name} reserved for ${reservationDate} at ${reservationTime}!`)
+    showToast(t('portal.toast.amenityReserved', { name: amenity.name, date: reservationDate, time: reservationTime }))
+  }
+
+  // Beach/pool spot reserved from the interactive map (H23). Mirrors the booking
+  // into "My Stay" as an active request; the live board itself lives in the
+  // useFacilities hook (shared with the admin), so canceling this card just
+  // dismisses the reminder — freeing the spot is done from the map.
+  const handleFacilityReserved = (reservation) => {
+    const newRequest = {
+      id: `BCH-${Date.now()}`,
+      type: 'facility',
+      service: reservation.describe,
+      date: reservation.date,
+      time: reservation.time,
+      status: 'confirmed',
+      price: reservation.price || 0,
+      location: reservation.describe,
+      canCancel: true
+    }
+    setRequests((prev) => [newRequest, ...prev])
+    showToast(t('portal.toast.facilityReserved', { label: reservation.label }))
+  }
+
+  // Drinks/snacks ordered "from my lounger" via the map.
+  const handlePoolsideOrder = (order) => {
+    const summary = order.items.map((l) => `${l.qty}× ${l.name}`).join(', ')
+    const newRequest = {
+      id: `PSO-${Date.now()}`,
+      type: 'poolside',
+      service: `Poolside order · ${order.spotLabel}`,
+      summary,
+      status: 'pending',
+      time: new Date().toLocaleTimeString(),
+      date: new Date().toLocaleDateString(),
+      estimatedTime: '15-20 min',
+      price: order.total,
+      canCancel: true
+    }
+    setRequests((prev) => [newRequest, ...prev])
+    showToast(t('portal.toast.poolsideSent'))
   }
 
   const formatDate = (dateStr) => {
@@ -561,11 +607,11 @@ export default function GuestPortal({ onExit }) {
   }
 
   const stayBadgeLabel = () => {
-    if (isCheckedIn) return 'Checked in'
+    if (isCheckedIn) return t('portal.overview.badge.checkedIn')
     const days = getDaysUntilCheckIn()
-    if (days <= 0) return 'Arriving today'
-    if (days === 1) return 'Arriving tomorrow'
-    return `Arriving in ${days} days`
+    if (days <= 0) return t('portal.overview.badge.arrivingToday')
+    if (days === 1) return t('portal.overview.badge.arrivingTomorrow')
+    return t('portal.overview.badge.arrivingInDays', { days })
   }
 
   // Bookable days for amenities: from today through checkout (inclusive).
@@ -603,23 +649,25 @@ export default function GuestPortal({ onExit }) {
                 <User className="w-6 h-6 text-accent" />
               </div>
               <div>
-                <h1 className="font-bold text-lg">Welcome, {guest.name.split(' ')[0]}</h1>
-                <p className="text-sm text-muted">Room {guest.room.number} | {guest.room.type}</p>
+                <h1 className="font-bold text-lg">{t('portal.header.welcome', { name: guest.name.split(' ')[0] })}</h1>
+                <p className="text-sm text-muted">{t('portal.header.roomLine', { number: guest.room.number, type: guest.room.type })}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 sm:gap-4">
+              <CurrencySwitch className="hidden sm:flex" />
+              <LanguageSwitch />
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-2 text-muted hover:text-primary transition"
               >
                 <LogOut className="w-5 h-5" />
-                <span className="hidden sm:inline">Sign Out</span>
+                <span className="hidden sm:inline">{t('portal.header.signOut')}</span>
               </button>
               <button
                 onClick={onExit}
                 className="flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg border border-border text-muted hover:text-primary hover:border-accent transition"
               >
-                <span className="hidden sm:inline">Exit Portal</span>
+                <span className="hidden sm:inline">{t('portal.header.exitPortal')}</span>
                 <X className="w-4 h-4 sm:hidden" />
               </button>
             </div>
@@ -644,7 +692,7 @@ export default function GuestPortal({ onExit }) {
                   }`}
                 >
                   <Icon className="w-4 h-4" />
-                  <span className="text-sm font-medium">{tab.name}</span>
+                  <span className="text-sm font-medium">{t(`portal.tabs.${tab.id}`)}</span>
                 </button>
               )
             })}
@@ -676,10 +724,9 @@ export default function GuestPortal({ onExit }) {
                     <KeyRound className="w-6 h-6 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-lg leading-tight">Check in online</h3>
+                    <h3 className="font-bold text-lg leading-tight">{t('portal.overview.checkInTitle')}</h3>
                     <p className="text-sm text-muted">
-                      Complete your details now, skip the front desk and get a digital room key
-                      ready for arrival.
+                      {t('portal.overview.checkInBody')}
                     </p>
                   </div>
                   <button
@@ -687,7 +734,7 @@ export default function GuestPortal({ onExit }) {
                     className="w-full sm:w-auto bg-accent text-white px-6 py-3 rounded-xl font-bold hover:opacity-90 transition flex items-center justify-center gap-2 flex-shrink-0"
                   >
                     <Smartphone className="w-5 h-5" />
-                    Check-in Online
+                    {t('portal.overview.checkInButton')}
                   </button>
                 </motion.div>
               )}
@@ -710,7 +757,7 @@ export default function GuestPortal({ onExit }) {
                   </div>
                   <div className="absolute bottom-4 left-4 right-4">
                     <h2 className="text-2xl md:text-3xl font-bold text-white mb-1">{guest.room.type}</h2>
-                    <p className="text-white/90 text-sm">Room {guest.room.number} · Floor {guest.room.floor}</p>
+                    <p className="text-white/90 text-sm">{t('portal.overview.roomFloor', { number: guest.room.number, floor: guest.room.floor })}</p>
                   </div>
                 </div>
 
@@ -721,9 +768,9 @@ export default function GuestPortal({ onExit }) {
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-accent" />
-                        <span className="text-sm font-medium">Stay Timeline</span>
+                        <span className="text-sm font-medium">{t('portal.overview.timeline')}</span>
                       </div>
-                      <span className="text-xs text-muted">{getDaysRemaining()} days remaining</span>
+                      <span className="text-xs text-muted">{t('portal.overview.daysRemaining', { days: getDaysRemaining() })}</span>
                     </div>
                     <div className="relative">
                       <div className="h-1.5 bg-bg rounded-full overflow-hidden">
@@ -746,24 +793,24 @@ export default function GuestPortal({ onExit }) {
                     <div className="bg-bg rounded-xl p-3">
                       <div className="flex items-center gap-2 mb-1">
                         <Clock className="w-3.5 h-3.5 text-accent" />
-                        <span className="text-xs text-muted">Nights</span>
+                        <span className="text-xs text-muted">{t('portal.overview.nights')}</span>
                       </div>
                       <p className="text-lg font-bold">{guest.reservation.nights}</p>
                     </div>
                     <div className="bg-bg rounded-xl p-3">
                       <div className="flex items-center gap-2 mb-1">
                         <User className="w-3.5 h-3.5 text-accent" />
-                        <span className="text-xs text-muted">Guests</span>
+                        <span className="text-xs text-muted">{t('portal.overview.guests')}</span>
                       </div>
                       <p className="text-lg font-bold">{guest.reservation.guests}</p>
                     </div>
                     <div className="bg-bg rounded-xl p-3">
                       <div className="flex items-center gap-2 mb-1">
                         <CreditCard className="w-3.5 h-3.5 text-accent" />
-                        <span className="text-xs text-muted">Balance</span>
+                        <span className="text-xs text-muted">{t('portal.overview.balance')}</span>
                       </div>
                       <p className="text-lg font-bold text-accent">
-                        ${(guest.reservation.totalAmount - guest.reservation.amountPaid).toFixed(0)}
+                        {format(guest.reservation.totalAmount - guest.reservation.amountPaid)}
                       </p>
                     </div>
                   </div>
@@ -771,10 +818,10 @@ export default function GuestPortal({ onExit }) {
                   {/* Quick Actions - Compact */}
                   <div className="grid grid-cols-2 gap-2 pt-3 border-t border-border">
                     {[
-                      { icon: UtensilsCrossed, label: 'Dining', action: () => setShowDining(true) },
-                      { icon: Bell, label: 'Room Service', action: () => goToServices('room-service') },
-                      { icon: Compass, label: 'Excursions', action: () => goToServices('excursions') },
-                      { icon: Sparkles, label: 'Amenities', action: () => goToServices('amenities') }
+                      { id: 'dining', icon: UtensilsCrossed, action: () => setShowDining(true) },
+                      { id: 'room-service', icon: Bell, action: () => goToServices('room-service') },
+                      { id: 'excursions', icon: Compass, action: () => goToServices('excursions') },
+                      { id: 'amenities', icon: Sparkles, action: () => goToServices('amenities') }
                     ].map((item, index) => {
                       const Icon = item.icon
                       return (
@@ -784,7 +831,7 @@ export default function GuestPortal({ onExit }) {
                           className="flex items-center gap-2 p-3 rounded-lg bg-bg hover:bg-accent/10 transition-colors group"
                         >
                           <Icon className="w-4 h-4 text-accent" />
-                          <span className="text-sm font-medium">{item.label}</span>
+                          <span className="text-sm font-medium">{t(`portal.overview.quickActions.${item.id}`)}</span>
                           <ChevronRight className="w-3.5 h-3.5 text-muted ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
                         </button>
                       )
@@ -793,8 +840,8 @@ export default function GuestPortal({ onExit }) {
                 </div>
               </div>
 
-              {/* Digital Room Key (H16) — persistent card shown after check-in */}
-              {isCheckedIn && checkInData && (
+              {/* Digital Room Key (H26) — persistent card shown after check-in */}
+              {isCheckedIn && storeRes?.digitalKey && (
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -803,11 +850,11 @@ export default function GuestPortal({ onExit }) {
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-semibold flex items-center gap-2">
                       <Smartphone className="w-4 h-4 text-accent" />
-                      Digital Room Key
+                      {t('portal.overview.digitalKeyTitle')}
                     </h3>
                     <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
                       <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                      Active
+                      {t('portal.overview.keyActive')}
                     </span>
                   </div>
                   <div className="bg-primary text-primary-contrast rounded-2xl p-5 flex items-center gap-4 sm:gap-5">
@@ -815,19 +862,18 @@ export default function GuestPortal({ onExit }) {
                       <KeyRound className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <span className="text-[11px] uppercase tracking-widest opacity-70">Room</span>
+                      <span className="text-[11px] uppercase tracking-widest opacity-70">{t('portal.overview.room')}</span>
                       <p className="text-3xl font-bold leading-none">{guest.room.number}</p>
                     </div>
                     <div className="text-right">
-                      <span className="text-[11px] uppercase tracking-widest opacity-70">Key code</span>
-                      <p className="font-mono font-bold text-accent tracking-wider break-all">{checkInData.digitalKey}</p>
+                      <span className="text-[11px] uppercase tracking-widest opacity-70">{t('portal.overview.keyCode')}</span>
+                      <p className="font-mono font-bold text-accent tracking-wider break-all">{storeRes.digitalKey}</p>
                     </div>
                   </div>
                   <div className="mt-3 flex items-start gap-2 text-xs text-muted">
                     <ShieldCheck className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
                     <span className="leading-relaxed">
-                      Present this code at the front desk on arrival, or tap your phone at the door.
-                      {checkInData.arrival ? ` Estimated arrival: ${checkInData.arrival}.` : ''}
+                      {t('portal.overview.digitalKeyNote')}
                     </span>
                   </div>
                 </motion.div>
@@ -838,23 +884,23 @@ export default function GuestPortal({ onExit }) {
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-semibold flex items-center gap-2">
                     <CreditCard className="w-4 h-4 text-accent" />
-                    Billing
+                    {t('portal.overview.billingTitle')}
                   </h3>
-                  <span className="text-xs text-muted">Res. #{guest.reservation.id}</span>
+                  <span className="text-xs text-muted">{t('portal.overview.reservationNumber', { id: guest.reservation.id })}</span>
                 </div>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted">Room ({guest.reservation.nights} nights)</span>
-                    <span className="font-medium">${guest.reservation.totalAmount.toFixed(2)}</span>
+                    <span className="text-muted">{t('portal.overview.roomNights', { nights: guest.reservation.nights })}</span>
+                    <span className="font-medium">{format(guest.reservation.totalAmount)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted">Paid</span>
-                    <span className="font-medium text-accent">-${guest.reservation.amountPaid.toFixed(2)}</span>
+                    <span className="text-muted">{t('portal.overview.paid')}</span>
+                    <span className="font-medium text-accent">-{format(guest.reservation.amountPaid)}</span>
                   </div>
                   <div className="pt-2 border-t border-border flex justify-between items-center">
-                    <span className="font-bold">Due at checkout</span>
+                    <span className="font-bold">{t('portal.overview.dueAtCheckout')}</span>
                     <span className="text-xl font-bold text-accent">
-                      ${(guest.reservation.totalAmount - guest.reservation.amountPaid).toFixed(2)}
+                      {format(guest.reservation.totalAmount - guest.reservation.amountPaid)}
                     </span>
                   </div>
                 </div>
@@ -866,9 +912,9 @@ export default function GuestPortal({ onExit }) {
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-semibold flex items-center gap-2">
                       <Clipboard className="w-4 h-4 text-accent" />
-                      Active Requests
+                      {t('portal.overview.activeRequestsTitle')}
                     </h3>
-                    <span className="text-xs text-muted">{requests.length} active</span>
+                    <span className="text-xs text-muted">{t('portal.overview.activeCount', { count: requests.length })}</span>
                   </div>
                   <div className="space-y-2">
                     <AnimatePresence initial={false}>
@@ -892,7 +938,9 @@ export default function GuestPortal({ onExit }) {
                                 dining: CalendarCheck,
                                 waiter: BellRing,
                                 excursion: Compass,
-                                amenity: Calendar
+                                amenity: Calendar,
+                                facility: Umbrella,
+                                poolside: Waves
                               }
                               const Icon = iconByType[request.type] ||
                                 (request.status === 'pending' ? Clock : request.status === 'confirmed' ? CheckCircle : AlertCircle)
@@ -903,20 +951,20 @@ export default function GuestPortal({ onExit }) {
                             <div className="flex items-center gap-2">
                               <h4 className="font-semibold text-sm truncate">{request.service}</h4>
                               <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-accent/20 text-accent capitalize flex-shrink-0">
-                                {request.status}
+                                {t(`common.status.${request.status}`)}
                               </span>
                             </div>
                             <p className="text-xs text-muted flex items-center gap-1 mt-0.5">
-                              {['amenity', 'dining', 'excursion'].includes(request.type) ? (
+                              {['amenity', 'dining', 'excursion', 'facility'].includes(request.type) ? (
                                 <>
                                   <Calendar className="w-3 h-3" />
                                   {request.date} · {request.time}
-                                  {request.guestsCount ? ` · ${request.guestsCount} guests` : ''}
+                                  {request.guestsCount ? t('portal.overview.guestsCount', { count: request.guestsCount }) : ''}
                                 </>
                               ) : (
                                 <>
                                   <Clock className="w-3 h-3" />
-                                  {request.date} {request.time} · ETA {request.estimatedTime}
+                                  {request.date} {request.time} · {t('portal.overview.etaShort', { eta: request.estimatedTime })}
                                 </>
                               )}
                             </p>
@@ -925,14 +973,14 @@ export default function GuestPortal({ onExit }) {
                             )}
                           </div>
                           {request.price > 0 && (
-                            <span className="text-sm font-bold text-accent whitespace-nowrap">${request.price}</span>
+                            <span className="text-sm font-bold text-accent whitespace-nowrap">{format(request.price)}</span>
                           )}
                           <ChevronRight className="w-4 h-4 text-muted flex-shrink-0" />
                           {request.canCancel && (
                             <button
                               onClick={(e) => { e.stopPropagation(); handleCancelRequest(request.id) }}
                               className="text-muted hover:text-primary transition flex-shrink-0"
-                              title="Cancel"
+                              title={t('portal.overview.cancel')}
                             >
                               <X className="w-4 h-4" />
                             </button>
@@ -971,7 +1019,7 @@ export default function GuestPortal({ onExit }) {
                       }`}
                     >
                       <Icon className="w-4 h-4" />
-                      {section.name}
+                      {t(`portal.services.sections.${section.id}`)}
                     </button>
                   )
                 })}
@@ -988,8 +1036,8 @@ export default function GuestPortal({ onExit }) {
                       <Icon className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-xl font-bold leading-tight">{current.name}</h2>
-                      <p className="text-sm text-muted">{current.description}</p>
+                      <h2 className="text-xl font-bold leading-tight">{t(`portal.services.sections.${current.id}`)}</h2>
+                      <p className="text-sm text-muted">{t(`portal.services.descriptions.${current.id}`)}</p>
                     </div>
                   </div>
                 )
@@ -1009,29 +1057,30 @@ export default function GuestPortal({ onExit }) {
                     <div>
                       <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                         <UtensilsCrossed className="w-5 h-5 text-accent" />
-                        In-Room Dining
+                        {t('portal.services.inRoomDining')}
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {ROOM_SERVICES.map((service) => {
                           const Icon = service.icon
+                          const serviceName = t(`portal.services.roomServiceItems.${service.id}`)
                           return (
                             <button
                               key={service.id}
-                              onClick={() => setShowServiceModal({ ...service, type: 'room-service' })}
+                              onClick={() => setShowServiceModal({ ...service, name: serviceName, type: 'room-service' })}
                               className="bg-surface p-4 rounded-xl flex items-center gap-4 border border-border hover:border-accent transition text-left"
                             >
                               <div className="w-12 h-12 bg-bg rounded-xl flex items-center justify-center flex-shrink-0">
                                 <Icon className="w-6 h-6 text-accent" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <h4 className="font-semibold truncate">{service.name}</h4>
+                                <h4 className="font-semibold truncate">{serviceName}</h4>
                                 <p className="text-sm text-muted">{service.time}</p>
                               </div>
                               <div className="text-right flex-shrink-0">
                                 {service.price > 0 ? (
-                                  <p className="font-bold text-accent">${service.price}</p>
+                                  <p className="font-bold text-accent">{format(service.price)}</p>
                                 ) : (
-                                  <p className="text-accent font-semibold">Free</p>
+                                  <p className="text-accent font-semibold">{t('portal.services.free')}</p>
                                 )}
                                 <ChevronRight className="w-5 h-5 text-muted ml-auto" />
                               </div>
@@ -1045,26 +1094,27 @@ export default function GuestPortal({ onExit }) {
                     <div>
                       <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                         <Sparkles className="w-5 h-5 text-accent" />
-                        Housekeeping
+                        {t('portal.services.housekeeping')}
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {HOUSEKEEPING_SERVICES.map((service) => {
                           const Icon = service.icon
+                          const serviceName = t(`portal.services.housekeepingItems.${service.id}`)
                           return (
                             <button
                               key={service.id}
-                              onClick={() => setShowServiceModal({ ...service, type: 'housekeeping' })}
+                              onClick={() => setShowServiceModal({ ...service, name: serviceName, type: 'housekeeping' })}
                               className="bg-surface p-4 rounded-xl flex items-center gap-4 border border-border hover:border-accent transition text-left"
                             >
                               <div className="w-12 h-12 bg-bg rounded-xl flex items-center justify-center flex-shrink-0">
                                 <Icon className="w-6 h-6 text-accent" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <h4 className="font-semibold truncate">{service.name}</h4>
+                                <h4 className="font-semibold truncate">{serviceName}</h4>
                                 <p className="text-sm text-muted">{service.time}</p>
                               </div>
                               <div className="text-right flex-shrink-0">
-                                <p className="text-accent font-semibold">Included</p>
+                                <p className="text-accent font-semibold">{t('portal.services.included')}</p>
                                 <ChevronRight className="w-5 h-5 text-muted ml-auto" />
                               </div>
                             </button>
@@ -1077,16 +1127,16 @@ export default function GuestPortal({ onExit }) {
                     <div className="bg-surface border border-border rounded-2xl p-6">
                       <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
                         <Wrench className="w-5 h-5 text-accent" />
-                        Report an Issue
+                        {t('portal.services.reportTitle')}
                       </h3>
                       <p className="text-muted mb-4">
-                        Something not working? Let us know and we'll fix it right away.
+                        {t('portal.services.reportBody')}
                       </p>
                       <button
-                        onClick={() => setShowServiceModal({ id: 'maintenance', name: 'Maintenance Request', icon: Wrench, price: 0, time: 'ASAP', type: 'maintenance' })}
+                        onClick={() => setShowServiceModal({ id: 'maintenance', name: t('portal.services.maintenanceName'), icon: Wrench, price: 0, time: 'ASAP', type: 'maintenance' })}
                         className="bg-accent text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition"
                       >
-                        Report Issue
+                        {t('portal.services.reportButton')}
                       </button>
                     </div>
                   </motion.div>
@@ -1108,17 +1158,16 @@ export default function GuestPortal({ onExit }) {
                     />
                     <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
                     <div className="absolute inset-0 p-6 flex flex-col justify-center max-w-md">
-                      <h3 className="text-2xl font-bold text-white mb-1">4 restaurants & room service</h3>
+                      <h3 className="text-2xl font-bold text-white mb-1">{t('portal.services.restaurantHeroTitle')}</h3>
                       <p className="text-white/85 text-sm mb-4">
-                        Book a table, order to your room or to your table, and call the waiter —
-                        all from here.
+                        {t('portal.services.restaurantHeroBody')}
                       </p>
                       <button
                         onClick={() => setShowDining(true)}
                         className="self-start inline-flex items-center gap-2 bg-accent text-white px-5 py-2.5 rounded-xl font-semibold hover:opacity-90 transition"
                       >
                         <UtensilsCrossed className="w-5 h-5" />
-                        Explore dining
+                        {t('portal.services.exploreDining')}
                       </button>
                     </div>
                   </motion.div>
@@ -1155,7 +1204,7 @@ export default function GuestPortal({ onExit }) {
                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                               <span className="absolute top-3 right-3 bg-accent text-white text-sm font-bold px-3 py-1 rounded-lg">
-                                ${excursion.price}
+                                {format(excursion.price)}
                               </span>
                               <div className="absolute bottom-3 left-3 w-10 h-10 bg-surface rounded-xl flex items-center justify-center">
                                 <Icon className="w-5 h-5 text-accent" />
@@ -1171,7 +1220,7 @@ export default function GuestPortal({ onExit }) {
                                 </span>
                                 <span className="flex items-center gap-1">
                                   <Users className="w-3 h-3" />
-                                  Max {excursion.maxCapacity}
+                                  {t('portal.services.max', { count: excursion.maxCapacity })}
                                 </span>
                               </div>
                             </div>
@@ -1184,12 +1233,43 @@ export default function GuestPortal({ onExit }) {
                       className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-accent text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition"
                     >
                       <Compass className="w-5 h-5" />
-                      Browse all excursions
+                      {t('portal.services.browseExcursions')}
                     </button>
                   </motion.div>
                 )}
 
-                {/* 4. Amenities — reservable facilities (spa, pool, gym, transfers) */}
+                {/* 4. Beach & Pool — interactive lounger / cabana map (H23) */}
+                {servicesSection === 'beach-pool' && (
+                  <motion.div
+                    key="svc-beach-pool"
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -12 }}
+                    className="relative overflow-hidden rounded-2xl shadow-soft"
+                  >
+                    <img
+                      src="https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=1200&h=500&fit=crop"
+                      alt="Pool and beach loungers"
+                      className="w-full h-56 md:h-64 object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
+                    <div className="absolute inset-0 p-6 flex flex-col justify-center max-w-md">
+                      <h3 className="text-2xl font-bold text-white mb-1">{t('portal.services.beachHeroTitle')}</h3>
+                      <p className="text-white/85 text-sm mb-4">
+                        {t('portal.services.beachHeroBody')}
+                      </p>
+                      <button
+                        onClick={() => setShowBeachMap(true)}
+                        className="self-start inline-flex items-center gap-2 bg-accent text-white px-5 py-2.5 rounded-xl font-semibold hover:opacity-90 transition"
+                      >
+                        <Umbrella className="w-5 h-5" />
+                        {t('portal.services.viewMap')}
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* 5. Amenities — reservable facilities (spa, pool, gym, transfers) */}
                 {servicesSection === 'amenities' && (
                   <motion.div
                     key="svc-amenities"
@@ -1221,7 +1301,7 @@ export default function GuestPortal({ onExit }) {
                               <Icon className="w-4 h-4 text-accent" />
                             </div>
                             <span className="absolute top-2 right-2 text-[11px] font-bold px-2 py-0.5 rounded-md bg-accent text-white">
-                              {isFree ? 'Free' : `$${amenity.price}`}
+                              {isFree ? t('portal.services.free') : format(amenity.price)}
                             </span>
                             <h3 className="absolute bottom-2 left-2 right-2 text-sm font-bold text-white leading-tight line-clamp-1">
                               {amenity.name}
@@ -1234,13 +1314,13 @@ export default function GuestPortal({ onExit }) {
                                 <Clock className="w-3 h-3" />
                                 {amenity.duration}
                               </span>
-                              <span>{amenity.available.length} slots</span>
+                              <span>{t('portal.services.slots', { count: amenity.available.length })}</span>
                             </div>
                             <button
                               onClick={() => setShowReservationModal(amenity)}
                               className="mt-auto w-full bg-accent text-white py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition"
                             >
-                              Book
+                              {t('portal.services.book')}
                             </button>
                           </div>
                         </motion.div>
@@ -1261,40 +1341,35 @@ export default function GuestPortal({ onExit }) {
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
-              <h2 className="text-xl font-bold">How can we help?</h2>
+              <h2 className="text-xl font-bold">{t('portal.help.title')}</h2>
 
               {/* Contact Options */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <a href="tel:+15551234567" className="bg-surface p-6 rounded-xl text-center hover:bg-surface/80 transition">
                   <Phone className="w-10 h-10 mx-auto mb-3 text-accent" />
-                  <h3 className="font-bold mb-1">Call Front Desk</h3>
-                  <p className="text-sm text-muted">Available 24/7</p>
+                  <h3 className="font-bold mb-1">{t('portal.help.callTitle')}</h3>
+                  <p className="text-sm text-muted">{t('portal.help.callSubtitle')}</p>
                 </a>
                 <button
                   onClick={() => setShowChat(true)}
                   className="bg-surface p-6 rounded-xl text-center hover:bg-surface/80 transition"
                 >
                   <MessageSquare className="w-10 h-10 mx-auto mb-3 text-accent" />
-                  <h3 className="font-bold mb-1">Live Chat</h3>
-                  <p className="text-sm text-muted">Instant support</p>
+                  <h3 className="font-bold mb-1">{t('portal.help.chatTitle')}</h3>
+                  <p className="text-sm text-muted">{t('portal.help.chatSubtitle')}</p>
                 </button>
                 <a href="mailto:concierge@villaserena.com" className="bg-surface p-6 rounded-xl text-center hover:bg-surface/80 transition">
                   <Mail className="w-10 h-10 mx-auto mb-3 text-accent" />
-                  <h3 className="font-bold mb-1">Email Us</h3>
-                  <p className="text-sm text-muted">We respond quickly</p>
+                  <h3 className="font-bold mb-1">{t('portal.help.emailTitle')}</h3>
+                  <p className="text-sm text-muted">{t('portal.help.emailSubtitle')}</p>
                 </a>
               </div>
 
               {/* FAQ */}
               <div className="bg-surface rounded-2xl p-6">
-                <h3 className="text-lg font-bold mb-4">Frequently Asked Questions</h3>
+                <h3 className="text-lg font-bold mb-4">{t('portal.help.faqTitle')}</h3>
                 <div className="space-y-4">
-                  {[
-                    { q: 'What are the check-out times?', a: 'Check-out is at 11:00 AM. Late check-out is available upon request.' },
-                    { q: 'Is breakfast included?', a: 'Breakfast is included with select room packages. Check your reservation details.' },
-                    { q: 'Where is the fitness center?', a: 'The fitness center is located on the 2nd floor, open 24/7 for guests.' },
-                    { q: 'How do I connect to WiFi?', a: 'Connect to "VillaSerena_Guest" and use your room number and last name to log in.' }
-                  ].map((faq, index) => (
+                  {t('portal.help.faq').map((faq, index) => (
                     <details key={index} className="group">
                       <summary className="flex items-center justify-between cursor-pointer p-3 bg-bg rounded-lg hover:bg-bg/80">
                         <span className="font-medium">{faq.q}</span>
@@ -1308,34 +1383,34 @@ export default function GuestPortal({ onExit }) {
 
               {/* Hotel Info */}
               <div className="bg-surface rounded-2xl p-6">
-                <h3 className="text-lg font-bold mb-4">Hotel Information</h3>
+                <h3 className="text-lg font-bold mb-4">{t('portal.help.infoTitle')}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex items-start gap-3">
                     <Wifi className="w-5 h-5 text-accent mt-1" />
                     <div>
-                      <p className="font-medium">WiFi</p>
-                      <p className="text-sm text-muted">Network: VillaSerena_Guest</p>
+                      <p className="font-medium">{t('portal.help.wifi')}</p>
+                      <p className="text-sm text-muted">{t('portal.help.wifiNetwork')}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <Clock className="w-5 h-5 text-accent mt-1" />
                     <div>
-                      <p className="font-medium">Restaurant Hours</p>
+                      <p className="font-medium">{t('portal.help.restaurantHours')}</p>
                       <p className="text-sm text-muted">6:30 AM - 10:30 PM</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <Waves className="w-5 h-5 text-accent mt-1" />
                     <div>
-                      <p className="font-medium">Pool Hours</p>
+                      <p className="font-medium">{t('portal.help.poolHours')}</p>
                       <p className="text-sm text-muted">7:00 AM - 9:00 PM</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <Dumbbell className="w-5 h-5 text-accent mt-1" />
                     <div>
-                      <p className="font-medium">Gym</p>
-                      <p className="text-sm text-muted">24 hours</p>
+                      <p className="font-medium">{t('portal.help.gym')}</p>
+                      <p className="text-sm text-muted">{t('portal.help.gymHours')}</p>
                     </div>
                   </div>
                 </div>
@@ -1373,7 +1448,7 @@ export default function GuestPortal({ onExit }) {
 
               {showServiceModal.type === 'room-service' && (
                 <div className="mb-4">
-                  <label className="text-sm text-muted mb-2 block">Quantity</label>
+                  <label className="text-sm text-muted mb-2 block">{t('portal.serviceModal.quantity')}</label>
                   <div className="flex items-center gap-4">
                     <button
                       onClick={() => setServiceQuantity(Math.max(1, serviceQuantity - 1))}
@@ -1393,26 +1468,26 @@ export default function GuestPortal({ onExit }) {
               )}
 
               <div className="mb-4">
-                <label className="text-sm text-muted mb-2 block">Special Instructions</label>
+                <label className="text-sm text-muted mb-2 block">{t('portal.serviceModal.specialInstructions')}</label>
                 <textarea
                   value={serviceNotes}
                   onChange={(e) => setServiceNotes(e.target.value)}
-                  placeholder="Any special requests?"
+                  placeholder={t('portal.serviceModal.specialPlaceholder')}
                   rows={3}
                   className="w-full px-4 py-3 bg-bg rounded-xl border-2 border-border focus:border-accent outline-none resize-none"
                 />
               </div>
 
               <div className="flex items-center justify-between mb-4">
-                <span className="text-muted">Estimated time:</span>
+                <span className="text-muted">{t('portal.serviceModal.estimatedTime')}</span>
                 <span className="font-semibold">{showServiceModal.time}</span>
               </div>
 
               {showServiceModal.price > 0 && (
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-muted">Total:</span>
+                  <span className="text-muted">{t('portal.serviceModal.total')}</span>
                   <span className="text-xl font-bold text-accent">
-                    ${(showServiceModal.price * serviceQuantity).toFixed(2)}
+                    {format(showServiceModal.price * serviceQuantity)}
                   </span>
                 </div>
               )}
@@ -1422,7 +1497,7 @@ export default function GuestPortal({ onExit }) {
                 className="w-full bg-accent text-white py-3 rounded-xl font-bold hover:bg-accent/90 transition flex items-center justify-center gap-2"
               >
                 <Send className="w-5 h-5" />
-                Send Request
+                {t('portal.serviceModal.sendRequest')}
               </button>
             </motion.div>
           </div>
@@ -1453,7 +1528,7 @@ export default function GuestPortal({ onExit }) {
                 <X className="w-5 h-5" />
               </button>
 
-              <h3 className="text-xl font-bold mb-1 pr-8">Book {showReservationModal.name}</h3>
+              <h3 className="text-xl font-bold mb-1 pr-8">{t('portal.reservationModal.bookTitle', { name: showReservationModal.name })}</h3>
               {showReservationModal.location && (
                 <p className="flex items-center gap-1.5 text-sm text-muted mb-3">
                   <MapPin className="w-4 h-4 text-accent flex-shrink-0" />
@@ -1465,7 +1540,7 @@ export default function GuestPortal({ onExit }) {
               )}
 
               <div className="mb-4">
-                <label className="text-sm text-muted mb-2 block">Select Date</label>
+                <label className="text-sm text-muted mb-2 block">{t('portal.reservationModal.selectDate')}</label>
                 <div className="grid grid-cols-4 gap-2">
                   {getStayDates().map((d) => {
                     const iso = d.toISOString().split('T')[0]
@@ -1494,7 +1569,7 @@ export default function GuestPortal({ onExit }) {
               </div>
 
               <div className="mb-4">
-                <label className="text-sm text-muted mb-2 block">Select Time</label>
+                <label className="text-sm text-muted mb-2 block">{t('portal.reservationModal.selectTime')}</label>
                 <div className="grid grid-cols-3 gap-2">
                   {showReservationModal.available.map((time) => (
                     <button
@@ -1513,21 +1588,21 @@ export default function GuestPortal({ onExit }) {
               </div>
 
               <div className="flex items-center justify-between mb-4">
-                <span className="text-muted">Duration:</span>
+                <span className="text-muted">{t('portal.reservationModal.duration')}</span>
                 <span className="font-semibold">{showReservationModal.duration}</span>
               </div>
 
               {showReservationModal.price > 0 && (
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-muted">Price:</span>
-                  <span className="text-xl font-bold text-accent">${showReservationModal.price}</span>
+                  <span className="text-muted">{t('portal.reservationModal.price')}</span>
+                  <span className="text-xl font-bold text-accent">{format(showReservationModal.price)}</span>
                 </div>
               )}
 
               {/* Cancellation policy — fee for paid experiences, no-show note for free ones */}
               <div className="flex items-start gap-2 text-xs text-muted bg-bg rounded-lg p-3 mb-4">
                 <AlertCircle className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
-                <span className="leading-relaxed">{cancellationCopy(showReservationModal.price)}</span>
+                <span className="leading-relaxed">{t(showReservationModal.price > 0 ? 'portal.cancellation.paid' : 'portal.cancellation.free')}</span>
               </div>
 
               <button
@@ -1536,7 +1611,7 @@ export default function GuestPortal({ onExit }) {
                 className="w-full bg-accent text-white py-3 rounded-xl font-bold hover:bg-accent/90 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <CheckCircle className="w-5 h-5" />
-                Confirm Reservation
+                {t('portal.reservationModal.confirm')}
               </button>
             </motion.div>
           </div>
@@ -1607,7 +1682,7 @@ export default function GuestPortal({ onExit }) {
                 {/* Status + type chips */}
                 <div className="flex flex-wrap items-center gap-2 mb-5">
                   <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-accent/20 text-accent capitalize">
-                    {showRequestDetail.status}
+                    {t(`common.status.${showRequestDetail.status}`)}
                   </span>
                   <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-bg text-muted capitalize">
                     {showRequestDetail.type}
@@ -1619,15 +1694,15 @@ export default function GuestPortal({ onExit }) {
                   {(() => {
                     const r = showRequestDetail
                     const rows = [
-                      { icon: Hash, label: 'Request ID', value: r.id },
-                      { icon: MapPin, label: 'Location', value: r.location },
-                      { icon: Calendar, label: 'Date', value: r.date },
-                      { icon: Clock, label: 'Time', value: r.time },
-                      { icon: Clock, label: 'ETA', value: r.estimatedTime },
-                      { icon: Clock, label: 'Duration', value: r.duration },
-                      { icon: Tag, label: 'Quantity', value: r.quantity && r.quantity > 1 ? r.quantity : null },
-                      { icon: Users, label: 'Guests', value: r.guestsCount },
-                      { icon: UtensilsCrossed, label: 'Items', value: r.summary }
+                      { icon: Hash, label: t('portal.requestDetail.requestId'), value: r.id },
+                      { icon: MapPin, label: t('portal.requestDetail.location'), value: r.location },
+                      { icon: Calendar, label: t('portal.requestDetail.date'), value: r.date },
+                      { icon: Clock, label: t('portal.requestDetail.time'), value: r.time },
+                      { icon: Clock, label: t('portal.requestDetail.eta'), value: r.estimatedTime },
+                      { icon: Clock, label: t('portal.requestDetail.duration'), value: r.duration },
+                      { icon: Tag, label: t('portal.requestDetail.quantity'), value: r.quantity && r.quantity > 1 ? r.quantity : null },
+                      { icon: Users, label: t('portal.requestDetail.guests'), value: r.guestsCount },
+                      { icon: UtensilsCrossed, label: t('portal.requestDetail.items'), value: r.summary }
                     ].filter((row) => row.value)
                     return rows.map((row) => {
                       const RowIcon = row.icon
@@ -1644,7 +1719,7 @@ export default function GuestPortal({ onExit }) {
                   {showRequestDetail.notes && (
                     <div className="flex items-start gap-3">
                       <StickyNote className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
-                      <span className="text-muted w-24 flex-shrink-0">Notes</span>
+                      <span className="text-muted w-24 flex-shrink-0">{t('portal.requestDetail.notes')}</span>
                       <span className="font-medium text-right flex-1 break-words italic">"{showRequestDetail.notes}"</span>
                     </div>
                   )}
@@ -1653,9 +1728,9 @@ export default function GuestPortal({ onExit }) {
                     <div className="flex items-center justify-between pt-3 mt-1 border-t border-border">
                       <span className="text-muted flex items-center gap-2">
                         <CreditCard className="w-4 h-4 text-accent" />
-                        Total
+                        {t('portal.requestDetail.total')}
                       </span>
-                      <span className="text-lg font-bold text-accent">${showRequestDetail.price}</span>
+                      <span className="text-lg font-bold text-accent">{format(showRequestDetail.price)}</span>
                     </div>
                   )}
 
@@ -1663,7 +1738,7 @@ export default function GuestPortal({ onExit }) {
                   {showRequestDetail.canCancel && (
                     <div className="flex items-start gap-2 text-xs text-muted bg-bg rounded-lg p-3 mt-1">
                       <AlertCircle className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
-                      <span className="leading-relaxed">{cancellationCopy(showRequestDetail.price)}</span>
+                      <span className="leading-relaxed">{t(showRequestDetail.price > 0 ? 'portal.cancellation.paid' : 'portal.cancellation.free')}</span>
                     </div>
                   )}
                 </div>
@@ -1678,14 +1753,14 @@ export default function GuestPortal({ onExit }) {
                       }}
                       className="flex-1 py-2.5 rounded-xl font-semibold border border-border text-muted hover:text-primary hover:border-accent transition"
                     >
-                      Cancel Request
+                      {t('portal.requestDetail.cancelRequest')}
                     </button>
                   )}
                   <button
                     onClick={() => setShowRequestDetail(null)}
                     className="flex-1 bg-accent text-white py-2.5 rounded-xl font-semibold hover:opacity-90 transition"
                   >
-                    Close
+                    {t('portal.requestDetail.close')}
                   </button>
                 </div>
               </div>
@@ -1718,7 +1793,7 @@ export default function GuestPortal({ onExit }) {
             exit={{ opacity: 0, scale: 0.8 }}
             onClick={() => setShowChat(true)}
             className="fixed bottom-5 right-5 z-40 flex items-center gap-2 bg-accent text-white pl-4 pr-5 py-3 rounded-full shadow-lg hover:bg-accent/90 transition"
-            title="Chatear con recepción"
+            title={t('portal.chat.launcherTitle')}
           >
             <span className="relative">
               <Headset className="w-5 h-5" />
@@ -1728,7 +1803,7 @@ export default function GuestPortal({ onExit }) {
                 </span>
               )}
             </span>
-            <span className="text-sm font-semibold hidden sm:inline">Chat en vivo</span>
+            <span className="text-sm font-semibold hidden sm:inline">{t('portal.chat.launcher')}</span>
           </motion.button>
         )}
       </AnimatePresence>
@@ -1743,12 +1818,16 @@ export default function GuestPortal({ onExit }) {
         onSend={handleSendChat}
       />
 
-      {/* Online check-in wizard (H16) */}
-      <CheckInFlow
+      {/* Online check-in wizard (H26) — shared station in guest mode, on the
+          unified store so reception can resume the guest's progress */}
+      <CheckInStation
         open={showCheckIn}
         onClose={() => setShowCheckIn(false)}
-        guest={guest}
+        reservation={storeRes}
+        mode="guest"
+        availableRooms={[]}
         onComplete={handleCheckInComplete}
+        onSaveProgress={handleCheckInSave}
       />
 
       {/* Dining — restaurants, room service, table booking, waiter (H7) */}
@@ -1761,6 +1840,17 @@ export default function GuestPortal({ onExit }) {
         onOrderPlaced={handleOrderPlaced}
         onReserveTable={handleReserveTable}
         onCallWaiter={handleCallWaiter}
+      />
+
+      {/* Beach & pool interactive map (H23) — reserve spots + poolside ordering */}
+      <BeachPoolMap
+        open={showBeachMap}
+        onClose={() => setShowBeachMap(false)}
+        guestName={guest.name}
+        roomNumber={guest.room.number}
+        stayDates={getStayDates()}
+        onReserve={handleFacilityReserved}
+        onOrder={handlePoolsideOrder}
       />
 
       {/* Excursion booking (H3) — reuses the landing form inside the portal */}

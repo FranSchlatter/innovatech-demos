@@ -1,9 +1,13 @@
 import { motion } from 'framer-motion'
 import { CheckCircle, Clock, Receipt, UtensilsCrossed, ChevronRight } from 'lucide-react'
+import { useTranslation } from '../../../i18n/LanguageProvider'
+import { useCurrency } from '../../../hooks/useCurrency'
 
 // Success screen shown after a room-service order is placed.
 // `order` is the object built by MenuBrowser (number, items, total, eta, room).
 export default function OrderConfirmation({ order, onClose, serviceType = 'room' }) {
+  const { t } = useTranslation()
+  const { format } = useCurrency()
   if (!order) return null
 
   const dineIn = serviceType === 'table'
@@ -25,11 +29,11 @@ export default function OrderConfirmation({ order, onClose, serviceType = 'room'
         <CheckCircle className="w-10 h-10 text-accent" />
       </motion.div>
 
-      <h2 className="text-2xl font-bold mb-1">Order confirmed!</h2>
+      <h2 className="text-2xl font-bold mb-1">{t('client.order.confirmedTitle')}</h2>
       <p className="text-muted mb-6">
         {dineIn
-          ? `Your order for ${order.venue} is being prepared. The waiter will bring it to your table shortly.`
-          : `Your order is on its way to Room ${order.room}. Sit back and relax.`}
+          ? t('client.order.dineInMessage', { venue: order.venue })
+          : t('client.order.roomMessage', { room: order.room })}
       </p>
 
       {/* Order meta */}
@@ -37,7 +41,7 @@ export default function OrderConfirmation({ order, onClose, serviceType = 'room'
         <div className="flex items-center justify-between pb-4 border-b border-border">
           <div className="flex items-center gap-2">
             <Receipt className="w-4 h-4 text-accent" />
-            <span className="text-sm text-muted">Order number</span>
+            <span className="text-sm text-muted">{t('client.order.orderNumber')}</span>
           </div>
           <span className="font-bold">#{order.number}</span>
         </div>
@@ -45,7 +49,7 @@ export default function OrderConfirmation({ order, onClose, serviceType = 'room'
         <div className="flex items-center justify-between py-4 border-b border-border">
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-accent" />
-            <span className="text-sm text-muted">{dineIn ? 'Ready by' : 'Estimated delivery'}</span>
+            <span className="text-sm text-muted">{dineIn ? t('client.order.readyBy') : t('client.order.estimatedDelivery')}</span>
           </div>
           <span className="font-bold text-accent">{order.eta}</span>
         </div>
@@ -60,19 +64,19 @@ export default function OrderConfirmation({ order, onClose, serviceType = 'room'
                 </span>
                 <span className="truncate">{line.name}</span>
               </span>
-              <span className="font-medium whitespace-nowrap">${line.price * line.qty}</span>
+              <span className="font-medium whitespace-nowrap">{format(line.price * line.qty)}</span>
             </div>
           ))}
         </div>
 
         <div className="flex items-center justify-between pt-4 mt-2 border-t border-border">
-          <span className="font-bold">Total</span>
-          <span className="text-xl font-bold text-accent">${order.total}</span>
+          <span className="font-bold">{t('client.order.total')}</span>
+          <span className="text-xl font-bold text-accent">{format(order.total)}</span>
         </div>
 
         {order.notes && (
           <div className="mt-4 pt-4 border-t border-border">
-            <p className="text-xs text-muted mb-1">Special instructions</p>
+            <p className="text-xs text-muted mb-1">{t('client.order.specialInstructions')}</p>
             <p className="text-sm">{order.notes}</p>
           </div>
         )}
@@ -80,14 +84,14 @@ export default function OrderConfirmation({ order, onClose, serviceType = 'room'
 
       <p className="text-xs text-muted flex items-center justify-center gap-1.5 mb-6">
         <UtensilsCrossed className="w-3.5 h-3.5" />
-        Charged to your room account · pay at checkout
+        {t('client.order.chargedToRoom')}
       </p>
 
       <button
         onClick={onClose}
         className="w-full bg-accent text-white py-3 rounded-xl font-bold hover:bg-accent/90 transition flex items-center justify-center gap-2"
       >
-        Back to my stay
+        {t('client.order.backToStay')}
         <ChevronRight className="w-5 h-5" />
       </button>
     </motion.div>

@@ -9,7 +9,7 @@ import {
   LogOut,
   X,
   Bot,
-  Calculator,
+  FileText,
   Wallet,
   Share2,
   ShieldCheck
@@ -24,7 +24,7 @@ const navItems = [
   { id: 'leads', label: 'Leads / CRM', icon: Users },
   { id: 'visits', label: 'Visitas', icon: CalendarDays },
   { id: 'operations', label: 'Operaciones', icon: Handshake },
-  { id: 'contracts', label: 'Ajustes', icon: Calculator },
+  { id: 'contracts', label: 'Contratos', icon: FileText },
   { id: 'liquidations', label: 'Liquidaciones', icon: Wallet },
   { id: 'agents', label: 'Equipo', icon: UserCog },
   { id: 'users', label: 'Usuarios', icon: ShieldCheck }

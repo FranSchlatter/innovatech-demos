@@ -1,5 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Plus, Minus, ShoppingBag, Send, Trash2, Loader2 } from 'lucide-react'
+import { useTranslation } from '../../../i18n/LanguageProvider'
+import { useCurrency } from '../../../hooks/useCurrency'
 
 // Lateral cart for the restaurant menu.
 // Props:
@@ -20,6 +22,8 @@ export default function CartDrawer({
   onSubmit,
   submitting
 }) {
+  const { t } = useTranslation()
+  const { format } = useCurrency()
   const subtotal = lines.reduce((sum, l) => sum + l.price * l.qty, 0)
   const itemCount = lines.reduce((sum, l) => sum + l.qty, 0)
 
@@ -48,7 +52,7 @@ export default function CartDrawer({
             <div className="flex items-center justify-between p-5 border-b border-border">
               <h3 className="text-lg font-bold flex items-center gap-2">
                 <ShoppingBag className="w-5 h-5 text-accent" />
-                Your Order
+                {t('client.cart.yourOrder')}
                 {itemCount > 0 && (
                   <span className="text-sm font-medium text-muted">({itemCount})</span>
                 )}
@@ -68,8 +72,8 @@ export default function CartDrawer({
                   <div className="w-16 h-16 rounded-full bg-surface flex items-center justify-center mb-4">
                     <ShoppingBag className="w-8 h-8 text-muted" />
                   </div>
-                  <p className="font-medium">Your cart is empty</p>
-                  <p className="text-sm text-muted mt-1">Add dishes from the menu to get started.</p>
+                  <p className="font-medium">{t('client.cart.empty')}</p>
+                  <p className="text-sm text-muted mt-1">{t('client.cart.emptyHint')}</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -94,12 +98,12 @@ export default function CartDrawer({
                             <button
                               onClick={() => onRemove(line.id)}
                               className="text-muted hover:text-red-500 transition-colors flex-shrink-0"
-                              title="Remove"
+                              title={t('client.cart.remove')}
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
-                          <p className="text-sm text-accent font-bold mt-0.5">${line.price}</p>
+                          <p className="text-sm text-accent font-bold mt-0.5">{format(line.price)}</p>
 
                           {/* Quantity stepper */}
                           <div className="flex items-center justify-between mt-2">
@@ -119,7 +123,7 @@ export default function CartDrawer({
                               </button>
                             </div>
                             <span className="text-sm font-bold whitespace-nowrap">
-                              ${line.price * line.qty}
+                              {format(line.price * line.qty)}
                             </span>
                           </div>
                         </div>
@@ -129,11 +133,11 @@ export default function CartDrawer({
 
                   {/* Special notes */}
                   <div className="pt-2">
-                    <label className="text-sm text-muted mb-2 block">Special instructions</label>
+                    <label className="text-sm text-muted mb-2 block">{t('client.cart.specialInstructions')}</label>
                     <textarea
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Allergies, cooking preferences, delivery notes…"
+                      placeholder={t('client.cart.specialInstructionsPlaceholder')}
                       rows={3}
                       className="w-full px-4 py-3 bg-surface rounded-xl border-2 border-border focus:border-accent outline-none resize-none text-sm"
                     />
@@ -146,8 +150,8 @@ export default function CartDrawer({
             {lines.length > 0 && (
               <div className="border-t border-border p-5 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-muted">Subtotal</span>
-                  <span className="text-xl font-bold text-accent">${subtotal}</span>
+                  <span className="text-muted">{t('client.cart.subtotal')}</span>
+                  <span className="text-xl font-bold text-accent">{format(subtotal)}</span>
                 </div>
                 <button
                   onClick={onSubmit}
@@ -157,16 +161,16 @@ export default function CartDrawer({
                   {submitting ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Sending order…
+                      {t('client.cart.sendingOrder')}
                     </>
                   ) : (
                     <>
                       <Send className="w-5 h-5" />
-                      Place order · ${subtotal}
+                      {t('client.cart.placeOrder', { subtotal: format(subtotal) })}
                     </>
                   )}
                 </button>
-                <p className="text-xs text-muted text-center">Charged to your room · pay at checkout</p>
+                <p className="text-xs text-muted text-center">{t('client.cart.chargedToRoom')}</p>
               </div>
             )}
           </motion.div>

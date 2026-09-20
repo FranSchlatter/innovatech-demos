@@ -26,34 +26,19 @@ import {
   ShieldCheck,
   CalendarRange
 } from 'lucide-react'
+import { useTranslation } from '../i18n/LanguageProvider'
+import { useCurrency } from '../hooks/useCurrency'
 
 // Curated experience packages. Each package is a stay (nightly rate) that bundles
-// a set of perks. `priceValue` feeds the BookingForm math; `details` carry a
-// per-item icon so the list reads richer than a flat bullet list.
+// a set of perks. `priceValue` feeds the BookingForm math; per-item icons keep
+// the inclusion list richer than a flat bullet list. Copy is translated at render
+// time via the stable numeric `id` (title/tagline/descriptions/details/etc.).
 const OFFERS = [
   {
     id: 1,
-    title: 'Romantic Escape',
-    tagline: 'For couples chasing an unforgettable getaway',
-    description:
-      'The ultimate romantic retreat, curated for couples seeking intimate moments and lasting memories.',
-    longDescription:
-      'From the moment you arrive, every detail is arranged for two. Settle into a spacious suite with a private terrace, unwind with a couples spa ritual, and end each evening with a candlelit dinner prepared by our Michelin-starred kitchen. This package blends privacy, indulgence and effortless service into a getaway you will not want to end.',
-    details: [
-      { icon: Wine, text: 'Complimentary champagne & chocolates on arrival' },
-      { icon: Sparkles, text: 'Couples spa ritual with 60-minute massage' },
-      { icon: Utensils, text: 'Candlelit dinner for two at our Michelin restaurant' },
-      { icon: Flower2, text: 'Fresh flower arrangement in your suite' },
-      { icon: Clock, text: 'Guaranteed late checkout until 2:00 PM' },
-      { icon: Waves, text: 'Private beach cabana access' }
-    ],
+    detailIcons: [Wine, Sparkles, Utensils, Flower2, Clock, Waves],
     icon: Heart,
-    price: 'From $520',
     priceValue: 520,
-    priceNote: 'per night · perks included',
-    validity: 'Valid Jan 6 – Dec 20, 2026',
-    cancellation:
-      'Free cancellation up to 7 days before arrival. Within 7 days, the first night is charged.',
     highlight: true,
     bestSeller: true,
     wide: true,
@@ -62,27 +47,9 @@ const OFFERS = [
   },
   {
     id: 2,
-    title: 'Culinary Journey',
-    tagline: 'A gastronomic adventure for food lovers',
-    description:
-      'A gastronomic adventure with access to our world-class restaurants and cellar-curated wine pairings.',
-    longDescription:
-      'Designed for the truly curious palate, the Culinary Journey opens every door in our kitchens. Sit down to multi-course tasting menus, pair each plate with wines chosen by our head sommelier, roll up your sleeves for a hands-on class with the executive chef, and finish with a private mixology session. It is a full immersion into the craft behind great dining.',
-    details: [
-      { icon: Utensils, text: 'Multi-course tasting menu at every restaurant' },
-      { icon: Wine, text: 'Premium wine pairings from our award-winning cellar' },
-      { icon: ChefHat, text: 'Private consultation with the executive chef' },
-      { icon: Flame, text: 'Hands-on cooking class for two' },
-      { icon: Leaf, text: 'Farm-to-table dining experience' },
-      { icon: GlassWater, text: 'Exclusive craft mixology session' }
-    ],
+    detailIcons: [Utensils, Wine, ChefHat, Flame, Leaf, GlassWater],
     icon: Utensils,
-    price: 'From $460',
     priceValue: 460,
-    priceNote: 'per night · dining included',
-    validity: 'Valid year-round, subject to restaurant availability',
-    cancellation:
-      'Free cancellation up to 48 hours before arrival. No-shows are charged the first night.',
     highlight: false,
     bestSeller: false,
     image:
@@ -90,27 +57,9 @@ const OFFERS = [
   },
   {
     id: 3,
-    title: 'City Explorer',
-    tagline: 'Culture, guides and hidden local gems',
-    description:
-      'Discover the hidden gems and cultural treasures of our city with guided tours and exclusive access.',
-    longDescription:
-      'Step beyond the guidebook. Our concierge team pairs you with local experts who reveal the neighbourhoods, markets and cultural venues most visitors never find. Private museum tours, curated food walks and evening entertainment are arranged around your pace, with transport handled end to end so you can simply enjoy the city.',
-    details: [
-      { icon: MapPin, text: 'Guided city tours with local experts' },
-      { icon: Landmark, text: 'Exclusive access to cultural venues' },
-      { icon: Ticket, text: 'Private museum & gallery tours' },
-      { icon: Utensils, text: 'Local market and street-food tour' },
-      { icon: Car, text: 'Private transportation throughout your stay' },
-      { icon: Music, text: 'Evening entertainment reservations' }
-    ],
+    detailIcons: [MapPin, Landmark, Ticket, Utensils, Car, Music],
     icon: MapPin,
-    price: 'From $390',
     priceValue: 390,
-    priceNote: 'per night · tours included',
-    validity: 'Valid Mar 1 – Nov 30, 2026 (weather permitting)',
-    cancellation:
-      'Free cancellation up to 72 hours before arrival. Tours can be rescheduled at no cost.',
     highlight: false,
     bestSeller: false,
     image:
@@ -118,27 +67,9 @@ const OFFERS = [
   },
   {
     id: 4,
-    title: 'Wellness Retreat',
-    tagline: 'Reset your body and mind',
-    description:
-      'A restorative escape blending spa, movement and nourishing cuisine to leave you completely renewed.',
-    longDescription:
-      'Slow down and reconnect. The Wellness Retreat pairs daily yoga and meditation with generous spa credit, a personalised training session and a nourishing detox menu crafted by our wellness chef. Between treatments, unwind in the thermal pool and sauna, and drift off with our signature aromatherapy turndown. You will leave lighter than you arrived.',
-    details: [
-      { icon: Leaf, text: 'Daily yoga & guided meditation sessions' },
-      { icon: Sparkles, text: 'Full-body spa & massage credit' },
-      { icon: Utensils, text: 'Detox & wellness cuisine menu' },
-      { icon: Dumbbell, text: 'Private personal-training session' },
-      { icon: Waves, text: 'Unlimited thermal pool & sauna access' },
-      { icon: Moon, text: 'Aromatherapy turndown service' }
-    ],
+    detailIcons: [Leaf, Sparkles, Utensils, Dumbbell, Waves, Moon],
     icon: Flower2,
-    price: 'From $540',
     priceValue: 540,
-    priceNote: 'per night · spa included',
-    validity: 'Valid year-round',
-    cancellation:
-      'Free cancellation up to 5 days before arrival. Spa appointments reschedulable anytime.',
     highlight: false,
     bestSeller: false,
     wide: true,
@@ -148,14 +79,42 @@ const OFFERS = [
 ]
 
 export default function OffersSection({ onReservePackage }) {
+  const { t } = useTranslation()
+  const { format } = useCurrency()
   const [selectedOffer, setSelectedOffer] = useState(null)
+
+  // Language-resolved copy for a package, keyed by its stable numeric id.
+  const offerTitle = (offer) => t(`landing.offers.packages.${offer.id}.title`)
+  const offerTagline = (offer) => t(`landing.offers.packages.${offer.id}.tagline`)
+  const offerDescription = (offer) => t(`landing.offers.packages.${offer.id}.description`)
+  const offerLongDescription = (offer) => t(`landing.offers.packages.${offer.id}.longDescription`)
+  const offerPriceNote = (offer) => t(`landing.offers.packages.${offer.id}.priceNote`)
+  const offerValidity = (offer) => t(`landing.offers.packages.${offer.id}.validity`)
+  const offerCancellation = (offer) => t(`landing.offers.packages.${offer.id}.cancellation`)
+  // details is stored as an array of strings; pair each with its icon by index.
+  const offerDetails = (offer) => {
+    const texts = t(`landing.offers.packages.${offer.id}.details`)
+    return (Array.isArray(texts) ? texts : []).map((text, i) => ({
+      icon: offer.detailIcons[i],
+      text
+    }))
+  }
 
   // Hand the package off to the booking flow (App builds a room-like object from it).
   // Falls back to scrolling toward the booking/accommodation area if no handler is wired.
   const reservePackage = (offer) => {
     setSelectedOffer(null)
     if (onReservePackage) {
-      onReservePackage(offer)
+      // Pass a language-resolved copy so the booking flow shows translated text.
+      onReservePackage({
+        ...offer,
+        title: offerTitle(offer),
+        tagline: offerTagline(offer),
+        description: offerDescription(offer),
+        priceNote: offerPriceNote(offer),
+        details: offerDetails(offer),
+        cancellation: offerCancellation(offer)
+      })
       return
     }
     const target =
@@ -191,9 +150,9 @@ export default function OffersSection({ onReservePackage }) {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="heading-md mb-4">Curated Experiences</h2>
+          <h2 className="heading-md mb-4">{t('landing.offers.title')}</h2>
           <p className="text-lg text-muted max-w-2xl mx-auto">
-            Handpicked packages designed to elevate your stay and create lasting memories
+            {t('landing.offers.subtitle')}
           </p>
         </motion.div>
 
@@ -217,14 +176,14 @@ export default function OffersSection({ onReservePackage }) {
                   <div className="relative h-64 md:h-full overflow-hidden">
                     <img
                       src={offer.image}
-                      alt={offer.title}
+                      alt={offerTitle(offer)}
                       loading="lazy"
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                     />
                     {offer.bestSeller && (
                       <span className="absolute top-4 left-4 inline-flex items-center gap-1.5 text-xs font-bold text-primary px-3 py-1.5 bg-gold rounded-full shadow-medium">
                         <Star className="w-3.5 h-3.5 fill-current" />
-                        Más vendido
+                        {t('landing.offers.bestSeller')}
                       </span>
                     )}
                   </div>
@@ -238,11 +197,11 @@ export default function OffersSection({ onReservePackage }) {
                           <Icon className="w-6 h-6 text-accent" />
                         </div>
                         <div>
-                          <h3 className="heading-sm text-primary mb-2">{offer.title}</h3>
+                          <h3 className="heading-sm text-primary mb-2">{offerTitle(offer)}</h3>
                           {offer.highlight && (
                             <span className="inline-flex items-center gap-1 text-xs font-semibold text-bg px-2 py-1 bg-accent rounded">
                               <Sparkles className="w-3 h-3" />
-                              Featured Offer
+                              {t('landing.offers.featuredOffer')}
                             </span>
                           )}
                         </div>
@@ -250,14 +209,14 @@ export default function OffersSection({ onReservePackage }) {
 
                       {/* Description */}
                       <p className="text-muted mb-6 leading-relaxed text-sm">
-                        {offer.description}
+                        {offerDescription(offer)}
                       </p>
 
                       {/* Details */}
                       <div className="space-y-2 mb-6">
-                        <h4 className="text-sm font-semibold text-primary mb-3">What's Included:</h4>
+                        <h4 className="text-sm font-semibold text-primary mb-3">{t('landing.offers.whatsIncluded')}</h4>
                         <ul className="space-y-2">
-                          {offer.details.map((detail, i) => {
+                          {offerDetails(offer).map((detail, i) => {
                             const DetailIcon = detail.icon
                             return (
                               <li key={i} className="flex items-start gap-2 text-sm text-muted">
@@ -273,10 +232,10 @@ export default function OffersSection({ onReservePackage }) {
                     {/* Price and CTA */}
                     <div>
                       <div className="mb-4 pt-4 border-t border-border">
-                        <div className="text-sm text-muted mb-1">Package Price</div>
+                        <div className="text-sm text-muted mb-1">{t('landing.offers.packagePrice')}</div>
                         <div className="flex items-baseline gap-2">
-                          <span className="text-xl font-bold text-accent">{offer.price}</span>
-                          <span className="text-xs text-muted">{offer.priceNote}</span>
+                          <span className="text-xl font-bold text-accent">{t('landing.offers.priceFrom', { price: format(offer.priceValue) })}</span>
+                          <span className="text-xs text-muted">{offerPriceNote(offer)}</span>
                         </div>
                       </div>
 
@@ -289,7 +248,7 @@ export default function OffersSection({ onReservePackage }) {
                               : 'bg-bg border border-accent text-accent'
                           }`}
                         >
-                          Learn More
+                          {t('landing.offers.learnMore')}
                           <ArrowRight className="w-4 h-4" />
                         </button>
                         <button
@@ -300,7 +259,7 @@ export default function OffersSection({ onReservePackage }) {
                               : 'bg-accent text-bg'
                           }`}
                         >
-                          Reserve
+                          {t('landing.offers.reserve')}
                         </button>
                       </div>
                     </div>
@@ -318,9 +277,9 @@ export default function OffersSection({ onReservePackage }) {
           viewport={{ once: true }}
           className="text-center"
         >
-          <p className="text-muted mb-6 text-lg">Can't find your perfect experience?</p>
+          <p className="text-muted mb-6 text-lg">{t('landing.offers.customTitle')}</p>
           <button onClick={scrollToBrowse} className="btn-secondary">
-            Customize Your Package
+            {t('landing.offers.customButton')}
           </button>
         </motion.div>
       </div>
@@ -343,20 +302,20 @@ export default function OffersSection({ onReservePackage }) {
               onClick={(e) => e.stopPropagation()}
               role="dialog"
               aria-modal="true"
-              aria-label={`${selectedOffer.title} package details`}
+              aria-label={t('landing.offers.detailsAria', { title: offerTitle(selectedOffer) })}
               className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-surface shadow-medium"
             >
               {/* Hero image */}
               <div className="relative h-56 md:h-72 overflow-hidden rounded-t-2xl">
                 <img
                   src={selectedOffer.image}
-                  alt={selectedOffer.title}
+                  alt={offerTitle(selectedOffer)}
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                 <button
                   onClick={() => setSelectedOffer(null)}
-                  aria-label="Close"
+                  aria-label={t('landing.offers.close')}
                   className="absolute top-4 right-4 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
                 >
                   <X className="w-5 h-5" />
@@ -366,29 +325,29 @@ export default function OffersSection({ onReservePackage }) {
                     {selectedOffer.bestSeller && (
                       <span className="inline-flex items-center gap-1 text-xs font-bold text-primary px-2.5 py-1 bg-gold rounded-full">
                         <Star className="w-3 h-3 fill-current" />
-                        Más vendido
+                        {t('landing.offers.bestSeller')}
                       </span>
                     )}
                     {selectedOffer.highlight && (
                       <span className="inline-flex items-center gap-1 text-xs font-semibold text-bg px-2.5 py-1 bg-accent rounded-full">
                         <Sparkles className="w-3 h-3" />
-                        Featured
+                        {t('landing.offers.featured')}
                       </span>
                     )}
                   </div>
-                  <h3 className="text-2xl md:text-3xl font-bold text-white">{selectedOffer.title}</h3>
-                  <p className="text-sm text-white/85 mt-1">{selectedOffer.tagline}</p>
+                  <h3 className="text-2xl md:text-3xl font-bold text-white">{offerTitle(selectedOffer)}</h3>
+                  <p className="text-sm text-white/85 mt-1">{offerTagline(selectedOffer)}</p>
                 </div>
               </div>
 
               {/* Body */}
               <div className="p-6 md:p-8">
-                <p className="text-muted leading-relaxed mb-6">{selectedOffer.longDescription}</p>
+                <p className="text-muted leading-relaxed mb-6">{offerLongDescription(selectedOffer)}</p>
 
                 {/* Inclusions */}
-                <h4 className="text-sm font-semibold text-primary mb-4">Everything included in this package:</h4>
+                <h4 className="text-sm font-semibold text-primary mb-4">{t('landing.offers.everythingIncluded')}</h4>
                 <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
-                  {selectedOffer.details.map((detail, i) => {
+                  {offerDetails(selectedOffer).map((detail, i) => {
                     const DetailIcon = detail.icon
                     return (
                       <li key={i} className="flex items-start gap-3 p-3 rounded-lg bg-bg">
@@ -404,15 +363,15 @@ export default function OffersSection({ onReservePackage }) {
                   <div className="flex items-start gap-3 p-4 rounded-lg bg-bg border border-border">
                     <CalendarRange className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
                     <div>
-                      <div className="text-sm font-semibold text-primary mb-1">Validity</div>
-                      <p className="text-xs text-muted leading-relaxed">{selectedOffer.validity}</p>
+                      <div className="text-sm font-semibold text-primary mb-1">{t('landing.offers.validity')}</div>
+                      <p className="text-xs text-muted leading-relaxed">{offerValidity(selectedOffer)}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3 p-4 rounded-lg bg-bg border border-border">
                     <ShieldCheck className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
                     <div>
-                      <div className="text-sm font-semibold text-primary mb-1">Cancellation policy</div>
-                      <p className="text-xs text-muted leading-relaxed">{selectedOffer.cancellation}</p>
+                      <div className="text-sm font-semibold text-primary mb-1">{t('landing.offers.cancellationPolicy')}</div>
+                      <p className="text-xs text-muted leading-relaxed">{offerCancellation(selectedOffer)}</p>
                     </div>
                   </div>
                 </div>
@@ -420,17 +379,17 @@ export default function OffersSection({ onReservePackage }) {
                 {/* Price + CTA */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-6 border-t border-border">
                   <div>
-                    <div className="text-sm text-muted mb-1">Package Price</div>
+                    <div className="text-sm text-muted mb-1">{t('landing.offers.packagePrice')}</div>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-2xl font-bold text-accent">{selectedOffer.price}</span>
-                      <span className="text-xs text-muted">{selectedOffer.priceNote}</span>
+                      <span className="text-2xl font-bold text-accent">{t('landing.offers.priceFrom', { price: format(selectedOffer.priceValue) })}</span>
+                      <span className="text-xs text-muted">{offerPriceNote(selectedOffer)}</span>
                     </div>
                   </div>
                   <button
                     onClick={() => reservePackage(selectedOffer)}
                     className="btn-gold flex items-center justify-center gap-2 hover:opacity-90"
                   >
-                    Reservar este paquete
+                    {t('landing.offers.reservePackage')}
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>

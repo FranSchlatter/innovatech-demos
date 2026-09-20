@@ -1,23 +1,17 @@
 import { Menu, Sun, Moon, Bell, Search } from 'lucide-react'
 import { useAdmin } from '../../../context/AdminContext'
+import { useTranslation } from '../../../i18n/LanguageProvider'
+import LanguageSwitch from '../../LanguageSwitch'
 
-const viewTitles = {
-  dashboard: 'Dashboard',
-  inbox: 'Bandeja IA',
-  pricing: 'Precio dinámico',
-  calendar: 'Calendario de ocupación',
-  rooms: 'Room Management',
-  housekeeping: 'Housekeeping',
-  inventory: 'Inventory',
-  services: 'Service Requests',
-  excursions: 'Excursiones',
-  events: 'Actividades y eventos',
-  news: 'Noticias y avisos',
-  users: 'Usuarios y roles'
-}
+const VIEW_IDS = new Set([
+  'dashboard', 'inbox', 'pricing', 'calendar', 'reception', 'rooms', 'housekeeping',
+  'inventory', 'services', 'excursions', 'facilities', 'events', 'news', 'users'
+])
 
 export default function AdminHeader({ isDark, toggleTheme }) {
   const { currentView, toggleSidebar, searchQuery, setSearch, notifications } = useAdmin()
+  const { t } = useTranslation()
+  const title = t(`admin.header.${VIEW_IDS.has(currentView) ? currentView : 'dashboard'}`)
 
   return (
     <header className="sticky top-0 z-30 bg-surface/80 backdrop-blur-md border-b border-border">
@@ -27,14 +21,14 @@ export default function AdminHeader({ isDark, toggleTheme }) {
           <button
             onClick={toggleSidebar}
             className="lg:hidden p-2 rounded-lg hover:bg-surface-alt text-text transition-colors"
-            aria-label="Toggle menu"
+            aria-label={t('admin.layout.toggleMenu')}
           >
             <Menu className="w-5 h-5" />
           </button>
 
           <div>
             <h1 className="text-lg font-bold text-text">
-              {viewTitles[currentView] || 'Dashboard'}
+              {title}
             </h1>
             <p className="text-xs text-muted hidden sm:block">
               {new Date().toLocaleDateString('en-US', {
@@ -54,7 +48,7 @@ export default function AdminHeader({ isDark, toggleTheme }) {
             <Search className="w-4 h-4 text-muted" />
             <input
               type="text"
-              placeholder="Search..."
+              placeholder={t('admin.layout.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearch(e.target.value)}
               className="bg-transparent border-none outline-none text-sm text-text placeholder:text-muted w-32 lg:w-48"
@@ -64,7 +58,7 @@ export default function AdminHeader({ isDark, toggleTheme }) {
           {/* Notifications */}
           <button
             className="relative p-2 rounded-lg hover:bg-surface-alt text-text transition-colors"
-            aria-label="Notifications"
+            aria-label={t('admin.layout.notifications')}
           >
             <Bell className="w-5 h-5" />
             {notifications.length > 0 && (
@@ -72,11 +66,14 @@ export default function AdminHeader({ isDark, toggleTheme }) {
             )}
           </button>
 
+          {/* Language Switch */}
+          <LanguageSwitch />
+
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
             className="p-2 rounded-lg hover:bg-surface-alt text-text transition-colors"
-            aria-label="Toggle theme"
+            aria-label={t('admin.layout.toggleTheme')}
           >
             {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
@@ -86,7 +83,7 @@ export default function AdminHeader({ isDark, toggleTheme }) {
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
               <span className="text-sm font-bold text-primary-contrast">A</span>
             </div>
-            <span className="text-sm font-medium text-text hidden lg:block">Admin</span>
+            <span className="text-sm font-medium text-text hidden lg:block">{t('admin.layout.admin')}</span>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, forwardRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Bell,
@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { useAdminData } from '../../../hooks/useAdminData'
 import { useAdmin } from '../../../context/AdminContext'
+import { useTranslation } from '../../../i18n/LanguageProvider'
 import StatusBadge from '../shared/StatusBadge'
 
 const serviceTypeIcons = {
@@ -40,25 +41,27 @@ const serviceTypeColors = {
   'facilities': 'bg-green-500'
 }
 
+// Filter option values + their translation keys (resolved at render time).
 const statusFilters = [
-  { value: 'all', label: 'All Requests' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'assigned', label: 'Assigned' },
-  { value: 'in-progress', label: 'In Progress' },
-  { value: 'completed', label: 'Completed' }
+  { value: 'all', labelKey: 'admin.services.filters.allRequests' },
+  { value: 'pending', labelKey: 'admin.services.filters.pending' },
+  { value: 'assigned', labelKey: 'admin.services.filters.assigned' },
+  { value: 'in-progress', labelKey: 'admin.services.filters.inProgress' },
+  { value: 'completed', labelKey: 'admin.services.filters.completed' }
 ]
 
 const typeFilters = [
-  { value: 'all', label: 'All Types' },
-  { value: 'room-service', label: 'Room Service' },
-  { value: 'housekeeping', label: 'Housekeeping' },
-  { value: 'maintenance', label: 'Maintenance' },
-  { value: 'spa', label: 'Spa' },
-  { value: 'concierge', label: 'Concierge' },
-  { value: 'facilities', label: 'Facilities' }
+  { value: 'all', labelKey: 'admin.services.filters.allTypes' },
+  { value: 'room-service', labelKey: 'admin.services.filters.roomService' },
+  { value: 'housekeeping', labelKey: 'admin.services.filters.housekeeping' },
+  { value: 'maintenance', labelKey: 'admin.services.filters.maintenance' },
+  { value: 'spa', labelKey: 'admin.services.filters.spa' },
+  { value: 'concierge', labelKey: 'admin.services.filters.concierge' },
+  { value: 'facilities', labelKey: 'admin.services.filters.facilities' }
 ]
 
-function RequestCard({ request, onStatusChange, onAssign, onMessage, staff }) {
+const RequestCard = forwardRef(function RequestCard({ request, onStatusChange, onAssign, onMessage, staff }, ref) {
+  const { t } = useTranslation()
   const [showActions, setShowActions] = useState(false)
   const Icon = serviceTypeIcons[request.type] || Bell
   const iconColor = serviceTypeColors[request.type] || 'bg-gray-500'
@@ -70,14 +73,15 @@ function RequestCard({ request, onStatusChange, onAssign, onMessage, staff }) {
     const diffMins = Math.floor(diffMs / 60000)
     const diffHours = Math.floor(diffMins / 60)
 
-    if (diffMins < 1) return 'Just now'
-    if (diffMins < 60) return `${diffMins}m ago`
-    if (diffHours < 24) return `${diffHours}h ago`
+    if (diffMins < 1) return t('admin.shared.relTime.justNow')
+    if (diffMins < 60) return t('admin.shared.relTime.minutesAgo', { count: diffMins })
+    if (diffHours < 24) return t('admin.shared.relTime.hoursAgo', { count: diffHours })
     return date.toLocaleDateString()
   }
 
   return (
     <motion.div
+      ref={ref}
       layout
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
@@ -97,15 +101,15 @@ function RequestCard({ request, onStatusChange, onAssign, onMessage, staff }) {
           <div>
             <div className="flex items-center gap-2">
               <span className="font-medium text-text capitalize">
-                {request.type.replace('-', ' ')}
+                {request.type in serviceTypeIcons ? t(`admin.services.types.${request.type}`) : request.type.replace('-', ' ')}
               </span>
               {request.priority === 'urgent' && (
                 <span className="text-xs px-2 py-0.5 bg-red-500 text-white rounded-full font-medium">
-                  Urgent
+                  {t('admin.services.urgent')}
                 </span>
               )}
             </div>
-            <p className="text-xs text-muted">Room {request.roomNumber}</p>
+            <p className="text-xs text-muted">{t('common.labels.room')} {request.roomNumber}</p>
           </div>
         </div>
         <StatusBadge status={request.status} size="sm" />
@@ -115,7 +119,7 @@ function RequestCard({ request, onStatusChange, onAssign, onMessage, staff }) {
       <p className="text-sm text-text mb-3 line-clamp-2">{request.description}</p>
 
       {request.notes && (
-        <p className="text-xs text-muted italic mb-3">Note: {request.notes}</p>
+        <p className="text-xs text-muted italic mb-3">{t('admin.services.note')} {request.notes}</p>
       )}
 
       {/* Meta */}
@@ -145,13 +149,13 @@ function RequestCard({ request, onStatusChange, onAssign, onMessage, staff }) {
       <div className="flex gap-2 pt-2 border-t border-border">
         <button
           onClick={() => onMessage(request)}
-          title="Escribir al huésped en la Bandeja IA"
+          title={t('admin.services.messageGuest')}
           className="flex-shrink-0 flex items-center justify-center gap-1.5 px-3 py-2
             bg-primary/10 text-primary text-xs font-medium rounded-lg
             hover:bg-primary/20 transition-colors"
         >
           <MessageSquare className="w-4 h-4" />
-          <span className="hidden sm:inline">Escribir</span>
+          <span className="hidden sm:inline">{t('admin.services.write')}</span>
         </button>
 
         {request.status === 'pending' && (
@@ -166,7 +170,7 @@ function RequestCard({ request, onStatusChange, onAssign, onMessage, staff }) {
               focus:outline-none focus:ring-2 focus:ring-primary/50"
             defaultValue=""
           >
-            <option value="" disabled>Assign to...</option>
+            <option value="" disabled>{t('admin.services.assignTo')}</option>
             {staff.filter(s => s.status === 'on-duty').map(s => (
               <option key={s.id} value={s.id}>{s.name}</option>
             ))}
@@ -180,7 +184,7 @@ function RequestCard({ request, onStatusChange, onAssign, onMessage, staff }) {
               bg-purple-500 text-white text-xs font-medium rounded-lg
               hover:bg-purple-600 transition-colors"
           >
-            Start
+            {t('admin.services.start')}
           </button>
         )}
 
@@ -192,15 +196,16 @@ function RequestCard({ request, onStatusChange, onAssign, onMessage, staff }) {
               hover:bg-green-600 transition-colors"
           >
             <CheckCircle className="w-4 h-4" />
-            Complete
+            {t('admin.services.complete')}
           </button>
         )}
       </div>
     </motion.div>
   )
-}
+})
 
 function StatsBar({ requests }) {
+  const { t } = useTranslation()
   const stats = useMemo(() => ({
     pending: requests.filter(r => r.status === 'pending').length,
     assigned: requests.filter(r => r.status === 'assigned').length,
@@ -213,23 +218,23 @@ function StatsBar({ requests }) {
     <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
       <div className="bg-amber-500/10 rounded-lg p-3 text-center">
         <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{stats.pending}</p>
-        <p className="text-xs text-muted">Pending</p>
+        <p className="text-xs text-muted">{t('admin.services.stats.pending')}</p>
       </div>
       <div className="bg-blue-500/10 rounded-lg p-3 text-center">
         <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.assigned}</p>
-        <p className="text-xs text-muted">Assigned</p>
+        <p className="text-xs text-muted">{t('admin.services.stats.assigned')}</p>
       </div>
       <div className="bg-purple-500/10 rounded-lg p-3 text-center">
         <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.inProgress}</p>
-        <p className="text-xs text-muted">In Progress</p>
+        <p className="text-xs text-muted">{t('admin.services.stats.inProgress')}</p>
       </div>
       <div className="bg-green-500/10 rounded-lg p-3 text-center">
         <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.completed}</p>
-        <p className="text-xs text-muted">Completed</p>
+        <p className="text-xs text-muted">{t('admin.services.stats.completed')}</p>
       </div>
       <div className="bg-red-500/10 rounded-lg p-3 text-center">
         <p className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.urgent}</p>
-        <p className="text-xs text-muted">Urgent</p>
+        <p className="text-xs text-muted">{t('admin.services.stats.urgent')}</p>
       </div>
     </div>
   )
@@ -238,6 +243,7 @@ function StatsBar({ requests }) {
 export default function ServiceRequestsMonitor() {
   const { serviceRequests, staff, updateServiceRequest } = useAdminData()
   const { openInboxWithTarget } = useAdmin()
+  const { t } = useTranslation()
   const [statusFilter, setStatusFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
@@ -305,9 +311,9 @@ export default function ServiceRequestsMonitor() {
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-xl font-bold text-text">Service Requests</h2>
+        <h2 className="text-xl font-bold text-text">{t('admin.services.title')}</h2>
         <p className="text-sm text-muted">
-          {filteredRequests.length} requests
+          {t('admin.services.countSummary', { count: filteredRequests.length })}
         </p>
       </div>
 
@@ -322,7 +328,7 @@ export default function ServiceRequestsMonitor() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
             <input
               type="text"
-              placeholder="Search requests, rooms, guests..."
+              placeholder={t('admin.services.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-bg border border-border rounded-lg
@@ -341,7 +347,7 @@ export default function ServiceRequestsMonitor() {
             >
               {statusFilters.map(filter => (
                 <option key={filter.value} value={filter.value}>
-                  {filter.label}
+                  {t(filter.labelKey)}
                 </option>
               ))}
             </select>
@@ -354,7 +360,7 @@ export default function ServiceRequestsMonitor() {
             >
               {typeFilters.map(filter => (
                 <option key={filter.value} value={filter.value}>
-                  {filter.label}
+                  {t(filter.labelKey)}
                 </option>
               ))}
             </select>
@@ -369,7 +375,7 @@ export default function ServiceRequestsMonitor() {
                 }`}
             >
               <AlertCircle className="w-4 h-4" />
-              Urgent
+              {t('admin.services.urgent')}
             </button>
           </div>
         </div>
@@ -399,11 +405,11 @@ export default function ServiceRequestsMonitor() {
           className="text-center py-12"
         >
           <Bell className="w-12 h-12 mx-auto text-muted mb-4" />
-          <h3 className="text-lg font-medium text-text mb-2">No requests found</h3>
+          <h3 className="text-lg font-medium text-text mb-2">{t('admin.services.emptyTitle')}</h3>
           <p className="text-sm text-muted">
             {showUrgentOnly
-              ? 'No urgent requests at the moment'
-              : 'Try adjusting your filters'}
+              ? t('admin.services.emptyUrgent')
+              : t('admin.services.emptyDefault')}
           </p>
         </motion.div>
       )}

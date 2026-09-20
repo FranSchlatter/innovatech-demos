@@ -2,8 +2,10 @@ import { motion } from 'framer-motion'
 import { Star, CheckCircle } from 'lucide-react'
 import { useState, useRef } from 'react'
 import reviewsData from '@shared-data/reviews.json'
+import { useTranslation } from '../i18n/LanguageProvider'
 
 export default function ReviewsSection() {
+  const { t } = useTranslation()
   const [scrollPosition, setScrollPosition] = useState(0)
   const scrollContainerRef = useRef(null)
 
@@ -21,7 +23,7 @@ export default function ReviewsSection() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="heading-md mb-8">Guest Voices</h2>
+          <h2 className="heading-md mb-8">{t('landing.reviews.title')}</h2>
           
           {/* Rating Summary */}
           <div className="flex items-center justify-center gap-6 mb-12 flex-col md:flex-row">
@@ -36,12 +38,12 @@ export default function ReviewsSection() {
                 ))}
               </div>
               <span className="text-4xl font-light text-primary">{avgRating}</span>
-              <span className="text-sm text-muted">Based on {reviewsData.length} verified reviews</span>
+              <span className="text-sm text-muted">{t('landing.reviews.basedOn', { n: reviewsData.length })}</span>
             </div>
             <div className="h-12 w-px bg-border hidden md:block" />
             <div className="text-left md:text-center">
               <p className="text-lg text-muted max-w-xl">
-                Discover authentic experiences from guests who've experienced our exceptional hospitality
+                {t('landing.reviews.subtitle')}
               </p>
             </div>
           </div>
@@ -66,7 +68,7 @@ export default function ReviewsSection() {
                 {review.verified && (
                   <div className="flex items-center gap-2 mb-3 text-accent text-xs">
                     <CheckCircle size={14} />
-                    <span className="font-medium">Verified Guest</span>
+                    <span className="font-medium">{t('landing.reviews.verifiedGuest')}</span>
                   </div>
                 )}
 
@@ -106,7 +108,7 @@ export default function ReviewsSection() {
           className="text-center mt-6"
         >
           <p className="text-sm text-muted font-medium">
-            Scroll to view more reviews
+            {t('landing.reviews.scrollHint')}
           </p>
         </motion.div>
       </div>

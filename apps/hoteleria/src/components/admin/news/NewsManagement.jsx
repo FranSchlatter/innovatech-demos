@@ -16,6 +16,7 @@ import {
   Copy
 } from 'lucide-react'
 import { useNews } from '../../../hooks/useNews'
+import { useTranslation } from '../../../i18n/LanguageProvider'
 import {
   NEWS_TYPES,
   NEWS_TYPE_OPTIONS,
@@ -23,11 +24,12 @@ import {
   todayISO
 } from '../../../data/mockNews'
 
+// Status pill styling. Labels resolve at render time via t('admin.news.status.<id>').
 const STATUS = {
-  active: { label: 'Activo', cls: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20' },
-  scheduled: { label: 'Programado', cls: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20' },
-  expired: { label: 'Expirado', cls: 'bg-gray-500/10 text-gray-500 dark:text-gray-400 border-gray-500/20' },
-  paused: { label: 'Pausado', cls: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' }
+  active: { cls: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20' },
+  scheduled: { cls: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20' },
+  expired: { cls: 'bg-gray-500/10 text-gray-500 dark:text-gray-400 border-gray-500/20' },
+  paused: { cls: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' }
 }
 
 // Order announcements by relevance: live first, then upcoming, paused, expired.
@@ -38,7 +40,7 @@ const fmtDate = (s) =>
 
 // ---------------------------------------------------------------- Front preview
 // A faithful mini-render of how the NewsBar band looks on the landing.
-function BarPreview({ type, title, message }) {
+function BarPreview({ type, title, message, t }) {
   const cfg = NEWS_TYPES[type] || NEWS_TYPES.info
   const Icon = cfg.icon
   return (
@@ -46,8 +48,8 @@ function BarPreview({ type, title, message }) {
       <div className="flex items-center gap-2 px-3 h-10">
         <Icon className="w-4 h-4 flex-shrink-0" />
         <p className="text-sm truncate">
-          <span className="font-semibold">{title?.trim() || 'Título del aviso'}</span>
-          <span className="opacity-80"> — {message?.trim() || 'Mensaje que verá el huésped en la landing.'}</span>
+          <span className="font-semibold">{title?.trim() || t('admin.news.preview.titlePlaceholder')}</span>
+          <span className="opacity-80"> — {message?.trim() || t('admin.news.preview.messagePlaceholder')}</span>
         </p>
       </div>
     </div>
@@ -56,6 +58,7 @@ function BarPreview({ type, title, message }) {
 
 // ---------------------------------------------------------------- Create / edit modal
 function NewsModal({ open, editing, onClose, onSave }) {
+  const { t } = useTranslation()
   const empty = { title: '', message: '', type: 'info', startDate: todayISO(), endDate: '' }
   const [draft, setDraft] = useState(empty)
   const [saving, setSaving] = useState(false)
@@ -118,7 +121,7 @@ function NewsModal({ open, editing, onClose, onSave }) {
                 <div className="p-2 rounded-lg bg-primary/10">
                   <Megaphone className="w-5 h-5 text-primary" />
                 </div>
-                <h2 className="text-lg font-bold text-text">{editing ? 'Editar aviso' : 'Crear aviso'}</h2>
+                <h2 className="text-lg font-bold text-text">{editing ? t('admin.news.modal.editTitle') : t('admin.news.modal.createTitle')}</h2>
               </div>
               <button onClick={onClose} className="p-2 rounded-lg hover:bg-bg text-muted hover:text-text transition-colors">
                 <X className="w-5 h-5" />
@@ -128,7 +131,7 @@ function NewsModal({ open, editing, onClose, onSave }) {
             <div className="p-5 overflow-y-auto space-y-5">
               {/* Type */}
               <div>
-                <label className="block text-sm font-medium text-text mb-2">Tipo</label>
+                <label className="block text-sm font-medium text-text mb-2">{t('admin.news.modal.typeLabel')}</label>
                 <div className="flex flex-wrap gap-2">
                   {NEWS_TYPE_OPTIONS.map((opt) => {
                     const OptIcon = opt.icon
@@ -145,7 +148,7 @@ function NewsModal({ open, editing, onClose, onSave }) {
                         }`}
                       >
                         <OptIcon className="w-3.5 h-3.5" />
-                        {opt.label}
+                        {t(`admin.news.types.${opt.value}`)}
                       </button>
                     )
                   })}
@@ -154,26 +157,26 @@ function NewsModal({ open, editing, onClose, onSave }) {
 
               {/* Title */}
               <div>
-                <label className="block text-sm font-medium text-text mb-2">Título</label>
+                <label className="block text-sm font-medium text-text mb-2">{t('admin.news.modal.titleLabel')}</label>
                 <input
                   type="text"
                   maxLength={60}
                   value={draft.title}
                   onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
-                  placeholder="Ej: Pileta cerrada por mantenimiento"
+                  placeholder={t('admin.news.modal.titlePlaceholder')}
                   className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/50"
                 />
               </div>
 
               {/* Message */}
               <div>
-                <label className="block text-sm font-medium text-text mb-2">Mensaje</label>
+                <label className="block text-sm font-medium text-text mb-2">{t('admin.news.modal.messageLabel')}</label>
                 <textarea
                   rows={3}
                   maxLength={180}
                   value={draft.message}
                   onChange={(e) => setDraft((d) => ({ ...d, message: e.target.value }))}
-                  placeholder="Detalle del aviso que verá el huésped."
+                  placeholder={t('admin.news.modal.messagePlaceholder')}
                   className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
                 />
                 <p className="text-[11px] text-muted mt-1 text-right">{draft.message.length}/180</p>
@@ -182,14 +185,14 @@ function NewsModal({ open, editing, onClose, onSave }) {
               {/* Dates */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-text mb-2">Desde</label>
+                  <label className="block text-sm font-medium text-text mb-2">{t('admin.news.modal.fromLabel')}</label>
                   <DatePicker
                     value={draft.startDate}
                     onChange={(startDate) => setDraft((d) => ({ ...d, startDate }))}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-text mb-2">Hasta</label>
+                  <label className="block text-sm font-medium text-text mb-2">{t('admin.news.modal.toLabel')}</label>
                   <DatePicker
                     value={draft.endDate}
                     min={draft.startDate}
@@ -201,15 +204,15 @@ function NewsModal({ open, editing, onClose, onSave }) {
               {/* Live preview */}
               <div>
                 <label className="block text-sm font-medium text-text mb-2 flex items-center gap-1.5">
-                  <Eye className="w-4 h-4 text-muted" /> Vista previa en la landing
+                  <Eye className="w-4 h-4 text-muted" /> {t('admin.news.modal.previewLabel')}
                 </label>
-                <BarPreview type={draft.type} title={draft.title} message={draft.message} />
+                <BarPreview type={draft.type} title={draft.title} message={draft.message} t={t} />
               </div>
             </div>
 
             <div className="flex items-center justify-end gap-3 p-5 border-t border-border">
               <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-text hover:bg-bg rounded-lg transition-colors">
-                Cancelar
+                {t('common.actions.cancel')}
               </button>
               <button
                 onClick={handleSave}
@@ -217,7 +220,7 @@ function NewsModal({ open, editing, onClose, onSave }) {
                 className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-contrast text-sm font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Save className="w-4 h-4" />
-                {saving ? 'Guardando…' : editing ? 'Guardar cambios' : 'Crear aviso'}
+                {saving ? t('common.actions.saving') : editing ? t('admin.news.modal.saveChanges') : t('admin.news.modal.create')}
               </button>
             </div>
           </motion.div>
@@ -236,6 +239,7 @@ const addDaysISO = (iso, days) => {
 }
 
 export default function NewsManagement() {
+  const { t } = useTranslation()
   const { news, addNews, updateNews, deleteNews, toggleNews } = useNews()
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState(null)
@@ -298,37 +302,37 @@ export default function NewsManagement() {
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-xl font-bold text-text flex items-center gap-2">
-            <Megaphone className="w-5 h-5 text-primary" /> Noticias y avisos
+            <Megaphone className="w-5 h-5 text-primary" /> {t('admin.news.title')}
           </h1>
           <p className="text-sm text-muted">
-            Publicá avisos con fecha de inicio y fin. Aparecen solos en la landing y se retiran al vencer.
+            {t('admin.news.subtitle')}
           </p>
         </div>
         <button
           onClick={openCreate}
           className="inline-flex items-center gap-2 px-3 py-2 bg-primary text-primary-contrast text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
         >
-          <Plus className="w-4 h-4" /> Crear aviso
+          <Plus className="w-4 h-4" /> {t('admin.news.create')}
         </button>
       </div>
 
       {/* Summary */}
       <div className="bg-surface rounded-xl border border-border px-4 py-3 flex items-center gap-2 text-sm">
         <span className="w-2 h-2 rounded-full bg-green-500" />
-        <span className="text-text font-medium">{activeCount} activo{activeCount === 1 ? '' : 's'}</span>
-        <span className="text-muted">de {news.length} en total</span>
+        <span className="text-text font-medium">{activeCount === 1 ? t('admin.news.summary.active', { count: activeCount }) : t('admin.news.summary.activePlural', { count: activeCount })}</span>
+        <span className="text-muted">{t('admin.news.summary.ofTotal', { total: news.length })}</span>
       </div>
 
       {/* Board — active / scheduled / paused */}
       {news.length === 0 ? (
         <div className="bg-surface rounded-xl border border-border text-center py-12">
           <Megaphone className="w-10 h-10 mx-auto text-muted mb-2" />
-          <p className="text-sm text-muted">No hay avisos. Creá el primero.</p>
+          <p className="text-sm text-muted">{t('admin.news.empty')}</p>
         </div>
       ) : current.length === 0 ? (
         <div className="bg-surface rounded-xl border border-border text-center py-10">
           <Megaphone className="w-9 h-9 mx-auto text-muted mb-2" />
-          <p className="text-sm text-muted">No hay avisos vigentes. Mirá el historial abajo o creá uno nuevo.</p>
+          <p className="text-sm text-muted">{t('admin.news.emptyCurrent')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
@@ -350,10 +354,10 @@ export default function NewsManagement() {
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-1 rounded-full ${cfg.softBg} ${cfg.softText}`}>
                       <TypeIcon className="w-3.5 h-3.5" />
-                      {cfg.label}
+                      {t(`admin.news.types.${item.type}`)}
                     </div>
                     <span className={`inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full border ${st.cls}`}>
-                      {st.label}
+                      {t(`admin.news.status.${status}`)}
                     </span>
                   </div>
 
@@ -375,19 +379,19 @@ export default function NewsManagement() {
                       }`}
                     >
                       <Power className="w-3.5 h-3.5" />
-                      {item.enabled ? 'Pausar' : 'Activar'}
+                      {item.enabled ? t('admin.news.card.pause') : t('admin.news.card.activate')}
                     </button>
                     <button
                       onClick={() => openEdit(item)}
                       className="p-1.5 rounded-lg text-muted hover:text-primary hover:bg-bg transition-colors"
-                      title="Editar aviso"
+                      title={t('admin.news.card.editTitle')}
                     >
                       <Pencil className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => deleteNews(item.id)}
                       className="p-1.5 rounded-lg text-muted hover:text-red-500 transition-colors"
-                      title="Eliminar aviso"
+                      title={t('admin.news.card.deleteTitle')}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -408,7 +412,7 @@ export default function NewsManagement() {
           >
             <span className="flex items-center gap-2 text-sm font-semibold text-text">
               <History className="w-4 h-4 text-muted" />
-              Historial de avisos
+              {t('admin.news.history.title')}
               <span className="text-xs font-medium text-muted">({history.length})</span>
             </span>
             <ChevronDown className={`w-4 h-4 text-muted transition-transform ${showHistory ? 'rotate-180' : ''}`} />
@@ -443,21 +447,21 @@ export default function NewsManagement() {
                           <button
                             onClick={() => reuseNews(item)}
                             className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-primary hover:bg-bg transition-colors"
-                            title="Reutilizar: republica este aviso 7 días desde hoy"
+                            title={t('admin.news.history.reuseTitle')}
                           >
-                            <Copy className="w-3.5 h-3.5" /> Reutilizar
+                            <Copy className="w-3.5 h-3.5" /> {t('admin.news.history.reuse')}
                           </button>
                           <button
                             onClick={() => openEdit(item)}
                             className="p-1.5 rounded-lg text-muted hover:text-primary hover:bg-bg transition-colors"
-                            title="Editar aviso"
+                            title={t('admin.news.card.editTitle')}
                           >
                             <Pencil className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => deleteNews(item.id)}
                             className="p-1.5 rounded-lg text-muted hover:text-red-500 transition-colors"
-                            title="Eliminar aviso"
+                            title={t('admin.news.card.deleteTitle')}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>

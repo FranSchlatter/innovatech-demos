@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { NEWS_TYPES } from '../data/mockNews'
+import { useTranslation } from '../i18n/LanguageProvider'
 
 // Public announcement bar shown at the very top of the landing. Presentational:
 // it receives the already-filtered live announcements and a dismiss handler from
@@ -10,6 +11,7 @@ import { NEWS_TYPES } from '../data/mockNews'
 export const NEWS_BAR_HEIGHT = '2.75rem' // keep in sync with the h-11 band below
 
 export default function NewsBar({ news = [], onDismiss }) {
+  const { t } = useTranslation()
   const [index, setIndex] = useState(0)
 
   // Clamp the active index whenever the live set shrinks (e.g. a notice expired
@@ -45,7 +47,7 @@ export default function NewsBar({ news = [], onDismiss }) {
       transition={{ type: 'spring', damping: 26, stiffness: 320 }}
       className={`fixed top-0 inset-x-0 z-[60] h-11 ${cfg.barBg} ${cfg.barText} shadow-md`}
       role="region"
-      aria-label="Anuncios del hotel"
+      aria-label={t('landing.news.regionLabel')}
     >
       <div className="container h-full flex items-center gap-3">
         <Icon className="w-4 h-4 flex-shrink-0" />
@@ -72,7 +74,7 @@ export default function NewsBar({ news = [], onDismiss }) {
           <div className="flex items-center gap-1.5 flex-shrink-0">
             <button
               onClick={() => go(-1)}
-              aria-label="Anuncio anterior"
+              aria-label={t('landing.news.prev')}
               className="p-1 rounded-md hover:bg-black/10 transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -82,7 +84,7 @@ export default function NewsBar({ news = [], onDismiss }) {
                 <button
                   key={n.id}
                   onClick={() => setIndex(i)}
-                  aria-label={`Ir al anuncio ${i + 1}`}
+                  aria-label={t('landing.news.goTo', { n: i + 1 })}
                   className={`h-1.5 rounded-full transition-all ${
                     i === safeIndex ? 'w-4 bg-current' : 'w-1.5 bg-current opacity-40 hover:opacity-70'
                   }`}
@@ -91,7 +93,7 @@ export default function NewsBar({ news = [], onDismiss }) {
             </div>
             <button
               onClick={() => go(1)}
-              aria-label="Siguiente anuncio"
+              aria-label={t('landing.news.next')}
               className="p-1 rounded-md hover:bg-black/10 transition-colors"
             >
               <ChevronRight className="w-4 h-4" />
@@ -102,7 +104,7 @@ export default function NewsBar({ news = [], onDismiss }) {
         {/* Dismiss the current announcement for this visitor */}
         <button
           onClick={() => onDismiss?.(item.id)}
-          aria-label="Descartar anuncio"
+          aria-label={t('landing.news.dismiss')}
           className="p-1 rounded-md hover:bg-black/10 transition-colors flex-shrink-0"
         >
           <X className="w-4 h-4" />

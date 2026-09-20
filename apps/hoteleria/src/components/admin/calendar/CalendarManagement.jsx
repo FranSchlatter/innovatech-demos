@@ -4,7 +4,9 @@ import {
   CalendarDays, ChevronLeft, ChevronRight, X, User, BedDouble,
   LogIn, LogOut, DoorOpen, Percent, Plus, Mail, Phone, MessageSquare, DollarSign
 } from 'lucide-react'
-import { mockReservations } from '../../../data/admin/mockReservations'
+import { useAdminData } from '../../../hooks/useAdminData'
+import { useTranslation } from '../../../i18n/LanguageProvider'
+import CheckInStation from '../../client/checkin/CheckInStation'
 
 // H6 — Tape Chart: horizontal Gantt of room occupancy.
 // Y axis: rooms grouped by floor. X axis: a rolling window of days.
@@ -16,8 +18,6 @@ const COL_W = 46
 const LABEL_W = 92
 const ROW_H = 40
 const HEADER_H = 48
-const EXTRA_KEY = 'hotel-admin-calendar-extra'
-const STATUS_KEY = 'hotel-admin-calendar-status'
 
 const ROOM_TYPES = ['standard', 'economy', 'deluxe', 'premium', 'suite', 'family', 'presidential']
 
@@ -33,13 +33,16 @@ const SUGGESTED_PRICE = {
 }
 const suggestedPriceFor = (type) => SUGGESTED_PRICE[type] || 150
 
+// Bar/chip/dot styles per reservation status. Labels are resolved at render
+// via admin.calendar.statuses.<labelKey>.
 const STATUS = {
-  confirmed: { bar: 'bg-blue-500/85 border-blue-600 hover:bg-blue-500', chip: 'bg-blue-500/10 text-blue-600 dark:text-blue-400', dot: 'bg-blue-500', label: 'Confirmada' },
-  'checked-in': { bar: 'bg-emerald-500/85 border-emerald-600 hover:bg-emerald-500', chip: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400', dot: 'bg-emerald-500', label: 'En estadía' },
-  'checked-out': { bar: 'bg-gray-400/80 border-gray-500 hover:bg-gray-400', chip: 'bg-gray-400/10 text-gray-500 dark:text-gray-400', dot: 'bg-gray-400', label: 'Check-out' },
-  cancelled: { bar: 'bg-red-500/55 border-red-600 hover:bg-red-500/80', chip: 'bg-red-500/10 text-red-600 dark:text-red-400', dot: 'bg-red-500', label: 'Cancelada' }
+  confirmed: { bar: 'bg-blue-500/85 border-blue-600 hover:bg-blue-500', chip: 'bg-blue-500/10 text-blue-600 dark:text-blue-400', dot: 'bg-blue-500', labelKey: 'confirmed' },
+  'checked-in': { bar: 'bg-emerald-500/85 border-emerald-600 hover:bg-emerald-500', chip: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400', dot: 'bg-emerald-500', labelKey: 'inStay' },
+  'checked-out': { bar: 'bg-gray-400/80 border-gray-500 hover:bg-gray-400', chip: 'bg-gray-400/10 text-gray-500 dark:text-gray-400', dot: 'bg-gray-400', labelKey: 'checkedOut' },
+  cancelled: { bar: 'bg-red-500/55 border-red-600 hover:bg-red-500/80', chip: 'bg-red-500/10 text-red-600 dark:text-red-400', dot: 'bg-red-500', labelKey: 'cancelled' }
 }
 const statusOf = (s) => STATUS[s] || STATUS.confirmed
+const statusLabel = (s, t) => t(`admin.calendar.statuses.${statusOf(s).labelKey}`)
 
 function startOfToday() {
   const d = new Date()
@@ -65,24 +68,6 @@ function fmtShort(str) {
   return parseDate(str).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })
 }
 
-function loadExtras() {
-  try {
-    const raw = localStorage.getItem(EXTRA_KEY)
-    return raw ? JSON.parse(raw) : []
-  } catch {
-    return []
-  }
-}
-
-function loadStatusOverrides() {
-  try {
-    const raw = localStorage.getItem(STATUS_KEY)
-    return raw ? JSON.parse(raw) : {}
-  } catch {
-    return {}
-  }
-}
-
 function KpiCard({ icon: Icon, label, value, tone }) {
   return (
     <div className="bg-surface rounded-xl border border-border p-3 flex items-center gap-3">
@@ -98,45 +83,40 @@ function KpiCard({ icon: Icon, label, value, tone }) {
 }
 
 export default function CalendarManagement() {
-  const [extras, setExtras] = useState(loadExtras)
-  const [statusOverrides, setStatusOverrides] = useState(loadStatusOverrides)
+  const { t } = useTranslation()
+  // Unified reservations store (H26) — shared live with Dashboard & Reception.
+  const { reservations, rooms, reservationsStore } = useAdminData()
   const [weekOffset, setWeekOffset] = useState(0) // scroll the window by whole weeks
   const [tip, setTip] = useState(null) // { res, x, y }
   const [detail, setDetail] = useState(null) // reservation
   const [createTarget, setCreateTarget] = useState(null) // { room, date }
+  const [station, setStation] = useState(null) // reservation being checked in
   const scrollRef = useRef(null)
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(EXTRA_KEY, JSON.stringify(extras))
-    } catch {
-      // Ignore storage errors.
-    }
-  }, [extras])
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(STATUS_KEY, JSON.stringify(statusOverrides))
-    } catch {
-      // Ignore storage errors.
-    }
-  }, [statusOverrides])
-
-  // Merge base reservations with any manual status changes (check-in/out).
-  const reservations = useMemo(
-    () =>
-      [...mockReservations, ...extras].map((r) =>
-        statusOverrides[r.id] ? { ...r, status: statusOverrides[r.id] } : r
-      ),
-    [extras, statusOverrides]
+  // Available rooms offered during check-in assignment.
+  const availableRooms = useMemo(
+    () => rooms.filter((r) => r.status === 'available').map((r) => ({ id: r.id, number: r.roomNumber, floor: r.floor, type: r.type })),
+    [rooms]
   )
 
-  // Change a reservation's status (front-desk check-in / check-out) and keep the
-  // open detail modal in sync.
-  const setReservationStatus = (id, status) => {
-    setStatusOverrides((prev) => ({ ...prev, [id]: status }))
-    setDetail((d) => (d && d.id === id ? { ...d, status } : d))
+  // Front-desk check-out (quick). Check-in goes through the full station wizard.
+  const handleCheckOut = (id) => {
+    reservationsStore.checkOut(id, 'reception')
+    setDetail((d) => (d && d.id === id ? { ...d, status: 'checked-out' } : d))
   }
+
+  // Open the shared check-in station for a reservation (from the detail modal).
+  const openCheckInStation = (reservation) => {
+    setDetail(null)
+    setStation(reservation)
+  }
+  const handleStationComplete = ({ station: stationData, room, digitalKey, keyCards, mobileKey }) => {
+    if (station) reservationsStore.checkIn(station.id, { station: stationData, room, digitalKey, keyCards, mobileKey, by: 'reception' })
+  }
+  const handleStationSave = (partial) => {
+    if (station) reservationsStore.saveStation(station.id, partial, 'reception')
+  }
+  const stationReservation = station ? reservations.find((r) => r.id === station.id) || station : null
 
   // Rolling day window (start shifts by whole weeks via the arrows).
   const days = useMemo(() => {
@@ -205,7 +185,7 @@ export default function CalendarManagement() {
     const pricePerNight = Math.max(0, parseInt(form.pricePerNight, 10) || 0)
     const newRes = {
       id: `RES-C-${Date.now()}`,
-      guestName: form.guestName.trim() || 'Huésped sin nombre',
+      guestName: form.guestName.trim() || t('admin.calendar.create.unnamedGuest'),
       guestEmail: form.guestEmail.trim(),
       guestPhone: form.guestPhone.trim(),
       roomId: 0,
@@ -222,7 +202,7 @@ export default function CalendarManagement() {
       createdAt: todayKey,
       arrivalTime: '14:00'
     }
-    setExtras((prev) => [...prev, newRes])
+    reservationsStore.addReservation(newRes)
     setCreateTarget(null)
   }
 
@@ -237,30 +217,30 @@ export default function CalendarManagement() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-xl font-bold text-text flex items-center gap-2">
-            <CalendarDays className="w-5 h-5 text-primary" /> Calendario de ocupación
+            <CalendarDays className="w-5 h-5 text-primary" /> {t('admin.calendar.title')}
           </h1>
-          <p className="text-sm text-muted">Vista tipo tape chart — reservas por habitación y día</p>
+          <p className="text-sm text-muted">{t('admin.calendar.subtitle')}</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setWeekOffset((v) => v - 1)}
             className="h-9 w-9 grid place-items-center rounded-lg border border-border bg-surface text-text hover:bg-bg transition-colors"
-            title="Semana anterior"
+            title={t('admin.calendar.prevWeek')}
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button
             onClick={() => setWeekOffset(0)}
             className={`h-9 px-3 rounded-lg border text-sm font-medium transition-colors ${weekOffset === 0 ? 'bg-primary text-primary-contrast border-primary' : 'border-border bg-surface text-text hover:bg-bg'}`}
-            title="Volver a hoy"
+            title={t('admin.calendar.backToToday')}
           >
-            Hoy
+            {t('common.actions.today')}
           </button>
           <span className="text-xs text-muted w-32 text-center hidden sm:block">{rangeLabel}</span>
           <button
             onClick={() => setWeekOffset((v) => v + 1)}
             className="h-9 w-9 grid place-items-center rounded-lg border border-border bg-surface text-text hover:bg-bg transition-colors"
-            title="Semana siguiente"
+            title={t('admin.calendar.nextWeek')}
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -269,22 +249,22 @@ export default function CalendarManagement() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        <KpiCard icon={Percent} label="Ocupación hoy" value={`${kpis.rate}%`} tone="bg-primary/10 text-primary" />
-        <KpiCard icon={BedDouble} label="Habitaciones ocupadas" value={kpis.occupied} tone="bg-emerald-500/10 text-emerald-500" />
-        <KpiCard icon={DoorOpen} label="Disponibles" value={kpis.available} tone="bg-blue-500/10 text-blue-500" />
-        <KpiCard icon={LogIn} label="Llegadas hoy" value={kpis.arrivals} tone="bg-amber-500/10 text-amber-500" />
-        <KpiCard icon={LogOut} label="Salidas hoy" value={kpis.departures} tone="bg-gray-400/10 text-gray-400" />
+        <KpiCard icon={Percent} label={t('admin.calendar.kpis.occupancyToday')} value={`${kpis.rate}%`} tone="bg-primary/10 text-primary" />
+        <KpiCard icon={BedDouble} label={t('admin.calendar.kpis.occupiedRooms')} value={kpis.occupied} tone="bg-emerald-500/10 text-emerald-500" />
+        <KpiCard icon={DoorOpen} label={t('admin.calendar.kpis.available')} value={kpis.available} tone="bg-blue-500/10 text-blue-500" />
+        <KpiCard icon={LogIn} label={t('admin.calendar.kpis.arrivalsToday')} value={kpis.arrivals} tone="bg-amber-500/10 text-amber-500" />
+        <KpiCard icon={LogOut} label={t('admin.calendar.kpis.departuresToday')} value={kpis.departures} tone="bg-gray-400/10 text-gray-400" />
       </div>
 
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted">
         {Object.entries(STATUS).map(([key, s]) => (
           <span key={key} className="flex items-center gap-1.5">
-            <span className={`w-3 h-3 rounded-sm ${s.dot}`} /> {s.label}
+            <span className={`w-3 h-3 rounded-sm ${s.dot}`} /> {t(`admin.calendar.statuses.${s.labelKey}`)}
           </span>
         ))}
         <span className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-sm border border-dashed border-border" /> Disponible (clic para reservar)
+          <span className="w-3 h-3 rounded-sm border border-dashed border-border" /> {t('admin.calendar.availableLegend')}
         </span>
       </div>
 
@@ -297,7 +277,7 @@ export default function CalendarManagement() {
               className="sticky left-0 z-30 bg-surface border-r border-border flex items-center px-3"
               style={{ width: LABEL_W, height: HEADER_H }}
             >
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">Hab.</span>
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">{t('admin.calendar.roomColHeader')}</span>
             </div>
             {days.map((d, i) => {
               const weekend = d.getDay() === 0 || d.getDay() === 6
@@ -320,7 +300,7 @@ export default function CalendarManagement() {
             <div key={group.floor}>
               <div className="bg-bg border-b border-border" style={{ minWidth: LABEL_W + DAYS * COL_W }}>
                 <div className="sticky left-0 inline-flex items-center gap-2 px-3 py-1.5">
-                  <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">Piso {group.floor}</span>
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">{t('admin.calendar.floor', { floor: group.floor })}</span>
                 </div>
               </div>
 
@@ -343,7 +323,7 @@ export default function CalendarManagement() {
                         <button
                           key={i}
                           onClick={() => setCreateTarget({ room, date: d })}
-                          title={`Reservar Hab. ${room.number} · ${fmtShort(toKey(d))}`}
+                          title={t('admin.calendar.reserveTile', { room: room.number, date: fmtShort(toKey(d)) })}
                           className={`border-r border-border/50 last:border-r-0 flex-shrink-0 hover:bg-accent/5 transition-colors ${isToday ? 'bg-accent/[0.06]' : weekend ? 'bg-bg/40' : ''}`}
                           style={{ width: COL_W, height: ROW_H }}
                         />
@@ -385,7 +365,7 @@ export default function CalendarManagement() {
           <p className="text-xs text-muted capitalize">{tip.res.roomType} · Hab. {tip.res.roomNumber}</p>
           <p className="text-xs text-muted mt-1">{fmtShort(tip.res.checkIn)} → {fmtShort(tip.res.checkOut)}</p>
           <span className={`inline-flex items-center gap-1 mt-2 px-2 py-0.5 rounded-full text-[10px] font-medium ${statusOf(tip.res.status).chip}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${statusOf(tip.res.status).dot}`} /> {statusOf(tip.res.status).label}
+            <span className={`w-1.5 h-1.5 rounded-full ${statusOf(tip.res.status).dot}`} /> {statusLabel(tip.res.status, t)}
           </span>
         </div>
       )}
@@ -410,7 +390,7 @@ export default function CalendarManagement() {
                 <div>
                   <h3 className="text-lg font-bold text-text">{detail.guestName}</h3>
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${statusOf(detail.status).chip}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${statusOf(detail.status).dot}`} /> {statusOf(detail.status).label}
+                    <span className={`w-1.5 h-1.5 rounded-full ${statusOf(detail.status).dot}`} /> {statusLabel(detail.status, t)}
                   </span>
                 </div>
               </div>
@@ -418,39 +398,39 @@ export default function CalendarManagement() {
               {/* Front-desk check-in / check-out */}
               {detail.status === 'confirmed' && (
                 <button
-                  onClick={() => setReservationStatus(detail.id, 'checked-in')}
+                  onClick={() => openCheckInStation(detail)}
                   className="w-full mb-4 flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold bg-emerald-500 text-white hover:bg-emerald-600 transition-colors"
                 >
-                  <LogIn className="w-4 h-4" /> Registrar check-in
+                  <LogIn className="w-4 h-4" /> {t('admin.calendar.detail.registerCheckin')}
                 </button>
               )}
               {detail.status === 'checked-in' && (
                 <button
-                  onClick={() => setReservationStatus(detail.id, 'checked-out')}
+                  onClick={() => handleCheckOut(detail.id)}
                   className="w-full mb-4 flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold bg-gray-500 text-white hover:bg-gray-600 transition-colors"
                 >
-                  <LogOut className="w-4 h-4" /> Registrar check-out
+                  <LogOut className="w-4 h-4" /> {t('admin.calendar.detail.registerCheckout')}
                 </button>
               )}
               {detail.status === 'checked-out' && (
                 <p className="w-full mb-4 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium bg-gray-400/10 text-muted">
-                  <LogOut className="w-4 h-4" /> Check-out realizado
+                  <LogOut className="w-4 h-4" /> {t('admin.calendar.detail.checkoutDone')}
                 </p>
               )}
 
               <dl className="space-y-2.5 text-sm">
-                <div className="flex justify-between"><dt className="text-muted">Reserva</dt><dd className="text-text font-medium">{detail.id}</dd></div>
-                <div className="flex justify-between"><dt className="text-muted">Habitación</dt><dd className="text-text font-medium capitalize">{detail.roomNumber} · {detail.roomType}</dd></div>
-                <div className="flex justify-between"><dt className="text-muted">Check-in</dt><dd className="text-text font-medium">{fmtShort(detail.checkIn)}</dd></div>
-                <div className="flex justify-between"><dt className="text-muted">Check-out</dt><dd className="text-text font-medium">{fmtShort(detail.checkOut)}</dd></div>
-                <div className="flex justify-between"><dt className="text-muted">Noches</dt><dd className="text-text font-medium">{Math.max(1, diffDays(parseDate(detail.checkOut), parseDate(detail.checkIn)))}</dd></div>
-                <div className="flex justify-between"><dt className="text-muted">Huéspedes</dt><dd className="text-text font-medium">{detail.guests}</dd></div>
+                <div className="flex justify-between"><dt className="text-muted">{t('admin.calendar.detail.reservation')}</dt><dd className="text-text font-medium">{detail.id}</dd></div>
+                <div className="flex justify-between"><dt className="text-muted">{t('admin.calendar.detail.room')}</dt><dd className="text-text font-medium capitalize">{detail.roomNumber} · {detail.roomType}</dd></div>
+                <div className="flex justify-between"><dt className="text-muted">{t('admin.calendar.detail.checkin')}</dt><dd className="text-text font-medium">{fmtShort(detail.checkIn)}</dd></div>
+                <div className="flex justify-between"><dt className="text-muted">{t('admin.calendar.detail.checkout')}</dt><dd className="text-text font-medium">{fmtShort(detail.checkOut)}</dd></div>
+                <div className="flex justify-between"><dt className="text-muted">{t('admin.calendar.detail.nights')}</dt><dd className="text-text font-medium">{Math.max(1, diffDays(parseDate(detail.checkOut), parseDate(detail.checkIn)))}</dd></div>
+                <div className="flex justify-between"><dt className="text-muted">{t('admin.calendar.detail.guests')}</dt><dd className="text-text font-medium">{detail.guests}</dd></div>
                 {detail.totalAmount > 0 && (
-                  <div className="flex justify-between"><dt className="text-muted">Total</dt><dd className="text-text font-bold">${detail.totalAmount}</dd></div>
+                  <div className="flex justify-between"><dt className="text-muted">{t('admin.calendar.detail.total')}</dt><dd className="text-text font-bold">${detail.totalAmount}</dd></div>
                 )}
                 {detail.specialRequests && (
                   <div className="pt-2 border-t border-border">
-                    <dt className="text-muted mb-0.5">Solicitudes especiales</dt>
+                    <dt className="text-muted mb-0.5">{t('admin.calendar.detail.specialRequests')}</dt>
                     <dd className="text-text">{detail.specialRequests}</dd>
                   </div>
                 )}
@@ -458,15 +438,15 @@ export default function CalendarManagement() {
 
               {/* Contact block */}
               <div className="mt-4 pt-4 border-t border-border">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted mb-2">Contacto del huésped</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted mb-2">{t('admin.calendar.detail.guestContact')}</p>
                 <div className="space-y-1.5 text-sm">
                   <div className="flex items-center gap-2 text-text">
                     <Mail className="w-4 h-4 text-muted flex-shrink-0" />
-                    <span className="truncate">{detail.guestEmail || 'Sin email registrado'}</span>
+                    <span className="truncate">{detail.guestEmail || t('admin.calendar.detail.noEmail')}</span>
                   </div>
                   <div className="flex items-center gap-2 text-text">
                     <Phone className="w-4 h-4 text-muted flex-shrink-0" />
-                    <span>{detail.guestPhone || 'Sin teléfono registrado'}</span>
+                    <span>{detail.guestPhone || t('admin.calendar.detail.noPhone')}</span>
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-2 mt-3">
@@ -475,14 +455,14 @@ export default function CalendarManagement() {
                     aria-disabled={!detail.guestPhone}
                     className={`flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium border transition-colors ${detail.guestPhone ? 'border-border text-text hover:bg-bg' : 'border-border text-muted opacity-50 pointer-events-none'}`}
                   >
-                    <Phone className="w-4 h-4" /> Llamar
+                    <Phone className="w-4 h-4" /> {t('admin.calendar.detail.call')}
                   </a>
                   <a
                     href={detail.guestEmail ? `mailto:${detail.guestEmail}` : undefined}
                     aria-disabled={!detail.guestEmail}
                     className={`flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium border transition-colors ${detail.guestEmail ? 'border-border text-text hover:bg-bg' : 'border-border text-muted opacity-50 pointer-events-none'}`}
                   >
-                    <Mail className="w-4 h-4" /> Email
+                    <Mail className="w-4 h-4" /> {t('admin.calendar.detail.email')}
                   </a>
                   <a
                     href={detail.guestPhone ? `https://wa.me/${detail.guestPhone.replace(/[^\d]/g, '')}` : undefined}
@@ -511,11 +491,23 @@ export default function CalendarManagement() {
           />
         )}
       </AnimatePresence>
+
+      {/* Shared check-in station (reception mode) */}
+      <CheckInStation
+        open={!!station}
+        onClose={() => setStation(null)}
+        reservation={stationReservation}
+        mode="reception"
+        availableRooms={availableRooms}
+        onComplete={handleStationComplete}
+        onSaveProgress={handleStationSave}
+      />
     </div>
   )
 }
 
 function CreateReservationModal({ target, roomTypes, onClose, onCreate }) {
+  const { t } = useTranslation()
   const [guestName, setGuestName] = useState('')
   const [guestEmail, setGuestEmail] = useState('')
   const [guestPhone, setGuestPhone] = useState('')
@@ -551,46 +543,46 @@ function CreateReservationModal({ target, roomTypes, onClose, onCreate }) {
           <X className="w-5 h-5" />
         </button>
         <h3 className="text-lg font-bold text-text mb-1 flex items-center gap-2">
-          <Plus className="w-4 h-4 text-primary" /> Nueva reserva
+          <Plus className="w-4 h-4 text-primary" /> {t('admin.calendar.create.title')}
         </h3>
-        <p className="text-sm text-muted mb-4">Habitación {target.room.number} · check-in {fmtShort(checkInKey)}</p>
+        <p className="text-sm text-muted mb-4">{t('admin.calendar.create.subtitle', { room: target.room.number, date: fmtShort(checkInKey) })}</p>
 
         <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1 -mr-1">
           <div>
-            <label className="text-sm text-muted mb-1.5 block">Huésped</label>
+            <label className="text-sm text-muted mb-1.5 block">{t('admin.calendar.create.guest')}</label>
             <input
               type="text"
               value={guestName}
               onChange={(e) => setGuestName(e.target.value)}
-              placeholder="Nombre y apellido"
+              placeholder={t('admin.calendar.create.guestPlaceholder')}
               className="w-full px-3.5 py-2.5 bg-bg rounded-lg border border-border focus:border-primary outline-none text-sm text-text"
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-sm text-muted mb-1.5 block">Email</label>
+              <label className="text-sm text-muted mb-1.5 block">{t('admin.calendar.create.email')}</label>
               <input
                 type="email"
                 value={guestEmail}
                 onChange={(e) => setGuestEmail(e.target.value)}
-                placeholder="huesped@email.com"
+                placeholder={t('admin.calendar.create.emailPlaceholder')}
                 className="w-full px-3.5 py-2.5 bg-bg rounded-lg border border-border focus:border-primary outline-none text-sm text-text"
               />
             </div>
             <div>
-              <label className="text-sm text-muted mb-1.5 block">Teléfono</label>
+              <label className="text-sm text-muted mb-1.5 block">{t('admin.calendar.create.phone')}</label>
               <input
                 type="tel"
                 value={guestPhone}
                 onChange={(e) => setGuestPhone(e.target.value)}
-                placeholder="+54 9 342 ..."
+                placeholder={t('admin.calendar.create.phonePlaceholder')}
                 className="w-full px-3.5 py-2.5 bg-bg rounded-lg border border-border focus:border-primary outline-none text-sm text-text"
               />
             </div>
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="text-sm text-muted mb-1.5 block">Noches</label>
+              <label className="text-sm text-muted mb-1.5 block">{t('admin.calendar.create.nights')}</label>
               <input
                 type="number"
                 min={1}
@@ -600,7 +592,7 @@ function CreateReservationModal({ target, roomTypes, onClose, onCreate }) {
               />
             </div>
             <div>
-              <label className="text-sm text-muted mb-1.5 block">Comensales</label>
+              <label className="text-sm text-muted mb-1.5 block">{t('admin.calendar.create.guests')}</label>
               <input
                 type="number"
                 min={1}
@@ -610,7 +602,7 @@ function CreateReservationModal({ target, roomTypes, onClose, onCreate }) {
               />
             </div>
             <div>
-              <label className="text-sm text-muted mb-1.5 block">Tipo</label>
+              <label className="text-sm text-muted mb-1.5 block">{t('admin.calendar.create.type')}</label>
               <select
                 value={roomType}
                 onChange={(e) => setRoomType(e.target.value)}
@@ -622,14 +614,14 @@ function CreateReservationModal({ target, roomTypes, onClose, onCreate }) {
           </div>
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-sm text-muted">Precio por noche (USD)</label>
+              <label className="text-sm text-muted">{t('admin.calendar.create.pricePerNight')}</label>
               <button
                 type="button"
                 onClick={() => { setPricePerNight(String(suggested)); setPriceTouched(false) }}
                 className="text-xs text-primary hover:underline"
-                title={`Sugerido para ${roomType}`}
+                title={t('admin.calendar.create.suggestedTitle', { type: roomType })}
               >
-                Sugerido: ${suggested}
+                {t('admin.calendar.create.suggested', { price: suggested })}
               </button>
             </div>
             <div className="relative">
@@ -644,11 +636,11 @@ function CreateReservationModal({ target, roomTypes, onClose, onCreate }) {
               />
             </div>
             {estimatedTotal > 0 && (
-              <p className="text-xs text-muted mt-1.5">Total estimado: <span className="font-semibold text-text">${estimatedTotal}</span> ({nightsNum} {nightsNum === 1 ? 'noche' : 'noches'})</p>
+              <p className="text-xs text-muted mt-1.5">{t('admin.calendar.create.estimatedTotal')} <span className="font-semibold text-text">${estimatedTotal}</span> ({nightsNum === 1 ? t('admin.calendar.create.nightOne', { count: nightsNum }) : t('admin.calendar.create.nightMany', { count: nightsNum })})</p>
             )}
           </div>
           <div>
-            <label className="text-sm text-muted mb-1.5 block">Estado</label>
+            <label className="text-sm text-muted mb-1.5 block">{t('admin.calendar.create.status')}</label>
             <div className="grid grid-cols-2 gap-2">
               {['confirmed', 'checked-in'].map((s) => (
                 <button
@@ -656,17 +648,17 @@ function CreateReservationModal({ target, roomTypes, onClose, onCreate }) {
                   onClick={() => setStatus(s)}
                   className={`py-2 rounded-lg text-sm font-medium border transition-colors ${status === s ? `${statusOf(s).chip} border-current` : 'border-border text-muted hover:text-text'}`}
                 >
-                  {statusOf(s).label}
+                  {statusLabel(s, t)}
                 </button>
               ))}
             </div>
           </div>
           <div>
-            <label className="text-sm text-muted mb-1.5 block">Solicitudes especiales</label>
+            <label className="text-sm text-muted mb-1.5 block">{t('admin.calendar.create.specialRequests')}</label>
             <textarea
               value={specialRequests}
               onChange={(e) => setSpecialRequests(e.target.value)}
-              placeholder="Piso alto, cuna, aniversario…"
+              placeholder={t('admin.calendar.create.specialRequestsPlaceholder')}
               rows={2}
               className="w-full px-3.5 py-2.5 bg-bg rounded-lg border border-border focus:border-primary outline-none text-sm text-text resize-none"
             />
@@ -676,7 +668,7 @@ function CreateReservationModal({ target, roomTypes, onClose, onCreate }) {
             onClick={() => onCreate({ guestName, guestEmail, guestPhone, nights, guests, roomType, pricePerNight, status, specialRequests, roomNumber: target.room.number, checkIn: checkInKey })}
             className="w-full bg-primary text-primary-contrast py-2.5 rounded-lg font-semibold hover:opacity-90 transition-opacity sticky bottom-0"
           >
-            Crear reserva
+            {t('admin.calendar.create.submit')}
           </button>
         </div>
       </motion.div>

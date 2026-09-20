@@ -19,6 +19,7 @@ import {
   KeyRound
 } from 'lucide-react'
 import { useUsers } from '../../../hooks/useUsers'
+import { useTranslation } from '../../../i18n/LanguageProvider'
 import {
   ROLES,
   AREAS,
@@ -57,27 +58,30 @@ function Avatar({ user, size = 'md' }) {
 }
 
 function RoleBadge({ roleId }) {
+  const { t } = useTranslation()
   const role = getRole(roleId)
   const Icon = role.icon
   return (
     <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-1 rounded-full border ${role.badge}`}>
       <Icon className="w-3.5 h-3.5" />
-      {role.label}
+      {t(`admin.users.roles.${role.id}`)}
     </span>
   )
 }
 
 function StatusPill({ status }) {
+  const { t } = useTranslation()
   return (
     <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-full border ${STATUS_PILL[status] || STATUS_PILL.inactive}`}>
       <span className={`w-1.5 h-1.5 rounded-full ${status === 'active' ? 'bg-emerald-500' : 'bg-gray-400'}`} />
-      {status === 'active' ? 'Activo' : 'Inactivo'}
+      {status === 'active' ? t('admin.users.status.active') : t('admin.users.status.inactive')}
     </span>
   )
 }
 
 // ------------------------------------------------------------- Create / edit
 function UserModal({ open, editing, existingEmails, onClose, onSave }) {
+  const { t } = useTranslation()
   const empty = { name: '', email: '', role: 'front-desk', permissions: getDefaultAreas('front-desk'), status: 'active' }
   const [draft, setDraft] = useState(empty)
   const [saving, setSaving] = useState(false)
@@ -164,7 +168,7 @@ function UserModal({ open, editing, existingEmails, onClose, onSave }) {
                   {editing ? <UserCog className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-text">{editing ? 'Editar usuario' : 'Agregar usuario'}</h2>
+                  <h2 className="text-lg font-bold text-text">{editing ? t('admin.users.modal.editTitle') : t('admin.users.modal.createTitle')}</h2>
                   {editing && <p className="text-xs text-muted">{editing.id}</p>}
                 </div>
               </div>
@@ -177,38 +181,38 @@ function UserModal({ open, editing, existingEmails, onClose, onSave }) {
               {/* Name + email */}
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-text mb-2">Nombre completo</label>
+                  <label className="block text-sm font-medium text-text mb-2">{t('admin.users.modal.nameLabel')}</label>
                   <input
                     type="text"
                     value={draft.name}
                     onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
-                    placeholder="Ej: Ana Martínez"
+                    placeholder={t('admin.users.modal.namePlaceholder')}
                     className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/50"
                   />
-                  {touched && !nameOk && <p className="text-[11px] text-red-500 mt-1">Ingresá un nombre válido.</p>}
+                  {touched && !nameOk && <p className="text-[11px] text-red-500 mt-1">{t('admin.users.modal.nameError')}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-text mb-2">Email</label>
+                  <label className="block text-sm font-medium text-text mb-2">{t('admin.users.modal.emailLabel')}</label>
                   <div className="relative">
                     <Mail className="w-4 h-4 text-muted absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="email"
                       value={draft.email}
                       onChange={(e) => setDraft((d) => ({ ...d, email: e.target.value }))}
-                      placeholder="nombre@villaserena.com"
+                      placeholder={t('admin.users.modal.emailPlaceholder')}
                       className="w-full pl-9 pr-3 py-2 bg-bg border border-border rounded-lg text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/50"
                     />
                   </div>
-                  {touched && emailTaken && <p className="text-[11px] text-red-500 mt-1">Ya existe un usuario con ese email.</p>}
+                  {touched && emailTaken && <p className="text-[11px] text-red-500 mt-1">{t('admin.users.modal.emailTaken')}</p>}
                   {touched && !emailTaken && !isValidEmail(draft.email) && (
-                    <p className="text-[11px] text-red-500 mt-1">Email inválido.</p>
+                    <p className="text-[11px] text-red-500 mt-1">{t('admin.users.modal.emailInvalid')}</p>
                   )}
                 </div>
               </div>
 
               {/* Role */}
               <div>
-                <label className="block text-sm font-medium text-text mb-2">Rol</label>
+                <label className="block text-sm font-medium text-text mb-2">{t('admin.users.modal.roleLabel')}</label>
                 <div className="flex flex-wrap gap-2">
                   {ROLES.map((role) => {
                     const RoleIcon = role.icon
@@ -225,12 +229,12 @@ function UserModal({ open, editing, existingEmails, onClose, onSave }) {
                         }`}
                       >
                         <RoleIcon className="w-3.5 h-3.5" />
-                        {role.label}
+                        {t(`admin.users.roles.${role.id}`)}
                       </button>
                     )
                   })}
                 </div>
-                <p className="text-xs text-muted mt-2">{getRole(draft.role).description}</p>
+                <p className="text-xs text-muted mt-2">{t(`admin.users.roleDescriptions.${draft.role}`)}</p>
               </div>
 
               {/* Permissions checklist */}
@@ -238,8 +242,8 @@ function UserModal({ open, editing, existingEmails, onClose, onSave }) {
                 <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
                   <label className="text-sm font-medium text-text flex items-center gap-1.5">
                     <KeyRound className="w-4 h-4 text-muted" />
-                    Módulos con acceso
-                    <span className="text-xs font-normal text-muted">({draft.permissions.length}/{ALL_AREA_IDS.length})</span>
+                    {t('admin.users.modal.permissionsLabel')}
+                    <span className="text-xs font-normal text-muted">{t('admin.users.modal.permissionsCount', { count: draft.permissions.length, total: ALL_AREA_IDS.length })}</span>
                   </label>
                   <div className="flex items-center gap-1.5 text-xs">
                     <button
@@ -247,9 +251,9 @@ function UserModal({ open, editing, existingEmails, onClose, onSave }) {
                       onClick={() => pickRole(draft.role)}
                       disabled={isPreset}
                       className="px-2 py-1 rounded-md text-primary hover:bg-bg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                      title="Restablecer a los módulos por defecto del rol"
+                      title={t('admin.users.modal.rolePresetTitle')}
                     >
-                      Preset del rol
+                      {t('admin.users.modal.rolePreset')}
                     </button>
                     <span className="text-border">|</span>
                     <button
@@ -257,14 +261,14 @@ function UserModal({ open, editing, existingEmails, onClose, onSave }) {
                       onClick={() => setDraft((d) => ({ ...d, permissions: [...ALL_AREA_IDS] }))}
                       className="px-2 py-1 rounded-md text-muted hover:text-text hover:bg-bg transition-colors"
                     >
-                      Todos
+                      {t('admin.users.modal.all')}
                     </button>
                     <button
                       type="button"
                       onClick={() => setDraft((d) => ({ ...d, permissions: [] }))}
                       className="px-2 py-1 rounded-md text-muted hover:text-text hover:bg-bg transition-colors"
                     >
-                      Ninguno
+                      {t('admin.users.modal.none')}
                     </button>
                   </div>
                 </div>
@@ -282,7 +286,7 @@ function UserModal({ open, editing, existingEmails, onClose, onSave }) {
                         }`}
                       >
                         <AreaIcon className="w-4 h-4 shrink-0" />
-                        <span className="text-sm font-medium flex-1">{area.label}</span>
+                        <span className="text-sm font-medium flex-1">{t(`admin.users.areas.${area.id}`)}</span>
                         <span
                           className={`w-4 h-4 rounded-full flex items-center justify-center border ${
                             on ? 'bg-primary-contrast border-primary-contrast' : 'border-border'
@@ -297,7 +301,7 @@ function UserModal({ open, editing, existingEmails, onClose, onSave }) {
                 {draft.permissions.length === 0 && (
                   <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-2 flex items-center gap-1.5">
                     <AlertTriangle className="w-3.5 h-3.5" />
-                    Sin módulos, el usuario no verá nada al ingresar.
+                    {t('admin.users.modal.noModulesWarning')}
                   </p>
                 )}
               </div>
@@ -306,8 +310,8 @@ function UserModal({ open, editing, existingEmails, onClose, onSave }) {
               {editing && (
                 <div className="flex items-center justify-between bg-bg rounded-lg border border-border px-4 py-3">
                   <div>
-                    <p className="text-sm font-medium text-text">Estado de la cuenta</p>
-                    <p className="text-xs text-muted">Un usuario inactivo no puede iniciar sesión.</p>
+                    <p className="text-sm font-medium text-text">{t('admin.users.modal.accountStatus')}</p>
+                    <p className="text-xs text-muted">{t('admin.users.modal.accountStatusHint')}</p>
                   </div>
                   <button
                     type="button"
@@ -319,7 +323,7 @@ function UserModal({ open, editing, existingEmails, onClose, onSave }) {
                     }`}
                   >
                     <Power className="w-3.5 h-3.5" />
-                    {draft.status === 'active' ? 'Activo' : 'Inactivo'}
+                    {draft.status === 'active' ? t('admin.users.modal.active') : t('admin.users.modal.inactive')}
                   </button>
                 </div>
               )}
@@ -328,7 +332,7 @@ function UserModal({ open, editing, existingEmails, onClose, onSave }) {
             {/* Footer */}
             <div className="flex items-center justify-end gap-3 p-5 border-t border-border">
               <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-text hover:bg-bg rounded-lg transition-colors">
-                Cancelar
+                {t('common.actions.cancel')}
               </button>
               <button
                 onClick={handleSave}
@@ -336,7 +340,7 @@ function UserModal({ open, editing, existingEmails, onClose, onSave }) {
                 className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-contrast text-sm font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Save className="w-4 h-4" />
-                {saving ? 'Guardando…' : editing ? 'Guardar cambios' : 'Crear usuario'}
+                {saving ? t('common.actions.saving') : editing ? t('admin.users.modal.saveChanges') : t('admin.users.modal.create')}
               </button>
             </div>
           </motion.div>
@@ -348,6 +352,7 @@ function UserModal({ open, editing, existingEmails, onClose, onSave }) {
 
 // ------------------------------------------------------------- Confirm delete
 function ConfirmDialog({ open, user, onClose, onConfirm }) {
+  const { t } = useTranslation()
   return (
     <AnimatePresence>
       {open && user && (
@@ -370,15 +375,15 @@ function ConfirmDialog({ open, user, onClose, onConfirm }) {
                 <div className="p-2 rounded-lg bg-red-500/10 text-red-500">
                   <Trash2 className="w-5 h-5" />
                 </div>
-                <h3 className="text-lg font-bold text-text">Eliminar usuario</h3>
+                <h3 className="text-lg font-bold text-text">{t('admin.users.delete.title')}</h3>
               </div>
               <p className="text-sm text-muted">
-                ¿Seguro que querés eliminar a <span className="font-semibold text-text">{user.name}</span>? Esta acción no se puede deshacer.
+                {t('admin.users.delete.confirmPrefix')} <span className="font-semibold text-text">{user.name}</span>{t('admin.users.delete.confirmSuffix')}
               </p>
             </div>
             <div className="flex items-center justify-end gap-3 px-5 py-4 border-t border-border">
               <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-text hover:bg-bg rounded-lg transition-colors">
-                Cancelar
+                {t('common.actions.cancel')}
               </button>
               <button
                 onClick={() => {
@@ -387,7 +392,7 @@ function ConfirmDialog({ open, user, onClose, onConfirm }) {
                 }}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-lg hover:bg-red-600 transition-colors"
               >
-                <Trash2 className="w-4 h-4" /> Eliminar
+                <Trash2 className="w-4 h-4" /> {t('admin.users.delete.confirm')}
               </button>
             </div>
           </motion.div>
@@ -399,6 +404,7 @@ function ConfirmDialog({ open, user, onClose, onConfirm }) {
 
 // ------------------------------------------------- Role → module access matrix
 function RolePermissionsPanel({ users }) {
+  const { t } = useTranslation()
   const countByRole = useMemo(() => {
     const map = {}
     users.forEach((u) => {
@@ -410,28 +416,27 @@ function RolePermissionsPanel({ users }) {
   return (
     <div className="space-y-6">
       <p className="text-sm text-muted">
-        Cada rol trae un set de módulos por defecto. Es el punto de partida al crear un usuario: los permisos se pueden ajustar
-        por persona desde su ficha.
+        {t('admin.users.rolesPanel.intro')}
       </p>
 
       {/* Access matrix — roles as rows, modules as columns */}
       <div className="bg-surface rounded-xl border border-border overflow-hidden">
         <div className="px-4 py-3 border-b border-border flex items-center gap-2">
           <LayoutGrid className="w-4 h-4 text-primary" />
-          <h3 className="text-sm font-bold text-text">Matriz de accesos por rol</h3>
+          <h3 className="text-sm font-bold text-text">{t('admin.users.rolesPanel.matrixTitle')}</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border">
-                <th className="text-left font-semibold text-muted px-4 py-3 sticky left-0 bg-surface z-10">Rol</th>
+                <th className="text-left font-semibold text-muted px-4 py-3 sticky left-0 bg-surface z-10">{t('admin.users.rolesPanel.roleColumn')}</th>
                 {AREAS.map((area) => {
                   const AreaIcon = area.icon
                   return (
-                    <th key={area.id} className="px-2 py-3 font-medium text-muted" title={area.label}>
+                    <th key={area.id} className="px-2 py-3 font-medium text-muted" title={t(`admin.users.areas.${area.id}`)}>
                       <div className="flex flex-col items-center gap-1 w-14">
                         <AreaIcon className="w-4 h-4" />
-                        <span className="text-[10px] leading-tight text-center line-clamp-2">{area.label}</span>
+                        <span className="text-[10px] leading-tight text-center line-clamp-2">{t(`admin.users.areas.${area.id}`)}</span>
                       </div>
                     </th>
                   )
@@ -448,7 +453,7 @@ function RolePermissionsPanel({ users }) {
                         <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg ${role.solid}`}>
                           <RoleIcon className="w-4 h-4" />
                         </span>
-                        <span className="font-medium text-text">{role.label}</span>
+                        <span className="font-medium text-text">{t(`admin.users.roles.${role.id}`)}</span>
                       </div>
                     </td>
                     {AREAS.map((area) => {
@@ -486,16 +491,16 @@ function RolePermissionsPanel({ users }) {
                     <RoleIcon className="w-5 h-5" />
                   </span>
                   <div>
-                    <h4 className="font-semibold text-text leading-tight">{role.label}</h4>
-                    <p className="text-xs text-muted">{n} usuario{n === 1 ? '' : 's'}</p>
+                    <h4 className="font-semibold text-text leading-tight">{t(`admin.users.roles.${role.id}`)}</h4>
+                    <p className="text-xs text-muted">{n === 1 ? t('admin.users.rolesPanel.userCount', { count: n }) : t('admin.users.rolesPanel.userCountPlural', { count: n })}</p>
                   </div>
                 </div>
               </div>
-              <p className="text-sm text-muted mb-3">{role.description}</p>
+              <p className="text-sm text-muted mb-3">{t(`admin.users.roleDescriptions.${role.id}`)}</p>
               <div className="flex flex-wrap gap-1.5 mt-auto">
                 {role.defaultAreas.length === ALL_AREA_IDS.length ? (
                   <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-full border ${role.badge}`}>
-                    <ShieldAlert className="w-3 h-3" /> Acceso total
+                    <ShieldAlert className="w-3 h-3" /> {t('admin.users.rolesPanel.fullAccess')}
                   </span>
                 ) : (
                   role.defaultAreas.map((areaId) => {
@@ -505,7 +510,7 @@ function RolePermissionsPanel({ users }) {
                     return (
                       <span key={areaId} className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded-full bg-bg text-muted border border-border">
                         <AreaIcon className="w-3 h-3" />
-                        {area.label}
+                        {t(`admin.users.areas.${area.id}`)}
                       </span>
                     )
                   })
@@ -521,6 +526,7 @@ function RolePermissionsPanel({ users }) {
 
 // -------------------------------------------------------------------- Main
 export default function UserManagement() {
+  const { t } = useTranslation()
   const { users, addUser, updateUser, deleteUser, toggleUserStatus } = useUsers()
   const [tab, setTab] = useState('users') // users | roles
   const [roleFilter, setRoleFilter] = useState('all')
@@ -572,10 +578,10 @@ export default function UserManagement() {
         disabled={user.status === 'active' && isLastAdmin(user)}
         title={
           user.status === 'active' && isLastAdmin(user)
-            ? 'No podés desactivar al único administrador activo'
+            ? t('admin.users.rowActions.lastAdminToggle')
             : user.status === 'active'
-            ? 'Desactivar'
-            : 'Activar'
+            ? t('admin.users.rowActions.deactivate')
+            : t('admin.users.rowActions.activate')
         }
         className={`p-1.5 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
           user.status === 'active' ? 'text-muted hover:text-amber-500 hover:bg-bg' : 'text-muted hover:text-emerald-500 hover:bg-bg'
@@ -586,14 +592,14 @@ export default function UserManagement() {
       <button
         onClick={() => openEdit(user)}
         className="p-1.5 rounded-lg text-muted hover:text-primary hover:bg-bg transition-colors"
-        title="Editar"
+        title={t('admin.users.rowActions.edit')}
       >
         <Pencil className="w-4 h-4" />
       </button>
       <button
         onClick={() => setDeleting(user)}
         disabled={isLastAdmin(user)}
-        title={isLastAdmin(user) ? 'No podés eliminar al único administrador activo' : 'Eliminar'}
+        title={isLastAdmin(user) ? t('admin.users.rowActions.lastAdminDelete') : t('admin.users.rowActions.delete')}
         className="p-1.5 rounded-lg text-muted hover:text-red-500 hover:bg-bg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
       >
         <Trash2 className="w-4 h-4" />
@@ -607,34 +613,34 @@ export default function UserManagement() {
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-xl font-bold text-text flex items-center gap-2">
-            <Users className="w-5 h-5 text-primary" /> Usuarios y roles
+            <Users className="w-5 h-5 text-primary" /> {t('admin.users.title')}
           </h1>
-          <p className="text-sm text-muted">Gestioná las cuentas del equipo, sus roles y a qué módulos accede cada uno.</p>
+          <p className="text-sm text-muted">{t('admin.users.subtitle')}</p>
         </div>
         <button
           onClick={openCreate}
           className="inline-flex items-center gap-2 px-3 py-2 bg-primary text-primary-contrast text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
         >
-          <UserPlus className="w-4 h-4" /> Agregar usuario
+          <UserPlus className="w-4 h-4" /> {t('admin.users.add')}
         </button>
       </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="bg-surface rounded-xl border border-border p-4">
-          <p className="text-xs text-muted">Usuarios</p>
+          <p className="text-xs text-muted">{t('admin.users.kpis.users')}</p>
           <p className="text-2xl font-bold text-text">{users.length}</p>
         </div>
         <div className="bg-surface rounded-xl border border-border p-4">
-          <p className="text-xs text-muted">Activos</p>
+          <p className="text-xs text-muted">{t('admin.users.kpis.active')}</p>
           <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{activeCount}</p>
         </div>
         <div className="bg-surface rounded-xl border border-border p-4">
-          <p className="text-xs text-muted">Inactivos</p>
+          <p className="text-xs text-muted">{t('admin.users.kpis.inactive')}</p>
           <p className="text-2xl font-bold text-text">{users.length - activeCount}</p>
         </div>
         <div className="bg-surface rounded-xl border border-border p-4">
-          <p className="text-xs text-muted">Roles</p>
+          <p className="text-xs text-muted">{t('admin.users.kpis.roles')}</p>
           <p className="text-2xl font-bold text-text">{ROLES.length}</p>
         </div>
       </div>
@@ -642,19 +648,19 @@ export default function UserManagement() {
       {/* Tabs */}
       <div className="flex items-center gap-1 bg-surface rounded-lg border border-border p-1 w-fit">
         {[
-          { id: 'users', label: 'Usuarios', icon: Users },
-          { id: 'roles', label: 'Permisos por rol', icon: KeyRound }
-        ].map((t) => {
-          const TabIcon = t.icon
+          { id: 'users', label: t('admin.users.tabs.users'), icon: Users },
+          { id: 'roles', label: t('admin.users.tabs.roles'), icon: KeyRound }
+        ].map((tabItem) => {
+          const TabIcon = tabItem.icon
           return (
             <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
+              key={tabItem.id}
+              onClick={() => setTab(tabItem.id)}
               className={`inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                tab === t.id ? 'bg-primary text-primary-contrast' : 'text-muted hover:text-text'
+                tab === tabItem.id ? 'bg-primary text-primary-contrast' : 'text-muted hover:text-text'
               }`}
             >
-              <TabIcon className="w-4 h-4" /> {t.label}
+              <TabIcon className="w-4 h-4" /> {tabItem.label}
             </button>
           )
         })}
@@ -672,7 +678,7 @@ export default function UserManagement() {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Buscar por nombre o email…"
+                placeholder={t('admin.users.filters.searchPlaceholder')}
                 className="w-full pl-9 pr-3 py-2 bg-surface border border-border rounded-lg text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/50"
               />
             </div>
@@ -683,7 +689,7 @@ export default function UserManagement() {
                   roleFilter === 'all' ? 'bg-primary text-primary-contrast border-primary' : 'bg-surface text-muted border-border hover:border-primary'
                 }`}
               >
-                Todos
+                {t('admin.users.filters.all')}
               </button>
               {ROLES.map((role) => {
                 const RoleIcon = role.icon
@@ -696,7 +702,7 @@ export default function UserManagement() {
                       active ? 'bg-primary text-primary-contrast border-primary' : 'bg-surface text-muted border-border hover:border-primary'
                     }`}
                   >
-                    <RoleIcon className="w-3.5 h-3.5" /> {role.label}
+                    <RoleIcon className="w-3.5 h-3.5" /> {t(`admin.users.roles.${role.id}`)}
                   </button>
                 )
               })}
@@ -709,7 +715,7 @@ export default function UserManagement() {
                     statusFilter === s ? 'bg-primary text-primary-contrast border-primary' : 'bg-surface text-muted border-border hover:border-primary'
                   }`}
                 >
-                  {s === 'all' ? 'Todo estado' : s === 'active' ? 'Activos' : 'Inactivos'}
+                  {s === 'all' ? t('admin.users.filters.allStatus') : s === 'active' ? t('admin.users.filters.active') : t('admin.users.filters.inactive')}
                 </button>
               ))}
             </div>
@@ -719,7 +725,7 @@ export default function UserManagement() {
           {filtered.length === 0 ? (
             <div className="bg-surface rounded-xl border border-border text-center py-12">
               <Users className="w-10 h-10 mx-auto text-muted mb-2" />
-              <p className="text-sm text-muted">No hay usuarios que coincidan con el filtro.</p>
+              <p className="text-sm text-muted">{t('admin.users.emptyFiltered')}</p>
             </div>
           ) : (
             <>
@@ -729,12 +735,12 @@ export default function UserManagement() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-border text-left">
-                        <th className="font-semibold text-muted px-4 py-3">Usuario</th>
-                        <th className="font-semibold text-muted px-4 py-3">Rol</th>
-                        <th className="font-semibold text-muted px-4 py-3">Accesos</th>
-                        <th className="font-semibold text-muted px-4 py-3">Estado</th>
-                        <th className="font-semibold text-muted px-4 py-3">Último acceso</th>
-                        <th className="font-semibold text-muted px-4 py-3 text-right">Acciones</th>
+                        <th className="font-semibold text-muted px-4 py-3">{t('admin.users.table.user')}</th>
+                        <th className="font-semibold text-muted px-4 py-3">{t('admin.users.table.role')}</th>
+                        <th className="font-semibold text-muted px-4 py-3">{t('admin.users.table.access')}</th>
+                        <th className="font-semibold text-muted px-4 py-3">{t('admin.users.table.status')}</th>
+                        <th className="font-semibold text-muted px-4 py-3">{t('admin.users.table.lastLogin')}</th>
+                        <th className="font-semibold text-muted px-4 py-3 text-right">{t('admin.users.table.actions')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -759,7 +765,7 @@ export default function UserManagement() {
                             </td>
                             <td className="px-4 py-3"><RoleBadge roleId={user.role} /></td>
                             <td className="px-4 py-3 text-muted whitespace-nowrap">
-                              {user.permissions?.length === ALL_AREA_IDS.length ? 'Acceso total' : `${user.permissions?.length || 0} módulos`}
+                              {user.permissions?.length === ALL_AREA_IDS.length ? t('admin.users.access.full') : t('admin.users.access.modules', { count: user.permissions?.length || 0 })}
                             </td>
                             <td className="px-4 py-3"><StatusPill status={user.status} /></td>
                             <td className="px-4 py-3 text-muted whitespace-nowrap">

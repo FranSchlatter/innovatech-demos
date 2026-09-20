@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, forwardRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Sparkles,
@@ -20,16 +20,9 @@ import {
   Gauge
 } from 'lucide-react'
 import { useAdminData } from '../../../hooks/useAdminData'
+import { useTranslation } from '../../../i18n/LanguageProvider'
 import { getStaffMetrics, getWeeklyCompletion } from '../../../data/admin/mockHousekeeping'
 import StatusBadge from '../shared/StatusBadge'
-
-const taskTypeLabels = {
-  'daily': 'Daily Clean',
-  'checkout-clean': 'Checkout',
-  'deep-clean': 'Deep Clean',
-  'turndown': 'Turndown',
-  'inspection': 'Inspection'
-}
 
 const taskTypeColors = {
   'daily': 'bg-blue-500',
@@ -40,19 +33,19 @@ const taskTypeColors = {
 }
 
 const statusFilters = [
-  { value: 'all', label: 'All Tasks' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'assigned', label: 'Assigned' },
-  { value: 'in-progress', label: 'In Progress' },
-  { value: 'completed', label: 'Completed' }
+  { value: 'all', key: 'admin.housekeeping.filters.allTasks' },
+  { value: 'pending', key: 'admin.housekeeping.filters.pending' },
+  { value: 'assigned', key: 'admin.housekeeping.filters.assigned' },
+  { value: 'in-progress', key: 'admin.housekeeping.filters.inProgress' },
+  { value: 'completed', key: 'admin.housekeeping.filters.completed' }
 ]
 
 const priorityFilters = [
-  { value: 'all', label: 'All Priority' },
-  { value: 'urgent', label: 'Urgent' },
-  { value: 'high', label: 'High' },
-  { value: 'normal', label: 'Normal' },
-  { value: 'low', label: 'Low' }
+  { value: 'all', key: 'admin.housekeeping.filters.allPriority' },
+  { value: 'urgent', key: 'admin.housekeeping.filters.urgent' },
+  { value: 'high', key: 'admin.housekeeping.filters.high' },
+  { value: 'normal', key: 'admin.housekeeping.filters.normal' },
+  { value: 'low', key: 'admin.housekeeping.filters.low' }
 ]
 
 // Human-readable elapsed time between an ISO start and a "now" epoch.
@@ -89,6 +82,7 @@ function QualityStars({ value = 0, size = 'w-3.5 h-3.5' }) {
 }
 
 function ProductivityBar({ value, teamMax, teamAvg }) {
+  const { t } = useTranslation()
   const pct = teamMax > 0 ? Math.min(100, (value / teamMax) * 100) : 0
   const avgPct = teamMax > 0 ? Math.min(100, (teamAvg / teamMax) * 100) : 0
   const delta = value - teamAvg
@@ -97,8 +91,8 @@ function ProductivityBar({ value, teamMax, teamAvg }) {
   return (
     <div>
       <div className="flex items-center justify-between text-xs mb-1">
-        <span className="text-muted">Productivity</span>
-        <span className="font-semibold text-text">{value.toFixed(1)} tasks/h</span>
+        <span className="text-muted">{t('admin.housekeeping.productivity.label')}</span>
+        <span className="font-semibold text-text">{t('admin.housekeeping.productivity.tasksPerHour', { value: value.toFixed(1) })}</span>
       </div>
       <div className="relative h-2.5 bg-bg rounded-full overflow-hidden">
         <motion.div
@@ -111,11 +105,11 @@ function ProductivityBar({ value, teamMax, teamAvg }) {
         <div
           className="absolute top-0 bottom-0 w-px bg-text opacity-40"
           style={{ left: `${avgPct}%` }}
-          title={`Team avg ${teamAvg.toFixed(1)}`}
+          title={t('admin.housekeeping.productivity.teamAvg', { value: teamAvg.toFixed(1) })}
         />
       </div>
       <p className={`mt-1 text-[11px] font-medium ${aboveAvg ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}`}>
-        {aboveAvg ? '+' : ''}{delta.toFixed(1)} vs team avg
+        {t('admin.housekeeping.productivity.vsTeamAvg', { delta: `${aboveAvg ? '+' : ''}${delta.toFixed(1)}` })}
       </p>
     </div>
   )
@@ -123,7 +117,8 @@ function ProductivityBar({ value, teamMax, teamAvg }) {
 
 // --- Task card --------------------------------------------------------------
 
-function TaskCard({ task, staff, onStatusChange, onAssign, now }) {
+const TaskCard = forwardRef(function TaskCard({ task, staff, onStatusChange, onAssign, now }, ref) {
+  const { t } = useTranslation()
   const completedItems = task.checklistItems?.filter(i => i.completed).length || 0
   const totalItems = task.checklistItems?.length || 0
   const progress = totalItems > 0 ? (completedItems / totalItems) * 100 : 0
@@ -137,6 +132,7 @@ function TaskCard({ task, staff, onStatusChange, onAssign, now }) {
 
   return (
     <motion.div
+      ref={ref}
       layout
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
@@ -155,7 +151,7 @@ function TaskCard({ task, staff, onStatusChange, onAssign, now }) {
           <div>
             <div className="flex items-center gap-2">
               <span className="font-medium text-text">
-                {taskTypeLabels[task.type] || task.type}
+                {t(`admin.housekeeping.taskTypes.${task.type}`)}
               </span>
               {(task.priority === 'high' || task.priority === 'urgent') && (
                 <StatusBadge status={task.priority} size="xs" />
@@ -163,10 +159,10 @@ function TaskCard({ task, staff, onStatusChange, onAssign, now }) {
             </div>
             <div className="flex items-center gap-2 text-xs text-muted">
               <BedDouble className="w-3 h-3" />
-              <span>Room {task.roomNumber}</span>
+              <span>{t('admin.housekeeping.card.room', { room: task.roomNumber })}</span>
               <span>•</span>
               <Building className="w-3 h-3" />
-              <span>Floor {task.floor}</span>
+              <span>{t('admin.housekeeping.card.floor', { floor: task.floor })}</span>
             </div>
           </div>
         </div>
@@ -176,7 +172,7 @@ function TaskCard({ task, staff, onStatusChange, onAssign, now }) {
       {/* Scheduled Time */}
       <div className="flex items-center gap-2 text-sm text-muted mb-3">
         <Clock className="w-4 h-4" />
-        <span>Scheduled: {formatTime(task.scheduledTime)}</span>
+        <span>{t('admin.housekeeping.card.scheduled', { time: formatTime(task.scheduledTime) })}</span>
       </div>
 
       {/* Elapsed time (in-progress only) */}
@@ -184,24 +180,24 @@ function TaskCard({ task, staff, onStatusChange, onAssign, now }) {
         <div className="flex items-center gap-2 mb-3 px-2.5 py-1.5 bg-purple-500/10 rounded-lg">
           <Timer className="w-4 h-4 text-purple-500" />
           <span className="text-sm text-purple-600 dark:text-purple-400 font-medium">
-            Elapsed: {elapsed}
+            {t('admin.housekeeping.card.elapsed', { elapsed })}
           </span>
           {task.startedAt && (
-            <span className="text-xs text-muted ml-auto">since {formatTime(task.startedAt)}</span>
+            <span className="text-xs text-muted ml-auto">{t('admin.housekeeping.card.since', { time: formatTime(task.startedAt) })}</span>
           )}
         </div>
       )}
 
       {/* Notes */}
       {task.notes && (
-        <p className="text-xs text-muted italic mb-3">Note: {task.notes}</p>
+        <p className="text-xs text-muted italic mb-3">{t('admin.housekeeping.card.note', { note: task.notes })}</p>
       )}
 
       {/* Progress Bar */}
       {task.status === 'in-progress' && totalItems > 0 && (
         <div className="mb-3">
           <div className="flex items-center justify-between text-xs mb-1">
-            <span className="text-muted">Progress</span>
+            <span className="text-muted">{t('admin.housekeeping.card.progress')}</span>
             <span className="text-text font-medium">{completedItems}/{totalItems}</span>
           </div>
           <div className="h-2 bg-bg rounded-full overflow-hidden">
@@ -239,7 +235,7 @@ function TaskCard({ task, staff, onStatusChange, onAssign, now }) {
                 focus:outline-none focus:ring-2 focus:ring-primary/50"
               defaultValue=""
             >
-              <option value="" disabled>Assign to...</option>
+              <option value="" disabled>{t('admin.housekeeping.card.assignTo')}</option>
               {staff.filter(s => s.role === 'housekeeping' && s.status === 'on-duty').map(s => (
                 <option key={s.id} value={s.id}>{s.name}</option>
               ))}
@@ -254,7 +250,7 @@ function TaskCard({ task, staff, onStatusChange, onAssign, now }) {
                 hover:bg-purple-600 transition-colors"
             >
               <Play className="w-3 h-3" />
-              Start
+              {t('admin.housekeeping.card.start')}
             </button>
           )}
 
@@ -266,18 +262,19 @@ function TaskCard({ task, staff, onStatusChange, onAssign, now }) {
                 hover:bg-green-600 transition-colors"
             >
               <CheckCircle className="w-3 h-3" />
-              Complete
+              {t('admin.housekeeping.card.complete')}
             </button>
           )}
         </div>
       )}
     </motion.div>
   )
-}
+})
 
 // --- Sidebar: staff overview with expandable detail -------------------------
 
 function StaffOverview({ staff, tasks }) {
+  const { t } = useTranslation()
   const housekeepingStaff = staff.filter(s => s.role === 'housekeeping')
   const [expandedId, setExpandedId] = useState(null)
 
@@ -285,7 +282,7 @@ function StaffOverview({ staff, tasks }) {
     <div className="bg-surface rounded-xl border border-border p-4">
       <h3 className="text-base font-bold text-text mb-4 flex items-center gap-2">
         <Users className="w-5 h-5 text-primary" />
-        Housekeeping Staff
+        {t('admin.housekeeping.staff.title')}
       </h3>
 
       <div className="space-y-2">
@@ -310,11 +307,11 @@ function StaffOverview({ staff, tasks }) {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-text">{member.name}</p>
-                    <p className="text-xs text-muted capitalize">{member.shift} shift</p>
+                    <p className="text-xs text-muted capitalize">{t('admin.housekeeping.staff.shift', { shift: member.shift })}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted">{assignedTasks.length} tasks</span>
+                  <span className="text-xs text-muted">{t('admin.housekeeping.staff.tasksCount', { count: assignedTasks.length })}</span>
                   <StatusBadge status={member.status} size="xs" />
                   <ChevronDown
                     className={`w-4 h-4 text-muted transition-transform ${expanded ? 'rotate-180' : ''}`}
@@ -334,32 +331,32 @@ function StaffOverview({ staff, tasks }) {
                       <div className="grid grid-cols-3 gap-2 text-center">
                         <div className="bg-surface rounded-lg py-2">
                           <p className="text-base font-bold text-text">{metrics.completedToday}</p>
-                          <p className="text-[10px] text-muted">Today</p>
+                          <p className="text-[10px] text-muted">{t('admin.housekeeping.staff.today')}</p>
                         </div>
                         <div className="bg-surface rounded-lg py-2">
                           <p className="text-base font-bold text-text">{metrics.completedWeek}</p>
-                          <p className="text-[10px] text-muted">Week</p>
+                          <p className="text-[10px] text-muted">{t('admin.housekeeping.staff.week')}</p>
                         </div>
                         <div className="bg-surface rounded-lg py-2">
                           <p className="text-base font-bold text-text">{metrics.completedMonth}</p>
-                          <p className="text-[10px] text-muted">Month</p>
+                          <p className="text-[10px] text-muted">{t('admin.housekeeping.staff.month')}</p>
                         </div>
                       </div>
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-muted flex items-center gap-1">
-                          <Timer className="w-3.5 h-3.5" /> Avg time
+                          <Timer className="w-3.5 h-3.5" /> {t('admin.housekeeping.staff.avgTime')}
                         </span>
-                        <span className="font-medium text-text">{metrics.avgMinutes} min</span>
+                        <span className="font-medium text-text">{t('admin.housekeeping.staff.minutes', { value: metrics.avgMinutes })}</span>
                       </div>
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-muted">Quality</span>
+                        <span className="text-muted">{t('admin.housekeeping.quality')}</span>
                         <QualityStars value={metrics.quality} />
                       </div>
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-muted flex items-center gap-1">
-                          <Gauge className="w-3.5 h-3.5" /> Throughput
+                          <Gauge className="w-3.5 h-3.5" /> {t('admin.housekeeping.staff.throughput')}
                         </span>
-                        <span className="font-medium text-text">{metrics.productivity.toFixed(1)} tasks/h</span>
+                        <span className="font-medium text-text">{t('admin.housekeeping.productivity.tasksPerHour', { value: metrics.productivity.toFixed(1) })}</span>
                       </div>
                     </div>
                   </motion.div>
@@ -374,6 +371,7 @@ function StaffOverview({ staff, tasks }) {
 }
 
 function FloorOverview({ tasks }) {
+  const { t } = useTranslation()
   const floors = [0, 1, 2, 3, 4, 5, 6]
 
   const getFloorStats = (floor) => {
@@ -389,7 +387,7 @@ function FloorOverview({ tasks }) {
     <div className="bg-surface rounded-xl border border-border p-4">
       <h3 className="text-base font-bold text-text mb-4 flex items-center gap-2">
         <Building className="w-5 h-5 text-primary" />
-        Floor Status
+        {t('admin.housekeeping.floors.title')}
       </h3>
 
       <div className="space-y-2">
@@ -403,7 +401,7 @@ function FloorOverview({ tasks }) {
               className="flex items-center gap-3 p-2 rounded-lg hover:bg-bg transition-colors"
             >
               <span className="text-sm font-medium text-text w-20">
-                {floor === 0 ? 'Ground' : `Floor ${floor}`}
+                {floor === 0 ? t('admin.housekeeping.floors.ground') : t('admin.housekeeping.floors.floor', { floor })}
               </span>
               <div className="flex-1 h-2 bg-bg rounded-full overflow-hidden flex">
                 {stats.completed > 0 && (
@@ -425,7 +423,7 @@ function FloorOverview({ tasks }) {
                   />
                 )}
               </div>
-              <span className="text-xs text-muted w-16 text-right">{total} tasks</span>
+              <span className="text-xs text-muted w-16 text-right">{t('admin.housekeeping.floors.tasksCount', { count: total })}</span>
             </div>
           )
         })}
@@ -434,15 +432,15 @@ function FloorOverview({ tasks }) {
       <div className="flex items-center justify-center gap-4 mt-4 pt-4 border-t border-border">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-green-500" />
-          <span className="text-xs text-muted">Done</span>
+          <span className="text-xs text-muted">{t('admin.housekeeping.floors.done')}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-purple-500" />
-          <span className="text-xs text-muted">In Progress</span>
+          <span className="text-xs text-muted">{t('admin.housekeeping.floors.inProgress')}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-amber-500" />
-          <span className="text-xs text-muted">Pending</span>
+          <span className="text-xs text-muted">{t('admin.housekeeping.floors.pending')}</span>
         </div>
       </div>
     </div>
@@ -452,15 +450,16 @@ function FloorOverview({ tasks }) {
 // --- Team metrics view ------------------------------------------------------
 
 function WeeklyChart({ data }) {
+  const { t } = useTranslation()
   const max = Math.max(...data.map(d => d.count), 1)
 
   return (
     <div className="bg-surface rounded-xl border border-border p-4 sm:p-5">
       <h3 className="text-base font-bold text-text mb-1 flex items-center gap-2">
         <BarChart3 className="w-5 h-5 text-primary" />
-        Tasks completed · last 7 days
+        {t('admin.housekeeping.metrics.weeklyTitle')}
       </h3>
-      <p className="text-xs text-muted mb-4">Team-wide daily throughput</p>
+      <p className="text-xs text-muted mb-4">{t('admin.housekeeping.metrics.weeklySubtitle')}</p>
 
       <div className="flex items-end gap-2 sm:gap-3 h-44">
         {data.map((d, i) => {
@@ -504,12 +503,13 @@ const rankStyles = [
 ]
 
 function TeamRanking({ ranking, maxProductivity }) {
+  const { t } = useTranslation()
   return (
     <div className="bg-surface rounded-xl border border-border p-4 sm:p-5">
       <h3 className="text-base font-bold text-text mb-4 flex items-center gap-2">
         <Trophy className="w-5 h-5 text-amber-400" />
-        Team ranking
-        <span className="text-xs font-normal text-muted">by productivity</span>
+        {t('admin.housekeeping.metrics.rankingTitle')}
+        <span className="text-xs font-normal text-muted">{t('admin.housekeeping.metrics.rankingBy')}</span>
       </h3>
 
       <div className="space-y-2">
@@ -541,7 +541,7 @@ function TeamRanking({ ranking, maxProductivity }) {
               </div>
             </div>
             <span className="text-sm font-semibold text-text whitespace-nowrap">
-              {m.productivity.toFixed(1)} <span className="text-xs font-normal text-muted">tasks/h</span>
+              {m.productivity.toFixed(1)} <span className="text-xs font-normal text-muted">{t('admin.housekeeping.metrics.tasksPerHour')}</span>
             </span>
           </motion.div>
         ))}
@@ -551,6 +551,7 @@ function TeamRanking({ ranking, maxProductivity }) {
 }
 
 function WorkerMetricCard({ member, metrics, teamMax, teamAvg }) {
+  const { t } = useTranslation()
   return (
     <motion.div
       layout
@@ -566,7 +567,7 @@ function WorkerMetricCard({ member, metrics, teamMax, teamAvg }) {
           </div>
           <div>
             <p className="text-sm font-bold text-text">{member.name}</p>
-            <p className="text-xs text-muted capitalize">{member.shift} shift</p>
+            <p className="text-xs text-muted capitalize">{t('admin.housekeeping.staff.shift', { shift: member.shift })}</p>
           </div>
         </div>
         <StatusBadge status={member.status} size="xs" />
@@ -575,9 +576,9 @@ function WorkerMetricCard({ member, metrics, teamMax, teamAvg }) {
       {/* Completed counters */}
       <div className="grid grid-cols-3 gap-2 mb-4">
         {[
-          { label: 'Today', value: metrics.completedToday },
-          { label: 'Week', value: metrics.completedWeek },
-          { label: 'Month', value: metrics.completedMonth }
+          { label: t('admin.housekeeping.metrics.today'), value: metrics.completedToday },
+          { label: t('admin.housekeeping.metrics.week'), value: metrics.completedWeek },
+          { label: t('admin.housekeeping.metrics.month'), value: metrics.completedMonth }
         ].map(s => (
           <div key={s.label} className="bg-bg rounded-lg py-2.5 text-center">
             <p className="text-lg font-bold text-text">{s.value}</p>
@@ -590,8 +591,8 @@ function WorkerMetricCard({ member, metrics, teamMax, teamAvg }) {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2 text-sm">
           <Timer className="w-4 h-4 text-muted" />
-          <span className="text-muted">Avg</span>
-          <span className="font-semibold text-text">{metrics.avgMinutes} min</span>
+          <span className="text-muted">{t('admin.housekeeping.metrics.avg')}</span>
+          <span className="font-semibold text-text">{t('admin.housekeeping.metrics.minutes', { value: metrics.avgMinutes })}</span>
         </div>
         <QualityStars value={metrics.quality} />
       </div>
@@ -603,6 +604,7 @@ function WorkerMetricCard({ member, metrics, teamMax, teamAvg }) {
 }
 
 function TeamMetricsView({ staff, tasks }) {
+  const { t } = useTranslation()
   const { metrics, ranking, teamMax, teamAvg, weekly, totals } = useMemo(() => {
     const hkStaff = staff.filter(s => s.role === 'housekeeping')
     const metrics = hkStaff.map(member => ({
@@ -632,10 +634,10 @@ function TeamMetricsView({ staff, tasks }) {
   }, [staff, tasks])
 
   const teamCards = [
-    { label: 'Completed today', value: totals.today, icon: CheckCircle, tint: 'text-green-500' },
-    { label: 'This week', value: totals.week, icon: ListChecks, tint: 'text-blue-500' },
-    { label: 'Avg productivity', value: `${teamAvg.toFixed(1)}/h`, icon: TrendingUp, tint: 'text-primary' },
-    { label: 'Avg quality', value: totals.avgQuality.toFixed(1), icon: Star, tint: 'text-amber-400' }
+    { label: t('admin.housekeeping.metrics.completedToday'), value: totals.today, icon: CheckCircle, tint: 'text-green-500' },
+    { label: t('admin.housekeeping.metrics.thisWeek'), value: totals.week, icon: ListChecks, tint: 'text-blue-500' },
+    { label: t('admin.housekeeping.metrics.avgProductivity'), value: t('admin.housekeeping.metrics.perHour', { value: teamAvg.toFixed(1) }), icon: TrendingUp, tint: 'text-primary' },
+    { label: t('admin.housekeeping.metrics.avgQuality'), value: totals.avgQuality.toFixed(1), icon: Star, tint: 'text-amber-400' }
   ]
 
   return (
@@ -666,7 +668,7 @@ function TeamMetricsView({ staff, tasks }) {
       <div>
         <h3 className="text-base font-bold text-text mb-3 flex items-center gap-2">
           <Users className="w-5 h-5 text-primary" />
-          Individual performance
+          {t('admin.housekeeping.metrics.individualTitle')}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {metrics.map(m => (
@@ -687,11 +689,12 @@ function TeamMetricsView({ staff, tasks }) {
 // --- Main -------------------------------------------------------------------
 
 const tabs = [
-  { value: 'tasks', label: 'Tasks', icon: ListChecks },
-  { value: 'metrics', label: 'Team Metrics', icon: BarChart3 }
+  { value: 'tasks', key: 'admin.housekeeping.tabs.tasks', icon: ListChecks },
+  { value: 'metrics', key: 'admin.housekeeping.tabs.metrics', icon: BarChart3 }
 ]
 
 export default function HousekeepingManagement() {
+  const { t } = useTranslation()
   const { housekeepingTasks, staff, updateHousekeepingTask } = useAdminData()
   const [view, setView] = useState('tasks')
   const [statusFilter, setStatusFilter] = useState('all')
@@ -771,21 +774,21 @@ export default function HousekeepingManagement() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-text">Housekeeping</h2>
+          <h2 className="text-xl font-bold text-text">{t('admin.housekeeping.title')}</h2>
           <p className="text-sm text-muted">
-            {filteredTasks.length} tasks • {stats.pending} pending • {stats.inProgress} in progress
+            {t('admin.housekeeping.summary', { tasks: filteredTasks.length, pending: stats.pending, inProgress: stats.inProgress })}
           </p>
         </div>
 
         {/* Tab switcher */}
         <div className="inline-flex items-center gap-1 bg-bg border border-border rounded-lg p-1 self-start">
-          {tabs.map(t => {
-            const Icon = t.icon
-            const active = view === t.value
+          {tabs.map(tab => {
+            const Icon = tab.icon
+            const active = view === tab.value
             return (
               <button
-                key={t.value}
-                onClick={() => setView(t.value)}
+                key={tab.value}
+                onClick={() => setView(tab.value)}
                 className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                   active
                     ? 'bg-primary text-primary-contrast'
@@ -793,7 +796,7 @@ export default function HousekeepingManagement() {
                 }`}
               >
                 <Icon className="w-4 h-4" />
-                {t.label}
+                {t(tab.key)}
               </button>
             )
           })}
@@ -826,7 +829,7 @@ export default function HousekeepingManagement() {
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
                   <input
                     type="text"
-                    placeholder="Search rooms, staff..."
+                    placeholder={t('admin.housekeeping.searchPlaceholder')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 bg-bg border border-border rounded-lg
@@ -845,7 +848,7 @@ export default function HousekeepingManagement() {
                   >
                     {statusFilters.map(filter => (
                       <option key={filter.value} value={filter.value}>
-                        {filter.label}
+                        {t(filter.key)}
                       </option>
                     ))}
                   </select>
@@ -858,7 +861,7 @@ export default function HousekeepingManagement() {
                   >
                     {priorityFilters.map(filter => (
                       <option key={filter.value} value={filter.value}>
-                        {filter.label}
+                        {t(filter.key)}
                       </option>
                     ))}
                   </select>
@@ -869,8 +872,8 @@ export default function HousekeepingManagement() {
                     className="px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text
                       focus:outline-none focus:ring-2 focus:ring-primary/50"
                   >
-                    <option value="all">All Staff</option>
-                    <option value="unassigned">Unassigned</option>
+                    <option value="all">{t('admin.housekeeping.filters.allStaff')}</option>
+                    <option value="unassigned">{t('admin.housekeeping.filters.unassigned')}</option>
                     {housekeepingStaff.map(s => (
                       <option key={s.id} value={s.id}>{s.name}</option>
                     ))}
@@ -906,8 +909,8 @@ export default function HousekeepingManagement() {
                     className="text-center py-12 bg-surface rounded-xl border border-border"
                   >
                     <Sparkles className="w-12 h-12 mx-auto text-muted mb-4" />
-                    <h3 className="text-lg font-medium text-text mb-2">No tasks found</h3>
-                    <p className="text-sm text-muted">Try adjusting your filters</p>
+                    <h3 className="text-lg font-medium text-text mb-2">{t('admin.housekeeping.empty.title')}</h3>
+                    <p className="text-sm text-muted">{t('admin.housekeeping.empty.subtitle')}</p>
                   </motion.div>
                 )}
               </div>

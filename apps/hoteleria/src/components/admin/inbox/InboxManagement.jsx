@@ -12,27 +12,18 @@ import {
 } from '../../../data/admin/serviceThreads'
 import { useLiveChat } from '../../../hooks/useLiveChat'
 import { useAdmin } from '../../../context/AdminContext'
+import { useTranslation } from '../../../i18n/LanguageProvider'
 
+// Channel presentation (icon + color). Labels are resolved at render time via
+// t('admin.inbox.channels.<id>') so they translate with the language.
 const CHANNEL = {
-  whatsapp: { icon: MessageCircle, label: 'WhatsApp', color: 'text-green-500' },
-  instagram: { icon: Instagram, label: 'Instagram', color: 'text-pink-500' },
-  web: { icon: Globe, label: 'Web', color: 'text-blue-500' },
-  booking: { icon: CalendarDays, label: 'Booking', color: 'text-indigo-500' },
-  portal: { icon: Headset, label: 'Portal · Chat en vivo', color: 'text-accent' },
-  service: { icon: ConciergeBell, label: 'Solicitud de servicio', color: 'text-amber-500' }
+  whatsapp: { icon: MessageCircle, color: 'text-green-500' },
+  instagram: { icon: Instagram, color: 'text-pink-500' },
+  web: { icon: Globe, color: 'text-blue-500' },
+  booking: { icon: CalendarDays, color: 'text-indigo-500' },
+  portal: { icon: Headset, color: 'text-accent' },
+  service: { icon: ConciergeBell, color: 'text-amber-500' }
 }
-
-// Staff-side quick replies (H4 templates).
-const TEMPLATES = [
-  'Gracias por su consulta. Le confirmo disponibilidad para las fechas solicitadas.',
-  'Le informo que su solicitud ha sido procesada. Cualquier consulta no dude en contactarnos.',
-  '¡Bienvenido/a! Su habitación estará lista a partir de las 15:00 hs.',
-  'Le enviamos el detalle de la reserva a su email.',
-  'Con gusto coordinamos su traslado desde el aeropuerto. ¿Me confirma horario y número de vuelo?',
-  'El desayuno se sirve de 7:00 a 10:30 hs en nuestro restaurante principal.',
-  'Hemos registrado su pedido, el equipo lo atenderá en breve.',
-  'Lamentamos el inconveniente. Enviamos a mantenimiento a la brevedad para resolverlo.'
-]
 
 // localStorage key for staff replies appended to the mock conversations (H4).
 const INBOX_KEY = 'hotel-admin-inbox'
@@ -59,22 +50,22 @@ function loadServiceThreads() {
 }
 
 // Relative time from an epoch timestamp (new messages). Mock messages keep their
-// pre-rendered `at` string.
-function timeAgo(ts) {
+// pre-rendered `at` string. `t` is threaded in so labels follow the language.
+function timeAgo(ts, t) {
   const diff = Date.now() - ts
   const min = Math.floor(diff / 60000)
-  if (min < 1) return 'recién'
-  if (min < 60) return `hace ${min} min`
+  if (min < 1) return t('admin.inbox.timeAgo.now')
+  if (min < 60) return t('admin.inbox.timeAgo.minutes', { count: min })
   const h = Math.floor(min / 60)
-  if (h < 24) return `hace ${h} h`
-  return `hace ${Math.floor(h / 24)} d`
+  if (h < 24) return t('admin.inbox.timeAgo.hours', { count: h })
+  return t('admin.inbox.timeAgo.days', { count: Math.floor(h / 24) })
 }
 
-function messageTime(m) {
-  return m.at || (m.ts ? timeAgo(m.ts) : '')
+function messageTime(m, t) {
+  return m.at || (m.ts ? timeAgo(m.ts, t) : '')
 }
 
-function Bubble({ m }) {
+function Bubble({ m, t }) {
   const mine = m.from === 'ai' || m.from === 'staff'
   const isAI = m.from === 'ai'
   return (
@@ -88,11 +79,11 @@ function Bubble({ m }) {
       <div className={`max-w-[80%] rounded-2xl px-3.5 py-2 ${
         mine ? (isAI ? 'bg-primary/10 border border-primary/20' : 'bg-primary/5 border border-border') : 'bg-bg border border-border'
       }`}>
-        {isAI && <p className="text-[10px] font-semibold text-primary flex items-center gap-1 mb-0.5"><Sparkles className="w-3 h-3" /> Agente IA</p>}
-        {m.from === 'staff' && <p className="text-[10px] font-semibold text-muted mb-0.5">Equipo</p>}
+        {isAI && <p className="text-[10px] font-semibold text-primary flex items-center gap-1 mb-0.5"><Sparkles className="w-3 h-3" /> {t('admin.inbox.aiAgent')}</p>}
+        {m.from === 'staff' && <p className="text-[10px] font-semibold text-muted mb-0.5">{t('admin.inbox.team')}</p>}
         <p className="text-sm text-text whitespace-pre-wrap break-words">{m.text}</p>
         {m.meta && <p className="text-[10px] text-muted mt-1 italic">{m.meta}</p>}
-        <p className="text-[10px] text-muted mt-0.5 text-right">{messageTime(m)}</p>
+        <p className="text-[10px] text-muted mt-0.5 text-right">{messageTime(m, t)}</p>
       </div>
     </motion.div>
   )
@@ -109,6 +100,9 @@ function pendingCount(messages) {
 }
 
 export default function InboxManagement() {
+  const { t } = useTranslation()
+  // Staff-side quick replies (H4 templates) — array value resolved via t().
+  const TEMPLATES = t('admin.inbox.templates')
   const liveChat = useLiveChat()
   const { inboxTarget, consumeInboxTarget } = useAdmin()
   const [extraMessages, setExtraMessages] = useState(loadExtraMessages)
@@ -145,22 +139,22 @@ export default function InboxManagement() {
       id: PORTAL_ID,
       channel: 'portal',
       isPortal: true,
-      guest: liveChat.guest?.name ? liveChat.guest.name : 'Huésped · Portal',
+      guest: liveChat.guest?.name ? liveChat.guest.name : t('admin.inbox.portalGuest'),
       avatar: 'https://picsum.photos/seed/portal-live-guest/80/80',
       unread: pendingCount(messages),
-      lastAt: last ? messageTime(last) : 'sin mensajes',
+      lastAt: last ? messageTime(last, t) : t('admin.inbox.list.noMessagesShort'),
       aiHandled: false,
-      tag: 'Chat en vivo',
+      tag: t('admin.inbox.tags.liveChat'),
       context: {
         reservation: liveChat.guest?.reservation ? `#${liveChat.guest.reservation}` : '—',
         previousStays: '—',
         notes: liveChat.guest?.room
-          ? `Habitación ${liveChat.guest.room} · escribe desde el portal del huésped.`
-          : 'Conversación iniciada desde el portal del huésped.'
+          ? t('admin.inbox.portalNotesWithRoom', { room: liveChat.guest.room })
+          : t('admin.inbox.portalNotesNoRoom')
       },
       messages
     }
-  }, [liveChat.messages, liveChat.guest])
+  }, [liveChat.messages, liveChat.guest, t])
 
   // Merge appended staff replies onto every conversation. Order: portal (live)
   // first, then service-request threads (H22), then the mock conversations.
@@ -174,13 +168,13 @@ export default function InboxManagement() {
       const last = merged.messages[merged.messages.length - 1]
       return {
         ...merged,
-        lastAt: last ? messageTime(last) : 'sin mensajes',
+        lastAt: last ? messageTime(last, t) : t('admin.inbox.list.noMessagesShort'),
         unread: pendingCount(merged.messages)
       }
     })
     const regular = mockConversations.map(withReplies)
     return [portalConversation, ...service, ...regular]
-  }, [extraMessages, serviceThreads, portalConversation])
+  }, [extraMessages, serviceThreads, portalConversation, t])
 
   const active = conversations.find((c) => c.id === activeId) || conversations[0]
 
@@ -261,11 +255,11 @@ export default function InboxManagement() {
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
-          <h1 className="text-xl font-bold text-text">Bandeja unificada</h1>
-          <p className="text-sm text-muted">WhatsApp · Instagram · Web · Booking · Portal — con agente de IA</p>
+          <h1 className="text-xl font-bold text-text">{t('admin.inbox.title')}</h1>
+          <p className="text-sm text-muted">{t('admin.inbox.subtitle')}</p>
         </div>
         <span className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-primary/10 text-primary">
-          <Bot className="w-3.5 h-3.5" /> IA respondiendo 24/7
+          <Bot className="w-3.5 h-3.5" /> {t('admin.inbox.aiBadge')}
         </span>
       </div>
 
@@ -294,7 +288,7 @@ export default function InboxManagement() {
                     <span className="text-[10px] text-muted flex-shrink-0">{c.lastAt}</span>
                   </div>
                   <p className="text-xs text-muted truncate flex items-center gap-1">
-                    <Icon className={`w-3 h-3 flex-shrink-0 ${ch.color}`} /> {lastMessage ? lastMessage.text : 'Sin mensajes aún'}
+                    <Icon className={`w-3 h-3 flex-shrink-0 ${ch.color}`} /> {lastMessage ? lastMessage.text : t('admin.inbox.list.noMessages')}
                   </p>
                 </div>
                 {c.unread > 0 && <span className="w-5 h-5 rounded-full bg-primary text-primary-contrast text-[10px] font-bold grid place-items-center flex-shrink-0">{c.unread}</span>}
@@ -312,11 +306,11 @@ export default function InboxManagement() {
               <p className="text-sm font-semibold text-text truncate">{active.guest}</p>
               <p className="text-xs text-muted flex items-center gap-1">
                 {(() => { const Ic = (CHANNEL[active.channel] || CHANNEL.web).icon; return <Ic className={`w-3 h-3 ${(CHANNEL[active.channel] || CHANNEL.web).color}`} /> })()}
-                {CHANNEL[active.channel]?.label}
+                {CHANNEL[active.channel] ? t(`admin.inbox.channels.${active.channel}`) : t('admin.inbox.channels.web')}
               </p>
             </div>
             <span className={`text-xs font-medium px-2 py-1 rounded-full flex-shrink-0 ${active.isPortal ? 'bg-accent/10 text-accent' : active.aiHandled ? 'bg-primary/10 text-primary' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'}`}>
-              {active.isPortal ? 'Chat en vivo' : active.aiHandled ? 'Resuelto por IA' : 'Con equipo'}
+              {active.isPortal ? t('admin.inbox.statusPills.liveChat') : active.aiHandled ? t('admin.inbox.statusPills.aiResolved') : t('admin.inbox.statusPills.withTeam')}
             </span>
           </div>
 
@@ -325,12 +319,12 @@ export default function InboxManagement() {
             {active.messages.length === 0 ? (
               <div className="h-full min-h-[280px] flex flex-col items-center justify-center text-center text-muted gap-2">
                 <Headset className="w-10 h-10 opacity-40" />
-                <p className="text-sm">El huésped aún no inició el chat.</p>
-                <p className="text-xs">Cuando escriba desde el portal, aparecerá acá en tiempo real.</p>
+                <p className="text-sm">{t('admin.inbox.empty.title')}</p>
+                <p className="text-xs">{t('admin.inbox.empty.subtitle')}</p>
               </div>
             ) : (
               <AnimatePresence initial={false}>
-                {active.messages.map((m, i) => <Bubble key={m.id || `${active.id}-${i}`} m={m} />)}
+                {active.messages.map((m, i) => <Bubble key={m.id || `${active.id}-${i}`} m={m} t={t} />)}
               </AnimatePresence>
             )}
           </div>
@@ -346,13 +340,13 @@ export default function InboxManagement() {
                   className="overflow-hidden"
                 >
                   <div className="max-h-40 overflow-y-auto space-y-1 rounded-lg bg-bg border border-border p-1.5">
-                    {TEMPLATES.map((t, i) => (
+                    {TEMPLATES.map((tpl, i) => (
                       <button
                         key={i}
-                        onClick={() => applyTemplate(t)}
+                        onClick={() => applyTemplate(tpl)}
                         className="w-full text-left text-xs text-text px-2.5 py-1.5 rounded-md hover:bg-bg transition-colors"
                       >
-                        {t}
+                        {tpl}
                       </button>
                     ))}
                   </div>
@@ -364,7 +358,7 @@ export default function InboxManagement() {
               <button
                 type="button"
                 onClick={() => setShowTemplates((v) => !v)}
-                title="Respuestas rápidas"
+                title={t('admin.inbox.composer.quickReplies')}
                 className={`flex-shrink-0 h-9 px-2.5 rounded-lg border transition-colors flex items-center gap-1 text-xs font-medium ${showTemplates ? 'bg-primary text-primary-contrast border-primary' : 'bg-bg border-border text-muted hover:text-text'}`}
               >
                 <Zap className="w-3.5 h-3.5" />
@@ -376,7 +370,7 @@ export default function InboxManagement() {
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={`Escribir como Equipo${active.isPortal ? ' (llega al chat del huésped)' : ''}…`}
+                placeholder={active.isPortal ? t('admin.inbox.composer.placeholderPortal') : t('admin.inbox.composer.placeholder')}
                 className="flex-1 resize-none bg-bg border border-border rounded-lg px-3 py-2 text-sm text-text placeholder:text-muted outline-none focus:border-primary max-h-24"
               />
               <button
@@ -384,7 +378,7 @@ export default function InboxManagement() {
                 onClick={handleSend}
                 disabled={!draft.trim()}
                 className="flex-shrink-0 h-9 w-9 grid place-items-center rounded-lg bg-primary text-primary-contrast disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
-                title="Enviar"
+                title={t('admin.inbox.composer.send')}
               >
                 <Send className="w-4 h-4" />
               </button>
@@ -394,25 +388,25 @@ export default function InboxManagement() {
 
         {/* Context */}
         <div className="bg-surface rounded-xl border border-border p-4 space-y-3 h-fit">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted">Contexto del huésped</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t('admin.inbox.context.title')}</p>
           <span className="inline-flex text-xs font-medium px-2 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400">{active.tag}</span>
-          <div><p className="text-[10px] uppercase text-muted">Reserva</p><p className="text-sm text-text">{active.context.reservation}</p></div>
-          <div><p className="text-[10px] uppercase text-muted flex items-center gap-1"><User className="w-3 h-3" /> Estadías previas</p><p className="text-sm text-text">{active.context.previousStays}</p></div>
-          {active.context.notes && <div><p className="text-[10px] uppercase text-muted">Notas</p><p className="text-sm text-text">{active.context.notes}</p></div>}
+          <div><p className="text-[10px] uppercase text-muted">{t('admin.inbox.context.reservation')}</p><p className="text-sm text-text">{active.context.reservation}</p></div>
+          <div><p className="text-[10px] uppercase text-muted flex items-center gap-1"><User className="w-3 h-3" /> {t('admin.inbox.context.previousStays')}</p><p className="text-sm text-text">{active.context.previousStays}</p></div>
+          {active.context.notes && <div><p className="text-[10px] uppercase text-muted">{t('admin.inbox.context.notes')}</p><p className="text-sm text-text">{active.context.notes}</p></div>}
           {active.isPortal ? (
             <div className="rounded-lg p-3 bg-accent/10 border border-accent/20">
-              <p className="text-xs font-semibold text-accent flex items-center gap-1.5"><Headset className="w-3.5 h-3.5" /> Chat en vivo</p>
-              <p className="text-xs text-muted mt-1">Conectado con el portal del huésped. Lo que escribas acá le llega al instante; si nadie responde en 5 s, la IA envía un aviso automático.</p>
+              <p className="text-xs font-semibold text-accent flex items-center gap-1.5"><Headset className="w-3.5 h-3.5" /> {t('admin.inbox.context.livePanelTitle')}</p>
+              <p className="text-xs text-muted mt-1">{t('admin.inbox.context.livePanelBody')}</p>
             </div>
           ) : active.channel === 'service' ? (
             <div className="rounded-lg p-3 bg-amber-500/10 border border-amber-500/20">
-              <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1.5"><ConciergeBell className="w-3.5 h-3.5" /> Solicitud de servicio</p>
-              <p className="text-xs text-muted mt-1">Conversación abierta desde el monitor de solicitudes. Escribile al huésped para coordinar; tu respuesta queda registrada en el historial.</p>
+              <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1.5"><ConciergeBell className="w-3.5 h-3.5" /> {t('admin.inbox.context.servicePanelTitle')}</p>
+              <p className="text-xs text-muted mt-1">{t('admin.inbox.context.servicePanelBody')}</p>
             </div>
           ) : active.aiHandled && (
             <div className="rounded-lg p-3 bg-primary/10 border border-primary/20">
-              <p className="text-xs font-semibold text-primary flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5" /> Agente IA</p>
-              <p className="text-xs text-muted mt-1">Respondió consultando disponibilidad real y ofreció una habitación con precio, sin intervención humana.</p>
+              <p className="text-xs font-semibold text-primary flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5" /> {t('admin.inbox.context.aiPanelTitle')}</p>
+              <p className="text-xs text-muted mt-1">{t('admin.inbox.context.aiPanelBody')}</p>
             </div>
           )}
         </div>

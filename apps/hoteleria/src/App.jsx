@@ -19,22 +19,26 @@ import GuestPortal from './components/GuestPortal'
 import GuidedTour from '@shared-ui/components/GuidedTour'
 import NewsBar, { NEWS_BAR_HEIGHT } from './components/NewsBar'
 import { useNews } from './hooks/useNews'
+import { useCurrency } from './hooks/useCurrency'
+import { useTranslation } from './i18n/LanguageProvider'
 import { AnimatePresence } from 'framer-motion'
 import { User, Compass } from 'lucide-react'
 import './styles.css'
 
-const TOUR_STEPS = [
-  { target: '#hero', title: 'Bienvenido a la demo', body: 'Te muestro en 30 segundos qué gana tu hotel con esto. Tocá Siguiente.' },
-  { target: '#services', title: 'Reserva y servicios directos', body: 'Los huéspedes reservan y piden servicios directo, sin pagar comisión a las OTAs.' },
-  { target: '#amenities', title: 'Tu propuesta completa', body: 'Habitaciones, comodidades y experiencias, siempre a la vista.' },
-  { target: '#contact', title: 'Consultas sin fricción', body: 'Las consultas por WhatsApp o formulario las responde la IA al instante.' },
-  { target: null, title: 'El panel es lo que vende', body: 'Entrá a "Admin" (arriba a la derecha): vas a ver la bandeja con IA, la comisión OTA vs. directo y el precio dinámico.' }
-]
-
 export default function App() {
   const { isDark, toggleTheme } = useDarkMode()
+  const { t, language, setLanguage, languages } = useTranslation()
+  const { currency, setCurrency, currencies } = useCurrency()
   const { cart, addItem, removeItem } = useCart()
   const { liveNews, dismiss: dismissNews } = useNews()
+
+  const TOUR_STEPS = [
+    { target: '#hero', title: t('landing.tour.welcomeTitle'), body: t('landing.tour.welcomeBody') },
+    { target: '#services', title: t('landing.tour.servicesTitle'), body: t('landing.tour.servicesBody') },
+    { target: '#amenities', title: t('landing.tour.amenitiesTitle'), body: t('landing.tour.amenitiesBody') },
+    { target: '#contact', title: t('landing.tour.contactTitle'), body: t('landing.tour.contactBody') },
+    { target: null, title: t('landing.tour.adminTitle'), body: t('landing.tour.adminBody') }
+  ]
   const [selectedRoom, setSelectedRoom] = useState(null)
   const [viewMode, setViewMode] = useState('main') // 'main', 'detail', 'booking', 'admin', 'guest-portal'
   const [tourRun, setTourRun] = useState(false)
@@ -64,16 +68,27 @@ export default function App() {
   }
 
   const navLinks = [
-    { name: 'Home', href: '#home', onClick: () => { setViewMode('main'); setSelectedRoom(null); window.scrollTo({ top: 0, behavior: 'smooth' }) } },
-    { name: 'Accommodation', href: '#accommodation', onClick: () => handleNavClick('accommodation') },
-    { name: 'Services', href: '#services', onClick: () => handleNavClick('services') },
-    { name: 'Amenities', href: '#amenities', onClick: () => handleNavClick('amenities') },
-    { name: 'Actividades', href: '#activities', onClick: () => handleNavClick('activities') },
-    { name: 'Contact', href: '#contact', onClick: () => handleNavClick('contact') },
-    { name: 'Recorrido', href: '#tour', onClick: startTour, icon: Compass },
-    { name: 'Guest Portal', href: '#guest', onClick: () => setViewMode('guest-portal'), icon: User },
-    { name: 'Admin', href: '#admin', onClick: () => setViewMode('admin'), highlight: true }
+    { name: t('nav.home'), href: '#home', onClick: () => { setViewMode('main'); setSelectedRoom(null); window.scrollTo({ top: 0, behavior: 'smooth' }) } },
+    { name: t('nav.accommodation'), href: '#accommodation', onClick: () => handleNavClick('accommodation') },
+    { name: t('nav.services'), href: '#services', onClick: () => handleNavClick('services') },
+    { name: t('nav.amenities'), href: '#amenities', onClick: () => handleNavClick('amenities') },
+    { name: t('nav.activities'), href: '#activities', onClick: () => handleNavClick('activities') },
+    { name: t('nav.contact'), href: '#contact', onClick: () => handleNavClick('contact') },
+    { name: t('nav.tour'), href: '#tour', onClick: startTour, icon: Compass },
+    { name: t('nav.guestPortal'), href: '#guest', onClick: () => setViewMode('guest-portal'), icon: User },
+    { name: t('nav.admin'), href: '#admin', onClick: () => setViewMode('admin'), highlight: true }
   ]
+
+  const navLangProps = { language, languages, onLanguageChange: setLanguage }
+  const navCurrencyProps = { currency, currencies, onCurrencyChange: setCurrency }
+  const footerLabels = {
+    servicesTitle: t('landing.footer.servicesTitle'),
+    services: t('landing.footer.services'),
+    legalTitle: t('landing.footer.legalTitle'),
+    legal: t('landing.footer.legal'),
+    madeWith: t('landing.footer.madeWith'),
+    madeWithSuffix: t('landing.footer.madeWithSuffix'),
+  }
 
   const handleSelectRoom = (room, action) => {
     setSelectedRoom(room)
@@ -146,13 +161,15 @@ export default function App() {
           toggleTheme={toggleTheme}
           isDark={isDark}
           links={navLinks}
+          {...navLangProps}
+          {...navCurrencyProps}
         />
         <RoomDetailPage
           room={selectedRoom}
           onBack={handleBackToMain}
           onReserve={handleReserveFromDetail}
         />
-        <Footer brand="Villa Serena" />
+        <Footer brand="Villa Serena" labels={footerLabels} />
       </div>
     )
   }
@@ -169,6 +186,8 @@ export default function App() {
         isDark={isDark}
         links={navLinks}
         topOffset={navTopOffset}
+        {...navLangProps}
+        {...navCurrencyProps}
       />
 
       <main>
@@ -229,7 +248,7 @@ export default function App() {
         </section>
       </main>
 
-      <Footer brand="Villa Serena" />
+      <Footer brand="Villa Serena" labels={footerLabels} />
 
       <GuidedTour steps={TOUR_STEPS} run={tourRun} onClose={() => setTourRun(false)} />
     </div>

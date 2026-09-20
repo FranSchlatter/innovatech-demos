@@ -5,11 +5,13 @@ import AdminDashboard from '../dashboard/AdminDashboard'
 import InboxManagement from '../inbox/InboxManagement'
 import DynamicPricing from '../pricing/DynamicPricing'
 import CalendarManagement from '../calendar/CalendarManagement'
+import ReceptionManagement from '../reception/ReceptionManagement'
 import RoomManagement from '../rooms/RoomManagement'
 import HousekeepingManagement from '../housekeeping/HousekeepingManagement'
 import InventoryManagement from '../inventory/InventoryManagement'
 import ServiceRequestsMonitor from '../services/ServiceRequestsMonitor'
 import ExcursionsManagement from '../excursions/ExcursionsManagement'
+import FacilitiesManagement from '../facilities/FacilitiesManagement'
 import EventsManagement from '../events/EventsManagement'
 import NewsManagement from '../news/NewsManagement'
 import UserManagement from '../users/UserManagement'
@@ -28,6 +30,8 @@ function AdminContent({ isDark, toggleTheme, onExit }) {
         return <DynamicPricing />
       case 'calendar':
         return <CalendarManagement />
+      case 'reception':
+        return <ReceptionManagement />
       case 'rooms':
         return <RoomManagement />
       case 'housekeeping':
@@ -38,6 +42,8 @@ function AdminContent({ isDark, toggleTheme, onExit }) {
         return <ServiceRequestsMonitor />
       case 'excursions':
         return <ExcursionsManagement />
+      case 'facilities':
+        return <FacilitiesManagement />
       case 'events':
         return <EventsManagement />
       case 'news':

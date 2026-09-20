@@ -1,72 +1,69 @@
 import { motion } from 'framer-motion'
 import { Dumbbell, Waves, Utensils, Wifi, Accessibility, Car, Check, ChevronDown, Trophy, Users, Leaf } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from '../i18n/LanguageProvider'
 
 export default function HotelAmenities() {
+  const { t } = useTranslation()
   const [showExtended, setShowExtended] = useState(false)
 
+  // Stable slugs drive the i18n lookup; icons/images stay here as the source of truth.
   const amenities = [
     {
       id: 1,
-      name: 'Fitness Center',
-      description: 'State-of-the-art equipment with personal training available',
+      slug: 'fitness-center',
       icon: Dumbbell,
       image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&q=80'
     },
     {
       id: 2,
-      name: 'Infinity Pool',
-      description: 'Panoramic rooftop pool with cabana service and city views',
+      slug: 'infinity-pool',
       icon: Waves,
       image: 'https://cdn.pixabay.com/photo/2014/08/17/23/45/hotel-420260_1280.jpg?w=600&q=80'
     },
     {
       id: 3,
-      name: 'Fine Dining',
-      description: 'Multiple Michelin-starred restaurants and bars',
+      slug: 'fine-dining',
       icon: Utensils,
       image: 'https://images.unsplash.com/photo-1676716260600-217008b2e00a?w=600&q=80'
     },
     {
       id: 4,
-      name: 'Game room',
-      description: 'Billiards, arcade games, and entertainment for all ages',
+      slug: 'game-room',
       icon: Trophy,
       image: 'https://cdn.pixabay.com/photo/2014/04/05/11/29/plaza-hotel-315892_1280.jpg?w=600&q=80'
     },
     {
       id: 5,
-      name: 'Conference Facilities',
-      description: 'Full-service meeting rooms with modern technology',
+      slug: 'conference-facilities',
       icon: Users,
       image: 'https://images.unsplash.com/photo-1621020512837-280d1c1ccc7b?w=600&q=80'
     },
     {
       id: 6,
-      name: 'Spa & Wellness',
-      description: 'Relaxation and rejuvenation with spa treatments and therapies',
+      slug: 'spa-wellness',
       icon: Leaf,
       image: 'https://cdn.pixabay.com/photo/2018/02/27/03/36/stones-3184610_1280.jpg?w=600&q=80'
     }
   ]
 
   const extendedAmenities = [
-    'Accessibility',
-    'High-Speed WiFi',
-    '24-Hour Fitness Center',
-    'Parking & Valet Service',
-    'Room Service (24/7)',
-    'Concierge Assistance',
-    'Business Center',
-    'Kids Club',
-    'Guest Laundry Service',
-    'Currency Exchange',
-    'Travel Desk',
-    'Car Rental Service',
-    'Airport Transfers',
-    'Turndown Service',
-    'Minibar Selection',
-    'In-Room Entertainment'
+    'accessibility',
+    'high-speed-wifi',
+    '24-hour-fitness-center',
+    'parking-valet-service',
+    'room-service-24-7',
+    'concierge-assistance',
+    'business-center',
+    'kids-club',
+    'guest-laundry-service',
+    'currency-exchange',
+    'travel-desk',
+    'car-rental-service',
+    'airport-transfers',
+    'turndown-service',
+    'minibar-selection',
+    'in-room-entertainment'
   ]
 
   return (
@@ -80,9 +77,9 @@ export default function HotelAmenities() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="heading-md mb-4">World-Class Amenities</h2>
+          <h2 className="heading-md mb-4">{t('landing.amenities.title')}</h2>
           <p className="text-lg text-muted max-w-2xl mx-auto">
-            Everything you need for an exceptional experience
+            {t('landing.amenities.subtitle')}
           </p>
         </motion.div>
 
@@ -103,7 +100,7 @@ export default function HotelAmenities() {
                 <div className="relative h-48 overflow-hidden bg-surface">
                   <img
                     src={amenity.image}
-                    alt={amenity.name}
+                    alt={t(`landing.amenities.items.${amenity.slug}.name`)}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -113,9 +110,9 @@ export default function HotelAmenities() {
                 <div className="p-6">
                   <div className="flex items-center gap-3 mb-3">
                     <Icon className="w-5 h-5 text-accent" />
-                    <h3 className="heading-sm text-primary">{amenity.name}</h3>
+                    <h3 className="heading-sm text-primary">{t(`landing.amenities.items.${amenity.slug}.name`)}</h3>
                   </div>
-                  <p className="text-sm text-muted leading-relaxed">{amenity.description}</p>
+                  <p className="text-sm text-muted leading-relaxed">{t(`landing.amenities.items.${amenity.slug}.description`)}</p>
                 </div>
               </motion.div>
             )
@@ -134,7 +131,7 @@ export default function HotelAmenities() {
             onClick={() => setShowExtended(!showExtended)}
             className="w-full flex items-center justify-between mb-6"
           >
-            <h3 className="text-2xl font-serif font-light text-primary">Additional Services & Amenities</h3>
+            <h3 className="text-2xl font-serif font-light text-primary">{t('landing.amenities.extendedTitle')}</h3>
             <motion.div
               animate={{ rotate: showExtended ? 180 : 0 }}
               transition={{ duration: 0.3 }}
@@ -159,7 +156,7 @@ export default function HotelAmenities() {
                   className="flex items-center gap-3 p-3 bg-surface rounded-lg"
                 >
                   <Check className="w-5 h-5 text-accent flex-shrink-0" />
-                  <span className="text-sm text-muted">{amenity}</span>
+                  <span className="text-sm text-muted">{t(`landing.amenities.extended.${amenity}`)}</span>
                 </motion.div>
               ))}
             </div>

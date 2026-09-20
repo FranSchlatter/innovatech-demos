@@ -2,8 +2,12 @@ import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { ChevronLeft, MapPin, Users, Maximize2, Wifi, Coffee, Bath, Tv, AirVent, Compass } from 'lucide-react'
 import VirtualTour360 from '@shared-ui/components/VirtualTour360'
+import { useTranslation } from '../i18n/LanguageProvider'
+import { useCurrency } from '../hooks/useCurrency'
 
 export default function RoomDetailPage({ room, onBack, onReserve }) {
+  const { t } = useTranslation()
+  const { format } = useCurrency()
   const [selectedImage, setSelectedImage] = useState(0)
   const [showTour, setShowTour] = useState(false)
 
@@ -20,7 +24,7 @@ export default function RoomDetailPage({ room, onBack, onReserve }) {
           className="flex items-center gap-2 text-accent hover:text-primary transition"
         >
           <ChevronLeft className="w-5 h-5" />
-          Back to Accommodations
+          {t('client.roomDetail.backToAccommodations')}
         </button>
       </div>
     )
@@ -31,12 +35,12 @@ export default function RoomDetailPage({ room, onBack, onReserve }) {
 
   // Room amenities
   const amenities = [
-    { icon: Wifi, label: 'High-Speed WiFi' },
-    { icon: AirVent, label: 'Air Conditioning' },
-    { icon: Tv, label: 'Smart TV' },
-    { icon: Coffee, label: 'Coffee Machine' },
-    { icon: Bath, label: 'Luxury Bathroom' },
-    { icon: Maximize2, label: 'Spacious Layout' }
+    { icon: Wifi, label: t('client.roomDetail.amenities.wifi') },
+    { icon: AirVent, label: t('client.roomDetail.amenities.ac') },
+    { icon: Tv, label: t('client.roomDetail.amenities.tv') },
+    { icon: Coffee, label: t('client.roomDetail.amenities.coffee') },
+    { icon: Bath, label: t('client.roomDetail.amenities.bath') },
+    { icon: Maximize2, label: t('client.roomDetail.amenities.layout') }
   ]
 
   return (
@@ -49,7 +53,7 @@ export default function RoomDetailPage({ room, onBack, onReserve }) {
         className="fixed top-24 left-6 z-40 flex items-center gap-2 text-accent hover:text-primary transition bg-bg px-4 py-2 rounded-lg shadow-soft"
       >
         <ChevronLeft className="w-5 h-5" />
-        <span className="text-sm font-medium">Back</span>
+        <span className="text-sm font-medium">{t('client.roomDetail.back')}</span>
       </motion.button>
 
       {/* Image Gallery */}
@@ -69,7 +73,7 @@ export default function RoomDetailPage({ room, onBack, onReserve }) {
           className="absolute bottom-6 right-6 z-10 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-black/55 backdrop-blur-sm text-white text-sm font-medium hover:bg-black/70 transition-colors shadow-lg"
         >
           <Compass className="w-4 h-4" />
-          Recorrido 360°
+          {t('client.roomDetail.tour360')}
         </button>
         {images.length > 1 && (
           <div className="absolute bottom-6 left-6 right-6 flex gap-2 justify-center">
@@ -77,7 +81,7 @@ export default function RoomDetailPage({ room, onBack, onReserve }) {
               <button
                 key={idx}
                 onClick={() => setSelectedImage(idx)}
-                aria-label={`View image ${idx + 1}`}
+                aria-label={t('client.roomDetail.viewImage', { index: idx + 1 })}
                 className={`h-2 rounded-full transition-all ${
                   idx === selectedImage
                     ? 'w-8 bg-accent'
@@ -111,31 +115,29 @@ export default function RoomDetailPage({ room, onBack, onReserve }) {
                 </div>
                 <div className="flex items-center gap-2">
                   <Users className="w-5 h-5 text-accent" />
-                  <span>Up to {room.guests} guests</span>
+                  <span>{t('client.roomDetail.upToGuests', { count: room.guests })}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPin className="w-5 h-5 text-accent" />
-                  <span>Luxury {room.type.slice(0, -1)}</span>
+                  <span>{t('client.roomDetail.luxuryType')}</span>
                 </div>
               </div>
             </div>
 
             {/* Description */}
             <div className="mb-12">
-              <h2 className="text-xl font-semibold text-primary mb-4">About This {room.type.slice(0, -1)}</h2>
+              <h2 className="text-xl font-semibold text-primary mb-4">{t('client.roomDetail.aboutTitle')}</h2>
               <p className="text-muted leading-relaxed mb-4">
                 {room.description}
               </p>
               <p className="text-muted leading-relaxed">
-                Experience unparalleled comfort and elegance in our {room.type.slice(0, -1).toLowerCase()}. 
-                With meticulous attention to detail and world-class amenities, every moment of your stay will be memorable.
-                Our dedicated concierge team is available 24/7 to ensure your complete satisfaction.
+                {t('client.roomDetail.aboutExtra')}
               </p>
             </div>
 
             {/* Amenities */}
             <div className="mb-12">
-              <h2 className="text-xl font-semibold text-primary mb-6">Room Amenities</h2>
+              <h2 className="text-xl font-semibold text-primary mb-6">{t('client.roomDetail.amenitiesTitle')}</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                 {amenities.map((amenity, idx) => {
                   const Icon = amenity.icon
@@ -157,31 +159,31 @@ export default function RoomDetailPage({ room, onBack, onReserve }) {
 
             {/* Specifications */}
             <div className="bg-bg p-8 rounded-lg">
-              <h2 className="text-xl font-semibold text-primary mb-6">Room Specifications</h2>
+              <h2 className="text-xl font-semibold text-primary mb-6">{t('client.roomDetail.specsTitle')}</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
                 <div>
-                  <div className="text-sm text-muted mb-2">Total Area</div>
+                  <div className="text-sm text-muted mb-2">{t('client.roomDetail.totalArea')}</div>
                   <div className="text-lg font-semibold text-primary">{room.size} m²</div>
                 </div>
                 <div>
-                  <div className="text-sm text-muted mb-2">Guest Capacity</div>
-                  <div className="text-lg font-semibold text-primary">{room.guests} guests</div>
+                  <div className="text-sm text-muted mb-2">{t('client.roomDetail.guestCapacity')}</div>
+                  <div className="text-lg font-semibold text-primary">{room.guests} {t('client.roomDetail.guests')}</div>
                 </div>
                 <div>
-                  <div className="text-sm text-muted mb-2">Bedding</div>
-                  <div className="text-lg font-semibold text-primary">Premium Linens</div>
+                  <div className="text-sm text-muted mb-2">{t('client.roomDetail.bedding')}</div>
+                  <div className="text-lg font-semibold text-primary">{t('client.roomDetail.premiumLinens')}</div>
                 </div>
                 <div>
-                  <div className="text-sm text-muted mb-2">Bathroom</div>
-                  <div className="text-lg font-semibold text-primary">Luxury Ensuite</div>
+                  <div className="text-sm text-muted mb-2">{t('client.roomDetail.bathroom')}</div>
+                  <div className="text-lg font-semibold text-primary">{t('client.roomDetail.luxuryEnsuite')}</div>
                 </div>
                 <div>
-                  <div className="text-sm text-muted mb-2">Climate Control</div>
-                  <div className="text-lg font-semibold text-primary">Individual AC</div>
+                  <div className="text-sm text-muted mb-2">{t('client.roomDetail.climateControl')}</div>
+                  <div className="text-lg font-semibold text-primary">{t('client.roomDetail.individualAc')}</div>
                 </div>
                 <div>
-                  <div className="text-sm text-muted mb-2">Entertainment</div>
-                  <div className="text-lg font-semibold text-primary">Smart TV</div>
+                  <div className="text-sm text-muted mb-2">{t('client.roomDetail.entertainment')}</div>
+                  <div className="text-lg font-semibold text-primary">{t('client.roomDetail.smartTv')}</div>
                 </div>
               </div>
             </div>
@@ -197,36 +199,36 @@ export default function RoomDetailPage({ room, onBack, onReserve }) {
             <div className="bg-bg p-8 rounded-lg shadow-soft sticky top-24">
               {/* Price */}
               <div className="mb-8 pb-8 border-b border-surface">
-                <div className="text-sm text-muted mb-2">Starting from</div>
+                <div className="text-sm text-muted mb-2">{t('client.roomDetail.startingFrom')}</div>
                 <div className="flex items-end gap-2">
-                  <span className="text-4xl font-bold text-accent">${room.price}</span>
-                  <span className="text-muted text-sm mb-1">per night</span>
+                  <span className="text-4xl font-bold text-accent">{format(room.price)}</span>
+                  <span className="text-muted text-sm mb-1">{t('client.roomDetail.perNight')}</span>
                 </div>
               </div>
 
               {/* Key Features */}
               <div className="mb-8">
-                <h3 className="font-semibold text-primary mb-4">Why Choose This {room.type.slice(0, -1)}</h3>
+                <h3 className="font-semibold text-primary mb-4">{t('client.roomDetail.whyChoose')}</h3>
                 <ul className="space-y-3 text-sm">
                   <li className="flex items-start gap-3">
                     <span className="text-accent mt-1">✓</span>
-                    <span className="text-muted">Stunning views and natural light</span>
+                    <span className="text-muted">{t('client.roomDetail.reasons.views')}</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-accent mt-1">✓</span>
-                    <span className="text-muted">Premium toiletries and bath amenities</span>
+                    <span className="text-muted">{t('client.roomDetail.reasons.toiletries')}</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-accent mt-1">✓</span>
-                    <span className="text-muted">Complimentary high-speed WiFi</span>
+                    <span className="text-muted">{t('client.roomDetail.reasons.wifi')}</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-accent mt-1">✓</span>
-                    <span className="text-muted">24/7 concierge service</span>
+                    <span className="text-muted">{t('client.roomDetail.reasons.concierge')}</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-accent mt-1">✓</span>
-                    <span className="text-muted">Flexible cancellation policy</span>
+                    <span className="text-muted">{t('client.roomDetail.reasons.cancellation')}</span>
                   </li>
                 </ul>
               </div>
@@ -237,21 +239,21 @@ export default function RoomDetailPage({ room, onBack, onReserve }) {
                   onClick={() => onReserve(room)}
                   className="btn-gold w-full text-center"
                 >
-                  Reserve Now
+                  {t('client.roomDetail.reserveNow')}
                 </button>
                 <button
                   onClick={onBack}
                   className="btn-secondary w-full text-center"
                 >
-                  Back to Accommodations
+                  {t('client.roomDetail.backToAccommodations')}
                 </button>
               </div>
 
               {/* Trust Badges */}
               <div className="mt-8 pt-8 border-t border-surface text-center">
-                <p className="text-xs text-muted mb-3">Secure booking powered by</p>
+                <p className="text-xs text-muted mb-3">{t('client.roomDetail.securePoweredBy')}</p>
                 <div className="flex items-center justify-center gap-2 text-xs text-muted">
-                  <span>🔒 SSL Encrypted</span>
+                  <span>{t('client.roomDetail.sslEncrypted')}</span>
                 </div>
               </div>
             </div>

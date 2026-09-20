@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { useTranslation } from '../../../i18n/LanguageProvider'
 
 const statusStyles = {
   // Room statuses
@@ -42,32 +43,34 @@ const statusStyles = {
   default: 'bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/20'
 }
 
-const statusLabels = {
-  available: 'Available',
-  occupied: 'Occupied',
-  cleaning: 'Cleaning',
-  maintenance: 'Maintenance',
-  reserved: 'Reserved',
-  confirmed: 'Confirmed',
-  'checked-in': 'Checked In',
-  'checked-out': 'Checked Out',
-  cancelled: 'Cancelled',
-  'no-show': 'No Show',
-  pending: 'Pending',
-  assigned: 'Assigned',
-  'in-progress': 'In Progress',
-  completed: 'Completed',
-  normal: 'Normal',
-  urgent: 'Urgent',
-  high: 'High',
-  low: 'Low',
-  paid: 'Paid',
-  partial: 'Partial',
-  refunded: 'Refunded',
-  'on-duty': 'On Duty',
-  'off-duty': 'Off Duty',
-  break: 'Break',
-  unavailable: 'Unavailable'
+// Map each status value to its translation key. Generic single-word statuses
+// reuse common.status.*; anything hotel-specific lives in admin.shared.statusLabels.*
+const statusLabelKeys = {
+  available: 'common.status.available',
+  occupied: 'common.status.occupied',
+  cleaning: 'admin.shared.statusLabels.cleaning',
+  maintenance: 'admin.shared.statusLabels.maintenance',
+  reserved: 'common.status.reserved',
+  confirmed: 'common.status.confirmed',
+  'checked-in': 'common.status.checkedIn',
+  'checked-out': 'common.status.checkedOut',
+  cancelled: 'common.status.cancelled',
+  'no-show': 'admin.shared.statusLabels.noShow',
+  pending: 'common.status.pending',
+  assigned: 'admin.shared.statusLabels.assigned',
+  'in-progress': 'common.status.inProgress',
+  completed: 'common.status.completed',
+  normal: 'admin.shared.statusLabels.normal',
+  urgent: 'admin.shared.statusLabels.urgent',
+  high: 'admin.shared.statusLabels.high',
+  low: 'admin.shared.statusLabels.low',
+  paid: 'admin.shared.statusLabels.paid',
+  partial: 'admin.shared.statusLabels.partial',
+  refunded: 'admin.shared.statusLabels.refunded',
+  'on-duty': 'admin.shared.statusLabels.onDuty',
+  'off-duty': 'admin.shared.statusLabels.offDuty',
+  break: 'admin.shared.statusLabels.break',
+  unavailable: 'admin.shared.statusLabels.unavailable'
 }
 
 export default function StatusBadge({
@@ -76,8 +79,9 @@ export default function StatusBadge({
   animate = false,
   className = ''
 }) {
+  const { t } = useTranslation()
   const style = statusStyles[status] || statusStyles.default
-  const label = statusLabels[status] || status
+  const label = statusLabelKeys[status] ? t(statusLabelKeys[status]) : status
 
   const sizeClasses = {
     xs: 'text-[10px] px-1.5 py-0.5',

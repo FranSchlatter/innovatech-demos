@@ -1,8 +1,10 @@
 import { motion } from 'framer-motion'
 import { Mail, Phone, MapPin, CheckCircle, Clock, Instagram, Facebook, Linkedin, Twitter } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from '../i18n/LanguageProvider'
 
 export default function HotelContactSection() {
+  const { t } = useTranslation()
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' })
   const [submitted, setSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -24,34 +26,32 @@ export default function HotelContactSection() {
     }, 1200)
   }
 
+  // Stable `id` drives both the i18n lookup (label/description) and the external-
+  // link behavior for the map card, so translating the label never breaks logic.
   const contactInfo = [
     {
+      id: 'call',
       icon: Phone,
-      label: 'Call Us',
       value: '+1 (305) 555-0123',
-      href: 'tel:+13055550123',
-      description: '24/7 Front Desk'
+      href: 'tel:+13055550123'
     },
     {
+      id: 'email',
       icon: Mail,
-      label: 'Email Us',
       value: 'reservations@villaserena.com',
-      href: 'mailto:reservations@villaserena.com',
-      description: 'Quick Response'
+      href: 'mailto:reservations@villaserena.com'
     },
     {
+      id: 'visit',
       icon: MapPin,
-      label: 'Visit Us',
       value: 'Miami Beach, FL',
-      href: 'https://goo.gl/maps/Miami',
-      description: '1234 Ocean Drive'
+      href: 'https://goo.gl/maps/Miami'
     },
     {
+      id: 'checkin',
       icon: Clock,
-      label: 'Check-in',
       value: '3:00 PM - 11:00 PM',
-      href: null,
-      description: 'Checkout: 11:00 AM'
+      href: null
     }
   ]
 
@@ -79,10 +79,10 @@ export default function HotelContactSection() {
           className="text-center mb-12 md:mb-16"
         >
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-4">
-            Get in Touch
+            {t('landing.contact.title')}
           </h2>
           <p className="text-base md:text-lg text-muted max-w-2xl mx-auto">
-            Our dedicated concierge team is here to make your stay exceptional
+            {t('landing.contact.subtitle')}
           </p>
         </motion.div>
 
@@ -113,19 +113,19 @@ export default function HotelContactSection() {
                     {contact.href ? (
                       <a
                         href={contact.href}
-                        target={contact.label === 'Visit Us' ? '_blank' : undefined}
-                        rel={contact.label === 'Visit Us' ? 'noopener noreferrer' : undefined}
+                        target={contact.id === 'visit' ? '_blank' : undefined}
+                        rel={contact.id === 'visit' ? 'noopener noreferrer' : undefined}
                         className="flex items-start gap-4 p-5 rounded-xl border border-border bg-surface hover:border-accent hover:shadow-lg transition-all duration-300"
                       >
                         <div className="p-3 rounded-lg bg-accent/10 group-hover:bg-accent/20 transition-colors flex-shrink-0">
                           <Icon className="w-5 h-5 text-accent" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-primary text-sm mb-1">{contact.label}</h3>
+                          <h3 className="font-semibold text-primary text-sm mb-1">{t(`landing.contact.cards.${contact.id}.label`)}</h3>
                           <p className="text-sm text-text font-medium group-hover:text-accent transition-colors break-words">
                             {contact.value}
                           </p>
-                          <p className="text-xs text-muted mt-1">{contact.description}</p>
+                          <p className="text-xs text-muted mt-1">{t(`landing.contact.cards.${contact.id}.description`)}</p>
                         </div>
                       </a>
                     ) : (
@@ -134,11 +134,11 @@ export default function HotelContactSection() {
                           <Icon className="w-5 h-5 text-accent" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-primary text-sm mb-1">{contact.label}</h3>
+                          <h3 className="font-semibold text-primary text-sm mb-1">{t(`landing.contact.cards.${contact.id}.label`)}</h3>
                           <p className="text-sm text-text font-medium break-words">
                             {contact.value}
                           </p>
-                          <p className="text-xs text-muted mt-1">{contact.description}</p>
+                          <p className="text-xs text-muted mt-1">{t(`landing.contact.cards.${contact.id}.description`)}</p>
                         </div>
                       </div>
                     )}
@@ -155,7 +155,7 @@ export default function HotelContactSection() {
               transition={{ delay: 0.4 }}
               className="p-6 rounded-xl border border-border bg-surface"
             >
-              <h3 className="font-semibold text-primary text-sm mb-4">Follow Us</h3>
+              <h3 className="font-semibold text-primary text-sm mb-4">{t('landing.contact.followUs')}</h3>
               <div className="flex gap-3">
                 {socialLinks.map((social, idx) => {
                   const Icon = social.icon
@@ -186,7 +186,7 @@ export default function HotelContactSection() {
               className="hidden lg:block rounded-xl overflow-hidden border border-border shadow-lg h-64"
             >
               <iframe
-                title="Hotel Location"
+                title={t('landing.contact.mapTitle')}
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3592.1234567890123!2d-80.19362!3d25.76168!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x88d9b0a20ec8c111%3A0xff96f271ddad4f65!2sMiami%2C%20FL!5e0!3m2!1sen!2sus!4v1234567890"
                 width="100%"
                 height="100%"
@@ -207,8 +207,8 @@ export default function HotelContactSection() {
             className="lg:sticky lg:top-24 h-fit"
           >
             <div className="p-6 md:p-8 rounded-xl border border-border bg-surface shadow-lg">
-              <h3 className="text-xl font-bold text-primary mb-2">Send us a Message</h3>
-              <p className="text-sm text-muted mb-6">We'll respond within 24 hours</p>
+              <h3 className="text-xl font-bold text-primary mb-2">{t('landing.contact.formTitle')}</h3>
+              <p className="text-sm text-muted mb-6">{t('landing.contact.formSubtitle')}</p>
 
               {submitted && (
                 <motion.div
@@ -219,8 +219,8 @@ export default function HotelContactSection() {
                 >
                   <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-semibold text-accent">Message Sent Successfully!</p>
-                    <p className="text-xs text-accent/80 mt-1">Our team will contact you shortly.</p>
+                    <p className="text-sm font-semibold text-accent">{t('landing.contact.successTitle')}</p>
+                    <p className="text-xs text-accent/80 mt-1">{t('landing.contact.successBody')}</p>
                   </div>
                 </motion.div>
               )}
@@ -228,12 +228,12 @@ export default function HotelContactSection() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-primary mb-2">
-                    Full Name *
+                    {t('landing.contact.fullName')}
                   </label>
                   <input
                     id="name"
                     type="text"
-                    placeholder="John Doe"
+                    placeholder={t('landing.contact.namePlaceholder')}
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     disabled={isLoading}
@@ -245,12 +245,12 @@ export default function HotelContactSection() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="email" className="block text-sm font-medium text-primary mb-2">
-                      Email *
+                      {t('landing.contact.email')}
                     </label>
                     <input
                       id="email"
                       type="email"
-                      placeholder="john@example.com"
+                      placeholder={t('landing.contact.emailPlaceholder')}
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       disabled={isLoading}
@@ -261,12 +261,12 @@ export default function HotelContactSection() {
 
                   <div>
                     <label htmlFor="phone" className="block text-sm font-medium text-primary mb-2">
-                      Phone
+                      {t('landing.contact.phone')}
                     </label>
                     <input
                       id="phone"
                       type="tel"
-                      placeholder="+1 (305) 555-0123"
+                      placeholder={t('landing.contact.phonePlaceholder')}
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       disabled={isLoading}
@@ -277,11 +277,11 @@ export default function HotelContactSection() {
 
                 <div>
                   <label htmlFor="message" className="block text-sm font-medium text-primary mb-2">
-                    Message *
+                    {t('landing.contact.message')}
                   </label>
                   <textarea
                     id="message"
-                    placeholder="Tell us about your inquiry or special requests..."
+                    placeholder={t('landing.contact.messagePlaceholder')}
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     disabled={isLoading}
@@ -307,7 +307,7 @@ export default function HotelContactSection() {
                   {submitted ? (
                     <>
                       <CheckCircle className="w-5 h-5" />
-                      Message Sent!
+                      {t('landing.contact.sent')}
                     </>
                   ) : isLoading ? (
                     <>
@@ -316,12 +316,12 @@ export default function HotelContactSection() {
                         transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                         className="w-5 h-5 border-2 border-bg border-t-transparent rounded-full"
                       />
-                      Sending...
+                      {t('landing.contact.sending')}
                     </>
                   ) : (
                     <>
                       <Mail className="w-5 h-5" />
-                      Send Message
+                      {t('landing.contact.sendMessage')}
                     </>
                   )}
                 </motion.button>

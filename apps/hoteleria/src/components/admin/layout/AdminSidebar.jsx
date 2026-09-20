@@ -14,27 +14,33 @@ import {
   CalendarRange,
   CalendarDays,
   Megaphone,
-  Users
+  Users,
+  Umbrella,
+  ConciergeBell
 } from 'lucide-react'
 import { useAdmin } from '../../../context/AdminContext'
+import { useTranslation } from '../../../i18n/LanguageProvider'
 
 const navItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'inbox', label: 'Bandeja IA', icon: Bot },
-  { id: 'pricing', label: 'Precio dinámico', icon: TrendingUp },
-  { id: 'calendar', label: 'Calendario', icon: CalendarRange },
-  { id: 'rooms', label: 'Room Management', icon: BedDouble },
-  { id: 'housekeeping', label: 'Housekeeping', icon: Sparkles },
-  { id: 'inventory', label: 'Inventory', icon: Package },
-  { id: 'services', label: 'Service Requests', icon: Bell },
-  { id: 'excursions', label: 'Excursiones', icon: Compass },
-  { id: 'events', label: 'Actividades', icon: CalendarDays },
-  { id: 'news', label: 'Noticias y avisos', icon: Megaphone },
-  { id: 'users', label: 'Usuarios y roles', icon: Users }
+  { id: 'dashboard', icon: LayoutDashboard },
+  { id: 'inbox', icon: Bot },
+  { id: 'pricing', icon: TrendingUp },
+  { id: 'calendar', icon: CalendarRange },
+  { id: 'reception', icon: ConciergeBell },
+  { id: 'rooms', icon: BedDouble },
+  { id: 'housekeeping', icon: Sparkles },
+  { id: 'inventory', icon: Package },
+  { id: 'services', icon: Bell },
+  { id: 'excursions', icon: Compass },
+  { id: 'facilities', icon: Umbrella },
+  { id: 'events', icon: CalendarDays },
+  { id: 'news', icon: Megaphone },
+  { id: 'users', icon: Users }
 ]
 
 export default function AdminSidebar({ onExit, isDark }) {
   const { currentView, setView, sidebarOpen, closeSidebar } = useAdmin()
+  const { t } = useTranslation()
 
   const sidebarContent = (
     <div className="flex flex-col h-full">
@@ -45,8 +51,8 @@ export default function AdminSidebar({ onExit, isDark }) {
             <Hotel className="w-6 h-6 text-primary-contrast" />
           </div>
           <div>
-            <h1 className="font-bold text-text">Villa Serena</h1>
-            <p className="text-xs text-muted">Admin Panel</p>
+            <h1 className="font-bold text-text">{t('admin.layout.brand')}</h1>
+            <p className="text-xs text-muted">{t('admin.layout.panel')}</p>
           </div>
         </div>
       </div>
@@ -71,7 +77,7 @@ export default function AdminSidebar({ onExit, isDark }) {
               `}
             >
               <Icon className="w-5 h-5 flex-shrink-0" />
-              <span className="font-medium">{item.label}</span>
+              <span className="font-medium">{t(`admin.sidebar.${item.id}`)}</span>
             </button>
           )
         })}
@@ -86,7 +92,7 @@ export default function AdminSidebar({ onExit, isDark }) {
             transition-all duration-200"
         >
           <LogOut className="w-5 h-5" />
-          <span className="font-medium">Exit Admin</span>
+          <span className="font-medium">{t('admin.layout.exit')}</span>
         </button>
       </div>
     </div>

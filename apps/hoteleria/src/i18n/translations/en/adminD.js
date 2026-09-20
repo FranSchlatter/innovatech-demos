@@ -1,0 +1,41 @@
+// Admin namespace — area D (H26 Reception). Merged into the `admin` namespace.
+export default {
+  reception: {
+    title: 'Reception',
+    subtitle: 'Arrivals, in-house and departures — check-in and check-out in one place.',
+    kpis: {
+      arrivals: 'Arrivals today',
+      inhouse: 'In-house',
+      departures: 'Departures today',
+      occupancy: 'Occupancy',
+    },
+    filters: {
+      all: 'All',
+      arrivals: 'Arrivals',
+      inhouse: 'In-house',
+      departures: 'Departures',
+      upcoming: 'Upcoming',
+    },
+    searchPlaceholder: 'Search by name, reservation or room…',
+    empty: 'No reservations for this filter.',
+    unassigned: 'Unassigned',
+    room: 'Room',
+    type: 'Type',
+    dates: 'Stay',
+    balance: 'Balance',
+    preCheckin: 'Pre-check-in',
+    timeline: 'View history',
+    timelineTitle: 'Reservation history',
+    checkIn: 'Check-in',
+    continueCheckin: 'Resume check-in',
+    checkOut: 'Check-out',
+    done: 'Completed',
+    digitalKey: 'Digital key',
+    by: {
+      system: 'System',
+      guest: 'Guest',
+      reception: 'Reception',
+      admin: 'Admin',
+    },
+  },
+}

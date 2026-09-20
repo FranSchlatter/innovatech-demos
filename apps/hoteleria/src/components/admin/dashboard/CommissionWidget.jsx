@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { PiggyBank, TrendingDown, Building2 } from 'lucide-react'
 import { getCommissionSummary } from '../../../data/admin/mockChannels'
+import { useTranslation } from '../../../i18n/LanguageProvider'
 
 const money = (ars) => {
   if (ars >= 1_000_000) return `$${(ars / 1_000_000).toFixed(1)}M`
@@ -10,6 +11,7 @@ const money = (ars) => {
 
 /* OTA-vs-direct commission widget — the chart that sells (ported from v2, CSS bars, no chart lib). */
 export default function CommissionWidget() {
+  const { t } = useTranslation()
   const comm = getCommissionSummary()
   const maxRevenue = Math.max(...comm.commByChannel.map((c) => c.revenue))
 
@@ -22,11 +24,11 @@ export default function CommissionWidget() {
     >
       <div className="flex items-start justify-between mb-4 gap-3">
         <div>
-          <h3 className="text-base sm:text-lg font-bold text-text">Comisión a OTAs vs. ingreso directo</h3>
-          <p className="text-xs sm:text-sm text-muted mt-0.5">Lo que te llevás vos vs. lo que se lleva Booking / Expedia</p>
+          <h3 className="text-base sm:text-lg font-bold text-text">{t('admin.dashboard.commission.title')}</h3>
+          <p className="text-xs sm:text-sm text-muted mt-0.5">{t('admin.dashboard.commission.subtitle')}</p>
         </div>
         <span className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 whitespace-nowrap">
-          <PiggyBank className="w-3.5 h-3.5" /> Ahorro 6m: {money(comm.cumulativeSavings)}
+          <PiggyBank className="w-3.5 h-3.5" /> {t('admin.dashboard.commission.savings6m', { value: money(comm.cumulativeSavings) })}
         </span>
       </div>
 
@@ -39,9 +41,9 @@ export default function CommissionWidget() {
               <span className="text-muted">
                 {money(c.revenue)}
                 {c.commissionPaid > 0 && (
-                  <span className="text-red-500 ml-2">− {money(c.commissionPaid)} comisión</span>
+                  <span className="text-red-500 ml-2">− {money(c.commissionPaid)} {t('admin.dashboard.commission.commissionSuffix')}</span>
                 )}
-                {c.commission === 0 && <span className="text-green-500 ml-2">sin comisión</span>}
+                {c.commission === 0 && <span className="text-green-500 ml-2">{t('admin.dashboard.commission.noCommission')}</span>}
               </span>
             </div>
             <div className="h-3 rounded-full bg-bg overflow-hidden">
@@ -57,15 +59,15 @@ export default function CommissionWidget() {
       {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5">
         <div className="rounded-lg p-3 bg-bg border border-border">
-          <p className="text-xs text-muted flex items-center gap-1"><TrendingDown className="w-3.5 h-3.5 text-red-500" /> Comisión OTA (mes)</p>
+          <p className="text-xs text-muted flex items-center gap-1"><TrendingDown className="w-3.5 h-3.5 text-red-500" /> {t('admin.dashboard.commission.otaMonth')}</p>
           <p className="text-lg font-bold text-red-500 mt-1">{money(comm.otaCommission)}</p>
         </div>
         <div className="rounded-lg p-3 bg-bg border border-border">
-          <p className="text-xs text-muted flex items-center gap-1"><Building2 className="w-3.5 h-3.5 text-green-500" /> Ingreso directo</p>
+          <p className="text-xs text-muted flex items-center gap-1"><Building2 className="w-3.5 h-3.5 text-green-500" /> {t('admin.dashboard.commission.directRevenue')}</p>
           <p className="text-lg font-bold text-green-500 mt-1">{money(comm.directRevenue)}</p>
         </div>
         <div className="rounded-lg p-3 bg-primary/10 border border-primary/20">
-          <p className="text-xs text-muted flex items-center gap-1"><PiggyBank className="w-3.5 h-3.5 text-primary" /> Ahorro acumulado</p>
+          <p className="text-xs text-muted flex items-center gap-1"><PiggyBank className="w-3.5 h-3.5 text-primary" /> {t('admin.dashboard.commission.cumulativeSavings')}</p>
           <p className="text-lg font-bold text-primary mt-1">{money(comm.cumulativeSavings)}</p>
         </div>
       </div>

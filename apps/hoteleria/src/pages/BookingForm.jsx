@@ -18,8 +18,12 @@ import {
   ArrowLeft,
   Sparkles
 } from 'lucide-react'
+import { useTranslation } from '../i18n/LanguageProvider'
+import { useCurrency } from '../hooks/useCurrency'
 
 export default function BookingForm({ room, onBook }) {
+  const { t } = useTranslation()
+  const { format } = useCurrency()
   const [booking, setBooking] = useState({
     // Step 1: Stay Details
     checkIn: '',
@@ -43,16 +47,17 @@ export default function BookingForm({ room, onBook }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
 
+  // Keys map to client.booking.countries.<key>; the key is the stored value.
   const countries = [
-    'United States', 'Canada', 'United Kingdom', 'Australia',
-    'Germany', 'France', 'Spain', 'Italy', 'Brazil', 'Argentina',
-    'Mexico', 'Japan', 'South Korea', 'China', 'India', 'Other'
+    'us', 'canada', 'uk', 'australia',
+    'germany', 'france', 'spain', 'italy', 'brazil', 'argentina',
+    'mexico', 'japan', 'southKorea', 'china', 'india', 'other'
   ]
 
   const arrivalTimes = [
     { value: '12:00', label: '12:00 PM' },
     { value: '13:00', label: '1:00 PM' },
-    { value: '14:00', label: '2:00 PM (Standard)' },
+    { value: '14:00', label: t('client.booking.arrivalStandard') },
     { value: '15:00', label: '3:00 PM' },
     { value: '16:00', label: '4:00 PM' },
     { value: '17:00', label: '5:00 PM' },
@@ -60,40 +65,40 @@ export default function BookingForm({ room, onBook }) {
     { value: '19:00', label: '7:00 PM' },
     { value: '20:00', label: '8:00 PM' },
     { value: '21:00', label: '9:00 PM' },
-    { value: '22:00', label: '10:00 PM (Late)' }
+    { value: '22:00', label: t('client.booking.arrivalLate') }
   ]
 
   const validateStep = (currentStep) => {
     const newErrors = {}
 
     if (currentStep === 1) {
-      if (!booking.checkIn) newErrors.checkIn = 'Check-in date is required'
-      if (!booking.checkOut) newErrors.checkOut = 'Check-out date is required'
+      if (!booking.checkIn) newErrors.checkIn = t('client.booking.errors.checkInRequired')
+      if (!booking.checkOut) newErrors.checkOut = t('client.booking.errors.checkOutRequired')
       if (booking.checkIn && booking.checkOut) {
         const checkIn = new Date(booking.checkIn)
         const checkOut = new Date(booking.checkOut)
         const today = new Date()
         today.setHours(0, 0, 0, 0)
 
-        if (checkIn < today) newErrors.checkIn = 'Check-in cannot be in the past'
-        if (checkOut <= checkIn) newErrors.checkOut = 'Check-out must be after check-in'
+        if (checkIn < today) newErrors.checkIn = t('client.booking.errors.checkInPast')
+        if (checkOut <= checkIn) newErrors.checkOut = t('client.booking.errors.checkOutAfter')
       }
     }
 
     if (currentStep === 2) {
-      if (!booking.firstName.trim()) newErrors.firstName = 'First name is required'
-      if (!booking.lastName.trim()) newErrors.lastName = 'Last name is required'
+      if (!booking.firstName.trim()) newErrors.firstName = t('client.booking.errors.firstNameRequired')
+      if (!booking.lastName.trim()) newErrors.lastName = t('client.booking.errors.lastNameRequired')
       if (!booking.email.trim()) {
-        newErrors.email = 'Email is required'
+        newErrors.email = t('client.booking.errors.emailRequired')
       } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(booking.email)) {
-        newErrors.email = 'Please enter a valid email'
+        newErrors.email = t('client.booking.errors.emailInvalid')
       }
-      if (!booking.phone.trim()) newErrors.phone = 'Phone number is required'
-      if (!booking.country) newErrors.country = 'Please select your country'
+      if (!booking.phone.trim()) newErrors.phone = t('client.booking.errors.phoneRequired')
+      if (!booking.country) newErrors.country = t('client.booking.errors.countryRequired')
     }
 
     if (currentStep === 3) {
-      if (!booking.travelPurpose) newErrors.travelPurpose = 'Please select travel purpose'
+      if (!booking.travelPurpose) newErrors.travelPurpose = t('client.booking.errors.travelPurposeRequired')
     }
 
     setErrors(newErrors)
@@ -175,10 +180,10 @@ export default function BookingForm({ room, onBook }) {
             transition={{ delay: 0.3 }}
           >
             <h2 className="text-2xl md:text-3xl font-serif text-primary mb-3">
-              Reservation Confirmed!
+              {t('client.booking.successTitle')}
             </h2>
             <p className="text-muted mb-8 max-w-md mx-auto">
-              Thank you for choosing Villa Serena. We've received your booking request and will contact you shortly.
+              {t('client.booking.successBody')}
             </p>
           </motion.div>
 
@@ -190,32 +195,32 @@ export default function BookingForm({ room, onBook }) {
           >
             <h3 className="font-semibold text-primary mb-4 flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-accent" />
-              Booking Summary
+              {t('client.booking.bookingSummary')}
             </h3>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted">{room.isPackage ? 'Package:' : 'Room:'}</span>
+                <span className="text-muted">{room.isPackage ? t('client.booking.summary.packageLabel') : t('client.booking.summary.roomLabel')}</span>
                 <span className="font-medium">{room.name}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted">Guest:</span>
+                <span className="text-muted">{t('client.booking.guestLabel')}</span>
                 <span className="font-medium">{booking.firstName} {booking.lastName}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted">Check-in:</span>
+                <span className="text-muted">{t('client.booking.checkInLabel')}</span>
                 <span className="font-medium">{formatDate(booking.checkIn)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted">Check-out:</span>
+                <span className="text-muted">{t('client.booking.checkOutLabel')}</span>
                 <span className="font-medium">{formatDate(booking.checkOut)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted">Guests:</span>
-                <span className="font-medium">{booking.guests} {booking.guests === 1 ? 'guest' : 'guests'}</span>
+                <span className="text-muted">{t('client.booking.guestsLabel')}</span>
+                <span className="font-medium">{booking.guests} {booking.guests === 1 ? t('client.booking.guest').toLowerCase() : t('client.booking.guests').toLowerCase()}</span>
               </div>
               <div className="border-t border-border pt-3 flex justify-between">
-                <span className="font-semibold text-primary">Total ({nights} nights):</span>
-                <span className="font-bold text-accent text-lg">${total}</span>
+                <span className="font-semibold text-primary">{t('client.booking.totalNights', { count: nights })}</span>
+                <span className="font-bold text-accent text-lg">{format(total)}</span>
               </div>
             </div>
           </motion.div>
@@ -229,10 +234,9 @@ export default function BookingForm({ room, onBook }) {
             <div className="flex items-start gap-3">
               <Mail className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
               <div className="text-left">
-                <p className="text-sm font-medium text-accent">What happens next?</p>
+                <p className="text-sm font-medium text-accent">{t('client.booking.whatNext')}</p>
                 <p className="text-sm text-accent/80 mt-1">
-                  A confirmation email has been sent to <strong>{booking.email}</strong>.
-                  Our team will contact you within 24 hours to finalize your reservation.
+                  {t('client.booking.whatNextBefore')} <strong>{booking.email}</strong>{t('client.booking.whatNextAfter')}
                 </p>
               </div>
             </div>
@@ -265,7 +269,7 @@ export default function BookingForm({ room, onBook }) {
             }}
             className="btn-primary px-8"
           >
-            Back to Home
+            {t('client.booking.backToHome')}
           </motion.button>
         </div>
       </motion.div>
@@ -299,16 +303,16 @@ export default function BookingForm({ room, onBook }) {
 
               <div className="space-y-3 bg-surface p-4 rounded-lg mb-6">
                 <div className="flex justify-between items-center">
-                  <span className="text-muted text-sm">Price per night:</span>
-                  <span className="font-semibold text-primary">${room.price}</span>
+                  <span className="text-muted text-sm">{t('client.booking.summary.pricePerNight')}</span>
+                  <span className="font-semibold text-primary">{format(room.price)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-muted text-sm">Number of nights:</span>
+                  <span className="text-muted text-sm">{t('client.booking.summary.numberOfNights')}</span>
                   <span className="font-semibold text-primary">{nights || '-'}</span>
                 </div>
                 <div className="border-t border-border pt-3 flex justify-between items-center">
-                  <span className="font-semibold text-primary">Total:</span>
-                  <span className="text-2xl font-bold text-accent">${total}</span>
+                  <span className="font-semibold text-primary">{t('client.booking.summary.total')}</span>
+                  <span className="text-2xl font-bold text-accent">{format(total)}</span>
                 </div>
               </div>
 
@@ -317,7 +321,7 @@ export default function BookingForm({ room, onBook }) {
                 <div className="mb-6">
                   <h4 className="text-sm font-semibold text-primary mb-3 flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-accent" />
-                    This package includes
+                    {t('client.booking.summary.packageIncludes')}
                   </h4>
                   <ul className="space-y-2">
                     {room.packageDetails.map((detail, i) => (
@@ -333,15 +337,15 @@ export default function BookingForm({ room, onBook }) {
               <div className="space-y-2 text-xs text-muted">
                 <div className="flex items-start gap-2">
                   <Check className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
-                  <span>{room.cancellationPolicy || 'Free cancellation up to 48 hours'}</span>
+                  <span>{room.cancellationPolicy || t('client.booking.summary.freeCancellation')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-4 h-4 text-accent" />
-                  <span>Best price guarantee</span>
+                  <span>{t('client.booking.summary.bestPrice')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-4 h-4 text-accent" />
-                  <span>24/7 customer support</span>
+                  <span>{t('client.booking.summary.support')}</span>
                 </div>
               </div>
             </div>
@@ -360,10 +364,10 @@ export default function BookingForm({ room, onBook }) {
             {/* Step Indicator */}
             <div className="flex items-center justify-between mb-8">
               {[
-                { num: 1, label: 'Dates' },
-                { num: 2, label: 'Details' },
-                { num: 3, label: 'Preferences' },
-                { num: 4, label: 'Confirm' }
+                { num: 1, label: t('client.booking.steps.dates') },
+                { num: 2, label: t('client.booking.steps.details') },
+                { num: 3, label: t('client.booking.steps.preferences') },
+                { num: 4, label: t('client.booking.steps.confirm') }
               ].map((s, idx) => (
                 <div key={s.num} className="flex items-center flex-1">
                   <div className="flex flex-col items-center">
@@ -398,14 +402,14 @@ export default function BookingForm({ room, onBook }) {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                 >
-                  <h3 className="text-2xl font-serif mb-2 text-primary">Select Your Stay</h3>
-                  <p className="text-muted text-sm mb-6">Choose your dates and arrival details</p>
+                  <h3 className="text-2xl font-serif mb-2 text-primary">{t('client.booking.step1Title')}</h3>
+                  <p className="text-muted text-sm mb-6">{t('client.booking.step1Subtitle')}</p>
 
                   <div className="space-y-5">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium mb-2">
-                          Check-In Date <span className="text-red-500">*</span>
+                          {t('client.booking.checkInDate')} <span className="text-red-500">*</span>
                         </label>
                         <DatePicker
                           value={booking.checkIn}
@@ -418,7 +422,7 @@ export default function BookingForm({ room, onBook }) {
 
                       <div>
                         <label className="block text-sm font-medium mb-2">
-                          Check-Out Date <span className="text-red-500">*</span>
+                          {t('client.booking.checkOutDate')} <span className="text-red-500">*</span>
                         </label>
                         <DatePicker
                           value={booking.checkOut}
@@ -433,7 +437,7 @@ export default function BookingForm({ room, onBook }) {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium mb-2">
-                          Estimated Arrival Time
+                          {t('client.booking.arrivalTime')}
                         </label>
                         <div className="flex items-center gap-3 px-4 py-3 bg-surface rounded-lg border border-border focus-within:border-accent transition-colors">
                           <Clock className="w-5 h-5 text-accent flex-shrink-0" />
@@ -451,7 +455,7 @@ export default function BookingForm({ room, onBook }) {
 
                       <div>
                         <label className="block text-sm font-medium mb-2">
-                          Number of Guests <span className="text-red-500">*</span>
+                          {t('client.booking.numberOfGuests')} <span className="text-red-500">*</span>
                         </label>
                         <div className="flex items-center gap-3 px-4 py-3 bg-surface rounded-lg border border-border focus-within:border-accent transition-colors">
                           <Users className="w-5 h-5 text-accent flex-shrink-0" />
@@ -461,7 +465,7 @@ export default function BookingForm({ room, onBook }) {
                             className="flex-1 bg-transparent focus:outline-none text-sm cursor-pointer"
                           >
                             {[1, 2, 3, 4, 5, 6].map(n => (
-                              <option key={n} value={n}>{n} {n === 1 ? 'Guest' : 'Guests'}</option>
+                              <option key={n} value={n}>{n} {n === 1 ? t('client.booking.guest') : t('client.booking.guests')}</option>
                             ))}
                           </select>
                         </div>
@@ -479,14 +483,14 @@ export default function BookingForm({ room, onBook }) {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                 >
-                  <h3 className="text-2xl font-serif mb-2 text-primary">Personal Information</h3>
-                  <p className="text-muted text-sm mb-6">Please provide your contact details</p>
+                  <h3 className="text-2xl font-serif mb-2 text-primary">{t('client.booking.step2Title')}</h3>
+                  <p className="text-muted text-sm mb-6">{t('client.booking.step2Subtitle')}</p>
 
                   <div className="space-y-5">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium mb-2">
-                          First Name <span className="text-red-500">*</span>
+                          {t('client.booking.firstName')} <span className="text-red-500">*</span>
                         </label>
                         <div className={`flex items-center gap-3 px-4 py-3 bg-surface rounded-lg border transition-colors ${errors.firstName ? 'border-red-500' : 'border-border focus-within:border-accent'}`}>
                           <User className="w-5 h-5 text-accent flex-shrink-0" />
@@ -503,7 +507,7 @@ export default function BookingForm({ room, onBook }) {
 
                       <div>
                         <label className="block text-sm font-medium mb-2">
-                          Last Name <span className="text-red-500">*</span>
+                          {t('client.booking.lastName')} <span className="text-red-500">*</span>
                         </label>
                         <div className={`flex items-center gap-3 px-4 py-3 bg-surface rounded-lg border transition-colors ${errors.lastName ? 'border-red-500' : 'border-border focus-within:border-accent'}`}>
                           <User className="w-5 h-5 text-accent flex-shrink-0" />
@@ -521,7 +525,7 @@ export default function BookingForm({ room, onBook }) {
 
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        Email Address <span className="text-red-500">*</span>
+                        {t('client.booking.email')} <span className="text-red-500">*</span>
                       </label>
                       <div className={`flex items-center gap-3 px-4 py-3 bg-surface rounded-lg border transition-colors ${errors.email ? 'border-red-500' : 'border-border focus-within:border-accent'}`}>
                         <Mail className="w-5 h-5 text-accent flex-shrink-0" />
@@ -539,7 +543,7 @@ export default function BookingForm({ room, onBook }) {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium mb-2">
-                          Phone Number <span className="text-red-500">*</span>
+                          {t('client.booking.phone')} <span className="text-red-500">*</span>
                         </label>
                         <div className={`flex items-center gap-3 px-4 py-3 bg-surface rounded-lg border transition-colors ${errors.phone ? 'border-red-500' : 'border-border focus-within:border-accent'}`}>
                           <Phone className="w-5 h-5 text-accent flex-shrink-0" />
@@ -556,7 +560,7 @@ export default function BookingForm({ room, onBook }) {
 
                       <div>
                         <label className="block text-sm font-medium mb-2">
-                          Country <span className="text-red-500">*</span>
+                          {t('client.booking.country')} <span className="text-red-500">*</span>
                         </label>
                         <div className={`flex items-center gap-3 px-4 py-3 bg-surface rounded-lg border transition-colors ${errors.country ? 'border-red-500' : 'border-border focus-within:border-accent'}`}>
                           <Globe className="w-5 h-5 text-accent flex-shrink-0" />
@@ -565,9 +569,9 @@ export default function BookingForm({ room, onBook }) {
                             onChange={(e) => setBooking({ ...booking, country: e.target.value })}
                             className="flex-1 bg-transparent focus:outline-none text-sm cursor-pointer"
                           >
-                            <option value="">Select country</option>
+                            <option value="">{t('client.booking.selectCountry')}</option>
                             {countries.map(country => (
-                              <option key={country} value={country}>{country}</option>
+                              <option key={country} value={country}>{t(`client.booking.countries.${country}`)}</option>
                             ))}
                           </select>
                         </div>
@@ -586,18 +590,18 @@ export default function BookingForm({ room, onBook }) {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                 >
-                  <h3 className="text-2xl font-serif mb-2 text-primary">Your Preferences</h3>
-                  <p className="text-muted text-sm mb-6">Help us personalize your stay</p>
+                  <h3 className="text-2xl font-serif mb-2 text-primary">{t('client.booking.step3Title')}</h3>
+                  <p className="text-muted text-sm mb-6">{t('client.booking.step3Subtitle')}</p>
 
                   <div className="space-y-5">
                     <div>
                       <label className="block text-sm font-medium mb-3">
-                        Purpose of Travel <span className="text-red-500">*</span>
+                        {t('client.booking.travelPurpose')} <span className="text-red-500">*</span>
                       </label>
                       <div className="grid grid-cols-2 gap-3">
                         {[
-                          { value: 'leisure', label: 'Leisure', icon: Heart },
-                          { value: 'business', label: 'Business', icon: Briefcase }
+                          { value: 'leisure', label: t('client.booking.leisure'), icon: Heart },
+                          { value: 'business', label: t('client.booking.business'), icon: Briefcase }
                         ].map(option => (
                           <motion.button
                             key={option.value}
@@ -621,12 +625,12 @@ export default function BookingForm({ room, onBook }) {
 
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        Room Preferences
+                        {t('client.booking.roomPreferences')}
                       </label>
                       <div className="flex items-start gap-3 px-4 py-3 bg-surface rounded-lg border border-border focus-within:border-accent transition-colors">
                         <MessageSquare className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
                         <textarea
-                          placeholder="e.g., High floor, quiet room, extra pillows..."
+                          placeholder={t('client.booking.roomPreferencesPlaceholder')}
                           value={booking.preferences}
                           onChange={(e) => setBooking({ ...booking, preferences: e.target.value })}
                           rows={3}
@@ -637,12 +641,12 @@ export default function BookingForm({ room, onBook }) {
 
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        Special Requests
+                        {t('client.booking.specialRequests')}
                       </label>
                       <div className="flex items-start gap-3 px-4 py-3 bg-surface rounded-lg border border-border focus-within:border-accent transition-colors">
                         <MessageSquare className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
                         <textarea
-                          placeholder="Any dietary restrictions, accessibility needs, celebrations..."
+                          placeholder={t('client.booking.specialRequestsPlaceholder')}
                           value={booking.specialRequests}
                           onChange={(e) => setBooking({ ...booking, specialRequests: e.target.value })}
                           rows={3}
@@ -662,33 +666,33 @@ export default function BookingForm({ room, onBook }) {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                 >
-                  <h3 className="text-2xl font-serif mb-2 text-primary">Review Your Booking</h3>
-                  <p className="text-muted text-sm mb-6">Please verify all details before confirming</p>
+                  <h3 className="text-2xl font-serif mb-2 text-primary">{t('client.booking.step4Title')}</h3>
+                  <p className="text-muted text-sm mb-6">{t('client.booking.step4Subtitle')}</p>
 
                   <div className="space-y-4">
                     {/* Stay Details */}
                     <div className="bg-surface rounded-lg p-5">
                       <h4 className="font-semibold text-primary mb-4 flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-accent" />
-                        Stay Details
+                        {t('client.booking.stayDetails')}
                       </h4>
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <span className="text-muted block">Check-in</span>
+                          <span className="text-muted block">{t('client.booking.checkIn')}</span>
                           <span className="font-medium">{formatDate(booking.checkIn)}</span>
                           <span className="text-muted text-xs block">{getArrivalTimeLabel(booking.estimatedArrivalTime)}</span>
                         </div>
                         <div>
-                          <span className="text-muted block">Check-out</span>
+                          <span className="text-muted block">{t('client.booking.checkOut')}</span>
                           <span className="font-medium">{formatDate(booking.checkOut)}</span>
                         </div>
                         <div>
-                          <span className="text-muted block">Guests</span>
-                          <span className="font-medium">{booking.guests} {booking.guests === 1 ? 'Guest' : 'Guests'}</span>
+                          <span className="text-muted block">{t('client.booking.guests')}</span>
+                          <span className="font-medium">{booking.guests} {booking.guests === 1 ? t('client.booking.guest') : t('client.booking.guests')}</span>
                         </div>
                         <div>
-                          <span className="text-muted block">Duration</span>
-                          <span className="font-medium">{nights} {nights === 1 ? 'Night' : 'Nights'}</span>
+                          <span className="text-muted block">{t('client.booking.duration')}</span>
+                          <span className="font-medium">{nights} {nights === 1 ? t('client.booking.night') : t('client.booking.nights')}</span>
                         </div>
                       </div>
                     </div>
@@ -697,23 +701,23 @@ export default function BookingForm({ room, onBook }) {
                     <div className="bg-surface rounded-lg p-5">
                       <h4 className="font-semibold text-primary mb-4 flex items-center gap-2">
                         <User className="w-4 h-4 text-accent" />
-                        Guest Information
+                        {t('client.booking.guestInfo')}
                       </h4>
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <span className="text-muted block">Name</span>
+                          <span className="text-muted block">{t('client.booking.nameLabel')}</span>
                           <span className="font-medium">{booking.firstName} {booking.lastName}</span>
                         </div>
                         <div>
-                          <span className="text-muted block">Country</span>
-                          <span className="font-medium">{booking.country}</span>
+                          <span className="text-muted block">{t('client.booking.countryLabel')}</span>
+                          <span className="font-medium">{booking.country ? t(`client.booking.countries.${booking.country}`) : ''}</span>
                         </div>
                         <div>
-                          <span className="text-muted block">Email</span>
+                          <span className="text-muted block">{t('client.booking.emailLabel')}</span>
                           <span className="font-medium text-xs">{booking.email}</span>
                         </div>
                         <div>
-                          <span className="text-muted block">Phone</span>
+                          <span className="text-muted block">{t('client.booking.phoneLabel')}</span>
                           <span className="font-medium">{booking.phone}</span>
                         </div>
                       </div>
@@ -724,24 +728,24 @@ export default function BookingForm({ room, onBook }) {
                       <div className="bg-surface rounded-lg p-5">
                         <h4 className="font-semibold text-primary mb-4 flex items-center gap-2">
                           <MessageSquare className="w-4 h-4 text-accent" />
-                          Preferences & Requests
+                          {t('client.booking.preferencesAndRequests')}
                         </h4>
                         <div className="space-y-3 text-sm">
                           {booking.travelPurpose && (
                             <div>
-                              <span className="text-muted block">Travel Purpose</span>
-                              <span className="font-medium capitalize">{booking.travelPurpose}</span>
+                              <span className="text-muted block">{t('client.booking.travelPurposeLabel')}</span>
+                              <span className="font-medium">{booking.travelPurpose === 'leisure' ? t('client.booking.leisure') : t('client.booking.business')}</span>
                             </div>
                           )}
                           {booking.preferences && (
                             <div>
-                              <span className="text-muted block">Room Preferences</span>
+                              <span className="text-muted block">{t('client.booking.roomPreferencesLabel')}</span>
                               <span className="font-medium">{booking.preferences}</span>
                             </div>
                           )}
                           {booking.specialRequests && (
                             <div>
-                              <span className="text-muted block">Special Requests</span>
+                              <span className="text-muted block">{t('client.booking.specialRequestsLabel')}</span>
                               <span className="font-medium">{booking.specialRequests}</span>
                             </div>
                           )}
@@ -752,8 +756,7 @@ export default function BookingForm({ room, onBook }) {
                     {/* Terms */}
                     <div className="bg-accent/10 border border-accent/30 p-4 rounded-lg text-sm">
                       <p className="text-text">
-                        By clicking "Confirm Reservation", you agree to our Terms & Conditions and Privacy Policy.
-                        A confirmation email will be sent to your email address.
+                        {t('client.booking.terms')}
                       </p>
                     </div>
                   </div>
@@ -773,7 +776,7 @@ export default function BookingForm({ room, onBook }) {
                   className="btn-secondary flex-1 flex items-center justify-center gap-2"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  Back
+                  {t('client.booking.back')}
                 </motion.button>
               )}
 
@@ -785,7 +788,7 @@ export default function BookingForm({ room, onBook }) {
                   whileTap={{ scale: 0.98 }}
                   className="btn-primary flex-1 flex items-center justify-center gap-2"
                 >
-                  Continue
+                  {t('client.booking.continue')}
                   <ArrowRight className="w-4 h-4" />
                 </motion.button>
               ) : (
@@ -803,12 +806,12 @@ export default function BookingForm({ room, onBook }) {
                         transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                         className="w-5 h-5 border-2 border-bg border-t-transparent rounded-full"
                       />
-                      Processing...
+                      {t('client.booking.processing')}
                     </>
                   ) : (
                     <>
                       <CheckCircle className="w-5 h-5" />
-                      Confirm Reservation
+                      {t('client.booking.confirmReservation')}
                     </>
                   )}
                 </motion.button>
@@ -816,11 +819,11 @@ export default function BookingForm({ room, onBook }) {
             </div>
 
             <p className="text-xs text-muted text-center mt-4 flex items-center justify-center gap-2">
-              <Check className="w-3 h-3" /> Secure booking
+              <Check className="w-3 h-3" /> {t('client.booking.secureBooking')}
               <span className="mx-1">•</span>
-              <Check className="w-3 h-3" /> Instant confirmation
+              <Check className="w-3 h-3" /> {t('client.booking.instantConfirmation')}
               <span className="mx-1">•</span>
-              <Check className="w-3 h-3" /> 24/7 support
+              <Check className="w-3 h-3" /> {t('client.booking.support247')}
             </p>
           </div>
         </motion.form>

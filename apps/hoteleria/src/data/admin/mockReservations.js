@@ -376,6 +376,33 @@ export const mockReservations = [
     specialRequests: 'Business trip - need good wifi',
     createdAt: formatDate(addDays(today, -1)),
     arrivalTime: '14:00'
+  },
+  // H26 — the Guest Portal's own reservation. It lives in the shared store so a
+  // guest who starts check-in online from the portal shows up in Reception, and
+  // the front desk can RESUME exactly where the guest left off. Identity fields
+  // mirror MOCK_GUEST in GuestPortal.jsx (Carlos Rodriguez, room 507).
+  {
+    id: 'RES-2024-5678',
+    guestName: 'Carlos Rodriguez',
+    guestEmail: 'carlos.rodriguez@email.com',
+    guestPhone: '+1 555-123-4567',
+    documentType: 'passport',
+    documentNumber: 'AA-4521887',
+    nationality: 'Argentina',
+    roomId: 15,
+    roomNumber: '507',
+    roomType: 'deluxe',
+    checkIn: formatDate(today),
+    checkOut: formatDate(addDays(today, 4)),
+    guests: 2,
+    status: 'confirmed',
+    paymentStatus: 'partial',
+    totalAmount: 1750,
+    amountPaid: 875,
+    specialRequests: '',
+    createdAt: formatDate(addDays(today, -6)),
+    arrivalTime: '15:00',
+    portalGuest: true
   }
 ]
 

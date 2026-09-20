@@ -20,16 +20,20 @@ import {
   Sun,
   WashingMachine,
   Compass,
-  Ruler
+  Ruler,
+  Scale,
+  X
 } from 'lucide-react'
 import properties from '../data/properties.json'
 import neighborhoods from '../data/neighborhoods.json'
 import { formatPrice, formatArea, OPERATION_LABELS, TYPE_LABELS } from '../utils/format'
 import PropertyCard from '../components/PropertyCard'
 import PropertyMap from '../components/PropertyMap'
+import PropertyComparator from '../components/PropertyComparator'
 
 const CURRENT_YEAR = 2026
 const ALERTS_KEY = 'inmob-portal-alerts-v2'
+const MAX_COMPARE = 4
 
 const OPERATION_FILTERS = [
   { value: 'all', label: 'Todas' },
@@ -159,6 +163,10 @@ export default function PropertiesListPage({ initialFilter, favorites, onSelectP
   // Drawn zone of interest (polygon of {x,y} map %), applied via point-in-polygon
   const [zone, setZone] = useState(null)
 
+  // Side-by-side comparison: selected ids (max 4) + modal open flag
+  const [compareIds, setCompareIds] = useState([])
+  const [showCompare, setShowCompare] = useState(false)
+
   const [toast, setToast] = useState(null)
   const listRef = useRef(null)
 
@@ -279,6 +287,36 @@ export default function PropertiesListPage({ initialFilter, favorites, onSelectP
     setActiveId(p.id)
     const el = document.getElementById(`maprow-${p.id}`)
     el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }
+
+  // Selected properties (in selection order) for the side-by-side comparator.
+  const compareList = useMemo(
+    () => compareIds.map((id) => properties.find((p) => p.id === id)).filter(Boolean),
+    [compareIds]
+  )
+
+  const toggleCompare = (id) => {
+    setCompareIds((prev) => {
+      if (prev.includes(id)) return prev.filter((x) => x !== id)
+      if (prev.length >= MAX_COMPARE) {
+        setToast({ key: Date.now(), message: `Podés comparar hasta ${MAX_COMPARE} propiedades`, tone: 'muted' })
+        return prev
+      }
+      return [...prev, id]
+    })
+  }
+
+  const removeFromCompare = (id) => {
+    setCompareIds((prev) => {
+      const next = prev.filter((x) => x !== id)
+      if (next.length < 2) setShowCompare(false) // comparison needs at least 2
+      return next
+    })
+  }
+
+  const clearCompare = () => {
+    setCompareIds([])
+    setShowCompare(false)
   }
 
   // Persist the current search as a portal alert (read later by ClientPortal).
@@ -657,6 +695,9 @@ export default function PropertiesListPage({ initialFilter, favorites, onSelectP
               isFavorite={favorites?.isFavorite(p.id)}
               onToggleFavorite={favorites?.toggleFavorite}
               onSelect={onSelectProperty}
+              onToggleCompare={toggleCompare}
+              isComparing={compareIds.includes(p.id)}
+              compareDisabled={compareIds.length >= MAX_COMPARE}
             />
           ))}
         </div>
@@ -740,6 +781,81 @@ export default function PropertiesListPage({ initialFilter, favorites, onSelectP
         </div>
       )}
 
+      {/* Floating compare bar */}
+      <AnimatePresence>
+        {compareIds.length > 0 && !showCompare && (
+          <motion.div
+            initial={{ opacity: 0, y: 32 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 32 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] w-[calc(100%-1.5rem)] max-w-2xl"
+          >
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-surface border border-border shadow-medium">
+              <div className="inline-flex items-center gap-2 shrink-0">
+                <span className="relative inline-flex">
+                  <Scale className="w-5 h-5 text-accent" />
+                  <span className="absolute -top-2 -right-2 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-accent text-primary-contrast text-[10px] font-bold">
+                    {compareIds.length}
+                  </span>
+                </span>
+                <span className="hidden sm:inline text-sm font-semibold text-text">
+                  {compareIds.length} para comparar
+                </span>
+              </div>
+
+              {/* Selected thumbnails */}
+              <div className="flex items-center gap-1.5 flex-1 min-w-0 overflow-x-auto">
+                {compareList.map((p) => (
+                  <div key={p.id} className="relative shrink-0 group/thumb">
+                    <img
+                      src={p.images?.[0]}
+                      alt={p.title}
+                      className="w-12 h-9 rounded-md object-cover bg-surface-alt border border-border"
+                    />
+                    <button
+                      onClick={() => toggleCompare(p.id)}
+                      aria-label={`Quitar ${p.title}`}
+                      className="absolute -top-1.5 -right-1.5 p-0.5 rounded-full bg-primary text-primary-contrast hover:bg-error transition-colors"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={clearCompare}
+                  className="hidden sm:inline text-xs font-medium text-muted hover:text-accent transition-colors"
+                >
+                  Limpiar
+                </button>
+                <button
+                  onClick={() => setShowCompare(true)}
+                  disabled={compareIds.length < 2}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-contrast text-sm font-semibold hover:bg-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <Scale className="w-4 h-4" /> Comparar
+                </button>
+              </div>
+            </div>
+            {compareIds.length < 2 && (
+              <p className="text-center text-[11px] text-muted mt-1.5">Elegí al menos 2 propiedades para comparar</p>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Comparator modal */}
+      <PropertyComparator
+        open={showCompare}
+        properties={compareList}
+        onClose={() => setShowCompare(false)}
+        onRemove={removeFromCompare}
+        onSelectProperty={onSelectProperty}
+      />
+
       {/* Toast */}
       <AnimatePresence>
         {toast && (
@@ -749,7 +865,9 @@ export default function PropertiesListPage({ initialFilter, favorites, onSelectP
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 24 }}
             transition={{ duration: 0.25 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[110] inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-surface border border-border shadow-medium"
+            className={`fixed left-1/2 -translate-x-1/2 z-[130] inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-surface border border-border shadow-medium ${
+              compareIds.length > 0 && !showCompare ? 'bottom-24' : 'bottom-6'
+            }`}
           >
             <CheckCircle className={`w-5 h-5 ${toast.tone === 'muted' ? 'text-muted' : 'text-success'}`} />
             <span className="text-sm font-medium text-text">{toast.message}</span>

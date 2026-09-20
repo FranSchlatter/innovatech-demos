@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Building2,
@@ -24,7 +24,9 @@ import {
 } from 'lucide-react'
 import { useAdminData } from '../../../hooks/useAdminData'
 import { useAdmin } from '../../../context/AdminContext'
+import { useTranslation } from '../../../i18n/LanguageProvider'
 import CommissionWidget from './CommissionWidget'
+import CheckInStation from '../../client/checkin/CheckInStation'
 
 const nightsBetween = (checkIn, checkOut) => {
   if (!checkIn || !checkOut) return 1
@@ -65,14 +67,21 @@ function KPICard({ label, value, icon: Icon, color, change, trend, index }) {
 }
 
 function ActivityDetailModal({ activity, onClose, onCheckIn, onCheckOut }) {
+  const { t } = useTranslation()
   const [working, setWorking] = useState(false)
   const isCheckin = activity?.type === 'checkin'
 
   const handleAction = async () => {
+    // Check-in now opens the full station wizard (documents, room, keys…);
+    // check-out stays a one-tap confirm.
+    if (isCheckin) {
+      onCheckIn(activity)
+      onClose()
+      return
+    }
     setWorking(true)
     try {
-      if (isCheckin) await onCheckIn(activity.id)
-      else await onCheckOut(activity.id)
+      await onCheckOut(activity.id)
       onClose()
     } finally {
       setWorking(false)
@@ -108,7 +117,7 @@ function ActivityDetailModal({ activity, onClose, onCheckIn, onCheckOut }) {
                 <div>
                   <h2 className="text-lg font-bold text-text">{activity.guestName}</h2>
                   <p className="text-sm text-muted">
-                    {isCheckin ? 'Check-in' : 'Check-out'} · {activity.id}
+                    {isCheckin ? t('admin.dashboard.activity.checkin') : t('admin.dashboard.activity.checkout')} · {activity.id}
                   </p>
                 </div>
               </div>
@@ -122,26 +131,26 @@ function ActivityDetailModal({ activity, onClose, onCheckIn, onCheckOut }) {
               {/* Stay summary */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-bg rounded-lg p-3">
-                  <p className="text-xs text-muted">Room</p>
+                  <p className="text-xs text-muted">{t('common.labels.room')}</p>
                   <p className="font-semibold text-text">{activity.roomNumber}</p>
                   <p className="text-xs text-muted capitalize">{activity.roomType}</p>
                 </div>
                 <div className="bg-bg rounded-lg p-3">
-                  <p className="text-xs text-muted">Guests</p>
+                  <p className="text-xs text-muted">{t('common.labels.guests')}</p>
                   <p className="font-semibold text-text">{activity.guests}</p>
-                  <p className="text-xs text-muted">{nightsBetween(activity.checkIn, activity.checkOut)} nights</p>
+                  <p className="text-xs text-muted">{t('admin.dashboard.activity.nights', { count: nightsBetween(activity.checkIn, activity.checkOut) })}</p>
                 </div>
                 <div className="bg-bg rounded-lg p-3 flex items-center gap-2">
                   <CalendarCheck className="w-4 h-4 text-muted shrink-0" />
                   <div className="min-w-0">
-                    <p className="text-xs text-muted">Check-in</p>
+                    <p className="text-xs text-muted">{t('admin.dashboard.activity.checkin')}</p>
                     <p className="text-sm font-medium text-text">{activity.checkIn}</p>
                   </div>
                 </div>
                 <div className="bg-bg rounded-lg p-3 flex items-center gap-2">
                   <Moon className="w-4 h-4 text-muted shrink-0" />
                   <div className="min-w-0">
-                    <p className="text-xs text-muted">Check-out</p>
+                    <p className="text-xs text-muted">{t('admin.dashboard.activity.checkout')}</p>
                     <p className="text-sm font-medium text-text">{activity.checkOut}</p>
                   </div>
                 </div>
@@ -151,7 +160,7 @@ function ActivityDetailModal({ activity, onClose, onCheckIn, onCheckOut }) {
               <div className="flex items-center justify-between bg-bg rounded-lg p-3">
                 <div className="flex items-center gap-2">
                   <CreditCard className="w-4 h-4 text-muted" />
-                  <span className="text-sm text-muted">Total</span>
+                  <span className="text-sm text-muted">{t('common.labels.total')}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="font-semibold text-text">${activity.totalAmount?.toLocaleString?.() ?? activity.totalAmount}</span>
@@ -160,7 +169,9 @@ function ActivityDetailModal({ activity, onClose, onCheckIn, onCheckOut }) {
                       ? 'bg-green-500/10 text-green-600 dark:text-green-400'
                       : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
                   }`}>
-                    {activity.paymentStatus || 'pending'}
+                    {activity.paymentStatus === 'paid'
+                      ? t('admin.shared.paymentStatus.paid')
+                      : t('admin.shared.paymentStatus.pending')}
                   </span>
                 </div>
               </div>
@@ -170,7 +181,7 @@ function ActivityDetailModal({ activity, onClose, onCheckIn, onCheckOut }) {
                 <div className="rounded-lg p-3 bg-blue-500/5 border border-blue-500/20">
                   <div className="flex items-center gap-2 mb-1">
                     <MessageSquare className="w-4 h-4 text-blue-500" />
-                    <span className="text-xs font-medium text-blue-600 dark:text-blue-400">Special request</span>
+                    <span className="text-xs font-medium text-blue-600 dark:text-blue-400">{t('admin.dashboard.activity.specialRequest')}</span>
                   </div>
                   <p className="text-sm text-text">{activity.specialRequests}</p>
                 </div>
@@ -180,7 +191,7 @@ function ActivityDetailModal({ activity, onClose, onCheckIn, onCheckOut }) {
               <div className="flex flex-wrap gap-2">
                 {activity.guestEmail && (
                   <a href={`mailto:${activity.guestEmail}`} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-bg hover:bg-primary hover:text-primary-contrast text-sm text-text transition-colors">
-                    <Mail className="w-4 h-4" /> Email
+                    <Mail className="w-4 h-4" /> {t('common.labels.email')}
                   </a>
                 )}
                 {activity.guestPhone && (
@@ -194,7 +205,7 @@ function ActivityDetailModal({ activity, onClose, onCheckIn, onCheckOut }) {
             {/* Footer action */}
             <div className="flex items-center justify-end gap-3 p-5 border-t border-border">
               <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-text hover:bg-bg rounded-lg transition-colors">
-                Close
+                {t('common.actions.close')}
               </button>
               <button
                 onClick={handleAction}
@@ -202,7 +213,7 @@ function ActivityDetailModal({ activity, onClose, onCheckIn, onCheckOut }) {
                 className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-contrast text-sm font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
               >
                 {isCheckin ? <UserCheck className="w-4 h-4" /> : <UserMinus className="w-4 h-4" />}
-                {working ? 'Saving…' : isCheckin ? 'Confirm check-in' : 'Confirm check-out'}
+                {working ? t('common.actions.saving') : isCheckin ? t('admin.dashboard.activity.confirmCheckin') : t('admin.dashboard.activity.confirmCheckout')}
               </button>
             </div>
           </motion.div>
@@ -213,6 +224,7 @@ function ActivityDetailModal({ activity, onClose, onCheckIn, onCheckOut }) {
 }
 
 function TodayActivity({ checkIns, checkOuts, onCheckIn, onCheckOut }) {
+  const { t } = useTranslation()
   const [selected, setSelected] = useState(null)
 
   const activities = [
@@ -228,14 +240,14 @@ function TodayActivity({ checkIns, checkOuts, onCheckIn, onCheckOut }) {
       className="bg-surface rounded-xl border border-border p-4 sm:p-6"
     >
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base sm:text-lg font-bold text-text">Today's Activity</h3>
-        <span className="text-xs text-muted">{activities.length} events</span>
+        <h3 className="text-base sm:text-lg font-bold text-text">{t('admin.dashboard.activity.title')}</h3>
+        <span className="text-xs text-muted">{t('admin.dashboard.activity.events', { count: activities.length })}</span>
       </div>
 
       {activities.length === 0 ? (
         <div className="text-center py-8 text-muted">
           <CalendarCheck className="w-10 h-10 mx-auto mb-2 opacity-50" />
-          <p className="text-sm">No scheduled activities for today</p>
+          <p className="text-sm">{t('admin.dashboard.activity.empty')}</p>
         </div>
       ) : (
         <div className="space-y-1 max-h-[320px] overflow-y-auto -mx-2">
@@ -251,7 +263,7 @@ function TodayActivity({ checkIns, checkOuts, onCheckIn, onCheckOut }) {
                 }`} />
                 <div className="min-w-0">
                   <p className="text-xs sm:text-sm font-medium text-text truncate">{activity.guestName}</p>
-                  <p className="text-xs text-muted">Room {activity.roomNumber} · {activity.time}</p>
+                  <p className="text-xs text-muted">{t('admin.dashboard.activity.roomAt', { room: activity.roomNumber, time: activity.time })}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
@@ -260,7 +272,7 @@ function TodayActivity({ checkIns, checkOuts, onCheckIn, onCheckOut }) {
                     ? 'bg-green-500/10 text-green-600 dark:text-green-400'
                     : 'bg-orange-500/10 text-orange-600 dark:text-orange-400'
                 }`}>
-                  {activity.type === 'checkin' ? 'In' : 'Out'}
+                  {activity.type === 'checkin' ? t('admin.dashboard.activity.in') : t('admin.dashboard.activity.out')}
                 </span>
                 <ChevronRight className="w-4 h-4 text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
@@ -280,14 +292,15 @@ function TodayActivity({ checkIns, checkOuts, onCheckIn, onCheckOut }) {
 }
 
 function RoomStatusOverview({ kpis, onOpenRooms }) {
+  const { t } = useTranslation()
   const { occupancyRate, totalRooms, occupiedRooms, availableRooms, cleaningRooms, maintenanceRooms } = kpis
   const attention = cleaningRooms + maintenanceRooms
 
   const statuses = [
-    { key: 'occupied', label: 'Occupied', color: 'bg-blue-500', count: occupiedRooms },
-    { key: 'available', label: 'Available', color: 'bg-green-500', count: availableRooms },
-    { key: 'cleaning', label: 'Cleaning', color: 'bg-purple-500', count: cleaningRooms },
-    { key: 'maintenance', label: 'Maintenance', color: 'bg-amber-500', count: maintenanceRooms }
+    { key: 'occupied', label: t('admin.dashboard.roomStatus.occupied'), color: 'bg-blue-500', count: occupiedRooms },
+    { key: 'available', label: t('admin.dashboard.roomStatus.available'), color: 'bg-green-500', count: availableRooms },
+    { key: 'cleaning', label: t('admin.dashboard.roomStatus.cleaning'), color: 'bg-purple-500', count: cleaningRooms },
+    { key: 'maintenance', label: t('admin.dashboard.roomStatus.maintenance'), color: 'bg-amber-500', count: maintenanceRooms }
   ]
 
   return (
@@ -298,16 +311,16 @@ function RoomStatusOverview({ kpis, onOpenRooms }) {
       className="bg-surface rounded-xl border border-border p-4 sm:p-6 flex flex-col"
     >
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base sm:text-lg font-bold text-text">Room Status</h3>
+        <h3 className="text-base sm:text-lg font-bold text-text">{t('admin.dashboard.roomStatus.title')}</h3>
         <button onClick={onOpenRooms} className="text-xs font-medium text-primary hover:underline inline-flex items-center gap-1">
-          Manage <ArrowRight className="w-3 h-3" />
+          {t('admin.dashboard.roomStatus.manage')} <ArrowRight className="w-3 h-3" />
         </button>
       </div>
 
       {/* Occupancy headline */}
       <div className="flex items-end gap-3 mb-4">
         <span className="text-3xl sm:text-4xl font-bold text-text leading-none">{occupancyRate}%</span>
-        <span className="text-xs text-muted mb-1">occupancy · {occupiedRooms}/{totalRooms} rooms</span>
+        <span className="text-xs text-muted mb-1">{t('admin.dashboard.roomStatus.occupancyDetail', { occupied: occupiedRooms, total: totalRooms })}</span>
       </div>
 
       {/* Segmented bar */}
@@ -339,7 +352,9 @@ function RoomStatusOverview({ kpis, onOpenRooms }) {
           className="mt-4 flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 hover:underline"
         >
           <AlertTriangle className="w-3.5 h-3.5" />
-          {attention} {attention === 1 ? 'room needs' : 'rooms need'} attention
+          {attention === 1
+            ? t('admin.dashboard.roomStatus.attentionOne', { count: attention })
+            : t('admin.dashboard.roomStatus.attentionMany', { count: attention })}
         </button>
       )}
     </motion.div>
@@ -347,10 +362,11 @@ function RoomStatusOverview({ kpis, onOpenRooms }) {
 }
 
 function QuickActions({ kpis, onNavigate }) {
+  const { t } = useTranslation()
   const actions = [
-    { icon: Bell, label: 'Pending services', value: kpis.pendingServices, view: 'services', urgent: kpis.pendingServices > 5, color: 'text-orange-500', bg: 'bg-orange-500/10' },
-    { icon: Sparkles, label: 'Pending housekeeping', value: kpis.pendingHousekeeping, view: 'housekeeping', urgent: kpis.pendingHousekeeping > 5, color: 'text-purple-500', bg: 'bg-purple-500/10' },
-    { icon: Package, label: 'Low stock items', value: kpis.lowStockItems, view: 'inventory', urgent: kpis.lowStockItems > 0, color: 'text-amber-500', bg: 'bg-amber-500/10' }
+    { icon: Bell, label: t('admin.dashboard.quickActions.pendingServices'), value: kpis.pendingServices, view: 'services', urgent: kpis.pendingServices > 5, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+    { icon: Sparkles, label: t('admin.dashboard.quickActions.pendingHousekeeping'), value: kpis.pendingHousekeeping, view: 'housekeeping', urgent: kpis.pendingHousekeeping > 5, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+    { icon: Package, label: t('admin.dashboard.quickActions.lowStock'), value: kpis.lowStockItems, view: 'inventory', urgent: kpis.lowStockItems > 0, color: 'text-amber-500', bg: 'bg-amber-500/10' }
   ]
 
   return (
@@ -361,9 +377,9 @@ function QuickActions({ kpis, onNavigate }) {
       className="bg-surface rounded-xl border border-border p-4 sm:p-6"
     >
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base sm:text-lg font-bold text-text">Quick actions</h3>
+        <h3 className="text-base sm:text-lg font-bold text-text">{t('admin.dashboard.quickActions.title')}</h3>
         <span className="inline-flex items-center gap-1.5 text-xs text-muted">
-          <Users className="w-3.5 h-3.5" /> {kpis.onDutyStaff} on duty
+          <Users className="w-3.5 h-3.5" /> {t('admin.dashboard.quickActions.onDuty', { count: kpis.onDutyStaff })}
         </span>
       </div>
 
@@ -388,20 +404,36 @@ function QuickActions({ kpis, onNavigate }) {
 }
 
 export default function AdminDashboard() {
-  const { getKPIs, updateReservation } = useAdminData()
+  const { getKPIs, reservations, rooms, reservationsStore } = useAdminData()
   const { setView } = useAdmin()
+  const { t } = useTranslation()
   const kpis = getKPIs()
+  const [station, setStation] = useState(null)
 
-  const handleCheckIn = (id) => updateReservation(id, { status: 'checked-in' })
-  const handleCheckOut = (id) => updateReservation(id, { status: 'checked-out' })
+  const availableRooms = useMemo(
+    () => rooms.filter((r) => r.status === 'available').map((r) => ({ id: r.id, number: r.roomNumber, floor: r.floor, type: r.type })),
+    [rooms]
+  )
+
+  // Check-in opens the shared station wizard; check-out is a quick confirm.
+  const handleCheckIn = (activity) => setStation(activity)
+  const handleCheckOut = (id) => reservationsStore.checkOut(id, 'admin')
+
+  const stationReservation = station ? reservations.find((r) => r.id === station.id) || station : null
+  const handleStationComplete = ({ station: stationData, room, digitalKey, keyCards, mobileKey }) => {
+    if (station) reservationsStore.checkIn(station.id, { station: stationData, room, digitalKey, keyCards, mobileKey, by: 'admin' })
+  }
+  const handleStationSave = (partial) => {
+    if (station) reservationsStore.saveStation(station.id, partial, 'admin')
+  }
 
   const kpiCards = [
-    { id: 'occupancy', label: 'Current Occupancy', value: `${kpis.occupancyRate}%`, icon: Building2, color: 'bg-blue-500', change: '+5%', trend: 'up' },
-    { id: 'available', label: 'Available Rooms', value: kpis.availableRooms.toString(), icon: BedDouble, color: 'bg-green-500' },
-    { id: 'reservations', label: 'Active Reservations', value: kpis.activeReservations.toString(), icon: CalendarCheck, color: 'bg-purple-500' },
-    { id: 'services', label: 'Pending Services', value: kpis.pendingServices.toString(), icon: Bell, color: kpis.pendingServices > 5 ? 'bg-red-500' : 'bg-orange-500' },
-    { id: 'checkins', label: "Today's Check-ins", value: kpis.todayCheckIns.toString(), icon: UserCheck, color: 'bg-teal-500' },
-    { id: 'checkouts', label: "Today's Check-outs", value: kpis.todayCheckOuts.toString(), icon: UserMinus, color: 'bg-rose-500' }
+    { id: 'occupancy', label: t('admin.dashboard.kpis.occupancy'), value: `${kpis.occupancyRate}%`, icon: Building2, color: 'bg-blue-500', change: '+5%', trend: 'up' },
+    { id: 'available', label: t('admin.dashboard.kpis.available'), value: kpis.availableRooms.toString(), icon: BedDouble, color: 'bg-green-500' },
+    { id: 'reservations', label: t('admin.dashboard.kpis.reservations'), value: kpis.activeReservations.toString(), icon: CalendarCheck, color: 'bg-purple-500' },
+    { id: 'services', label: t('admin.dashboard.kpis.services'), value: kpis.pendingServices.toString(), icon: Bell, color: kpis.pendingServices > 5 ? 'bg-red-500' : 'bg-orange-500' },
+    { id: 'checkins', label: t('admin.dashboard.kpis.checkins'), value: kpis.todayCheckIns.toString(), icon: UserCheck, color: 'bg-teal-500' },
+    { id: 'checkouts', label: t('admin.dashboard.kpis.checkouts'), value: kpis.todayCheckOuts.toString(), icon: UserMinus, color: 'bg-rose-500' }
   ]
 
   return (
@@ -427,6 +459,17 @@ export default function AdminDashboard() {
         <RoomStatusOverview kpis={kpis} onOpenRooms={() => setView('rooms')} />
         <QuickActions kpis={kpis} onNavigate={setView} />
       </div>
+
+      {/* Shared check-in station (opened from Today's Activity) */}
+      <CheckInStation
+        open={!!station}
+        onClose={() => setStation(null)}
+        reservation={stationReservation}
+        mode="reception"
+        availableRooms={availableRooms}
+        onComplete={handleStationComplete}
+        onSaveProgress={handleStationSave}
+      />
     </div>
   )
 }

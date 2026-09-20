@@ -14,12 +14,11 @@ import {
 } from 'lucide-react'
 import ServiceRequestForm from '../pages/ServiceRequestForm'
 import ExcursionBookingForm from '../pages/ExcursionBookingForm'
+import { useTranslation } from '../i18n/LanguageProvider'
 
 const QUICK_SERVICES = [
   {
     id: 'room-service',
-    name: 'Room Service',
-    description: 'Order food & beverages to your room 24/7',
     icon: Utensils,
     color: 'text-orange-500',
     bgColor: 'bg-orange-500/10',
@@ -27,8 +26,6 @@ const QUICK_SERVICES = [
   },
   {
     id: 'housekeeping',
-    name: 'Housekeeping',
-    description: 'Extra towels, cleaning, or amenities',
     icon: Sparkles,
     color: 'text-blue-500',
     bgColor: 'bg-blue-500/10',
@@ -36,8 +33,6 @@ const QUICK_SERVICES = [
   },
   {
     id: 'spa',
-    name: 'Spa & Wellness',
-    description: 'Book relaxing treatments and massages',
     icon: Waves,
     color: 'text-teal-500',
     bgColor: 'bg-teal-500/10',
@@ -45,8 +40,6 @@ const QUICK_SERVICES = [
   },
   {
     id: 'excursions',
-    name: 'Excursions',
-    description: 'Discover amazing local experiences',
     icon: Compass,
     color: 'text-purple-500',
     bgColor: 'bg-purple-500/10',
@@ -54,8 +47,6 @@ const QUICK_SERVICES = [
   },
   {
     id: 'facilities',
-    name: 'Facilities',
-    description: 'Reserve gym, pool, or meeting rooms',
     icon: Building2,
     color: 'text-green-500',
     bgColor: 'bg-green-500/10',
@@ -63,8 +54,6 @@ const QUICK_SERVICES = [
   },
   {
     id: 'maintenance',
-    name: 'Maintenance',
-    description: 'Report issues or request repairs',
     icon: Wrench,
     color: 'text-gray-500',
     bgColor: 'bg-gray-500/10',
@@ -73,6 +62,7 @@ const QUICK_SERVICES = [
 ]
 
 export default function GuestServicesSection({ onOpenPortal }) {
+  const { t } = useTranslation()
   const [activeModal, setActiveModal] = useState(null) // 'service' | 'excursion' | null
   const [preselectedService, setPreselectedService] = useState(null)
 
@@ -110,10 +100,10 @@ export default function GuestServicesSection({ onOpenPortal }) {
             className="text-center mb-12"
           >
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif text-primary mb-4">
-              Guest Services
+              {t('landing.services.title')}
             </h2>
             <p className="text-base md:text-lg text-muted max-w-2xl mx-auto">
-              Everything you need for a perfect stay, just one click away
+              {t('landing.services.subtitle')}
             </p>
           </motion.div>
 
@@ -137,10 +127,10 @@ export default function GuestServicesSection({ onOpenPortal }) {
                     <Icon className={`w-6 h-6 ${service.color}`} />
                   </div>
                   <h3 className="font-semibold text-primary text-sm mb-1 group-hover:text-accent transition-colors">
-                    {service.name}
+                    {t(`landing.services.quick.${service.id}.name`)}
                   </h3>
                   <p className="text-xs text-muted line-clamp-2">
-                    {service.description}
+                    {t(`landing.services.quick.${service.id}.description`)}
                   </p>
                 </motion.button>
               )
@@ -159,7 +149,7 @@ export default function GuestServicesSection({ onOpenPortal }) {
               onClick={() => setActiveModal('service')}
               className="btn-primary flex items-center gap-2"
             >
-              Request a Service
+              {t('landing.services.requestService')}
               <ArrowRight className="w-4 h-4" />
             </button>
             <button
@@ -167,7 +157,7 @@ export default function GuestServicesSection({ onOpenPortal }) {
               className="btn-secondary flex items-center gap-2"
             >
               <Compass className="w-4 h-4" />
-              Book an Excursion
+              {t('landing.services.bookExcursion')}
             </button>
           </motion.div>
 
@@ -181,7 +171,7 @@ export default function GuestServicesSection({ onOpenPortal }) {
           >
             <p className="text-sm text-muted flex items-center justify-center gap-2">
               <Phone className="w-4 h-4" />
-              Need immediate help? Call the front desk: <strong className="text-accent">ext. 0</strong>
+              {t('landing.services.helpNote')} <strong className="text-accent">{t('landing.services.ext')}</strong>
             </p>
           </motion.div>
         </div>

@@ -14,6 +14,8 @@ import {
   SlidersHorizontal
 } from 'lucide-react'
 import menuData from '../../../data/menuItems.json'
+import { useTranslation } from '../../../i18n/LanguageProvider'
+import { useCurrency } from '../../../hooks/useCurrency'
 import CartDrawer from './CartDrawer'
 import OrderConfirmation from './OrderConfirmation'
 
@@ -36,6 +38,8 @@ function DietBadge({ icon: Icon, label }) {
 }
 
 function MenuCard({ item, qty, onInc, onDec }) {
+  const { t } = useTranslation()
+  const { format } = useCurrency()
   return (
     <motion.div
       layout
@@ -51,12 +55,12 @@ function MenuCard({ item, qty, onInc, onDec }) {
         {item.popular && (
           <span className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full bg-white/90 text-accent">
             <Star className="w-3 h-3 fill-accent text-accent" />
-            Popular
+            {t('client.menu.popular')}
           </span>
         )}
         {!item.available && (
           <span className="absolute top-2.5 right-2.5 text-[10px] font-bold px-2 py-1 rounded-full bg-black/70 text-white">
-            Sold out
+            {t('client.menu.soldOut')}
           </span>
         )}
       </div>
@@ -64,21 +68,21 @@ function MenuCard({ item, qty, onInc, onDec }) {
       <div className="p-4 flex flex-col flex-1">
         <div className="flex items-start justify-between gap-2 mb-1">
           <h3 className="font-bold leading-tight">{item.name}</h3>
-          <span className="font-bold text-accent whitespace-nowrap">${item.price}</span>
+          <span className="font-bold text-accent whitespace-nowrap">{format(item.price)}</span>
         </div>
         <p className="text-sm text-muted line-clamp-2 mb-3">{item.description}</p>
 
         {/* Diet badges */}
         {(item.vegetarian || item.glutenFree) && (
           <div className="flex flex-wrap gap-1 mb-3">
-            {item.vegetarian && <DietBadge icon={Leaf} label="Vegetarian" />}
-            {item.glutenFree && <DietBadge icon={WheatOff} label="Gluten-free" />}
+            {item.vegetarian && <DietBadge icon={Leaf} label={t('client.menu.vegetarian')} />}
+            {item.glutenFree && <DietBadge icon={WheatOff} label={t('client.menu.glutenFree')} />}
           </div>
         )}
 
         {item.allergens.length > 0 && (
           <p className="text-[11px] text-muted mb-3 capitalize">
-            Contains: {item.allergens.join(', ')}
+            {t('client.menu.contains', { list: item.allergens.join(', ') })}
           </p>
         )}
 
@@ -91,7 +95,7 @@ function MenuCard({ item, qty, onInc, onDec }) {
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-accent text-white font-semibold hover:bg-accent/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Plus className="w-4 h-4" />
-              Add
+              {t('client.menu.add')}
             </button>
           ) : (
             <div className="flex items-center justify-between bg-bg rounded-xl p-1">
@@ -101,7 +105,7 @@ function MenuCard({ item, qty, onInc, onDec }) {
               >
                 <Minus className="w-4 h-4" />
               </button>
-              <span className="font-bold">{qty} in cart</span>
+              <span className="font-bold">{t('client.menu.inCart', { count: qty })}</span>
               <button
                 onClick={() => onInc(item.id)}
                 className="w-9 h-9 rounded-lg bg-surface flex items-center justify-center hover:bg-accent/10 transition-colors"
@@ -124,8 +128,11 @@ export default function MenuBrowser({
   menu = menuData,
   venueName = 'Room Service',
   serviceType = 'room', // 'room' (deliver to room) | 'table' (dine-in)
-  title = 'Restaurant Menu'
+  title
 }) {
+  const { t } = useTranslation()
+  const { format } = useCurrency()
+  const resolvedTitle = title || t('client.menu.defaultTitle')
   const MENU_ITEMS = useMemo(() => menu.items || [], [menu])
   const categories = useMemo(() => {
     if (menu.categories) return menu.categories
@@ -267,11 +274,11 @@ export default function MenuBrowser({
                   <QrCode className="w-5 h-5 text-accent" />
                 </div>
                 <div className="min-w-0">
-                  <h1 className="font-bold text-lg leading-tight truncate">{title}</h1>
+                  <h1 className="font-bold text-lg leading-tight truncate">{resolvedTitle}</h1>
                   <p className="text-xs text-muted">
                     {serviceType === 'table'
-                      ? `Dine-in at ${venueName} · charged to your room`
-                      : `Order to Room ${room} · pay at checkout`}
+                      ? t('client.menu.dineInSubtitle', { venue: venueName })
+                      : t('client.menu.roomSubtitle', { room })}
                   </p>
                 </div>
               </div>
@@ -282,7 +289,7 @@ export default function MenuBrowser({
                     className="relative flex items-center gap-2 bg-accent text-white pl-3 pr-4 py-2 rounded-xl font-semibold hover:bg-accent/90 transition"
                   >
                     <ShoppingBag className="w-5 h-5" />
-                    <span className="hidden sm:inline">${total}</span>
+                    <span className="hidden sm:inline">{format(total)}</span>
                     {itemCount > 0 && (
                       <span className="absolute -top-2 -right-2 min-w-[20px] h-5 px-1 rounded-full bg-red-500 text-white text-[11px] font-bold grid place-items-center">
                         {itemCount}
@@ -293,7 +300,7 @@ export default function MenuBrowser({
                 <button
                   onClick={handleCloseAll}
                   className="p-2 rounded-lg hover:bg-bg text-muted hover:text-primary transition-colors"
-                  title="Close menu"
+                  title={t('client.menu.closeMenu')}
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -314,7 +321,7 @@ export default function MenuBrowser({
                       type="text"
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      placeholder="Search dishes…"
+                      placeholder={t('client.menu.searchPlaceholder')}
                       className="w-full pl-10 pr-4 py-2.5 bg-surface rounded-xl border border-border focus:border-accent outline-none text-sm"
                     />
                   </div>
@@ -327,7 +334,7 @@ export default function MenuBrowser({
                     }`}
                   >
                     <SlidersHorizontal className="w-4 h-4" />
-                    <span className="text-sm font-medium hidden sm:inline">Filters</span>
+                    <span className="text-sm font-medium hidden sm:inline">{t('client.menu.filters')}</span>
                     {activeFilters > 0 && (
                       <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-accent text-white text-[10px] font-bold grid place-items-center">
                         {activeFilters}
@@ -348,13 +355,13 @@ export default function MenuBrowser({
                       <div className="bg-surface rounded-xl border border-border p-4 space-y-4">
                         <div>
                           <p className="text-xs font-semibold text-muted uppercase tracking-wide mb-2">
-                            Dietary
+                            {t('client.menu.dietary')}
                           </p>
                           <div className="flex flex-wrap gap-2">
                             {[
-                              { key: 'popular', label: 'Popular', icon: Star },
-                              { key: 'vegetarian', label: 'Vegetarian', icon: Leaf },
-                              { key: 'glutenFree', label: 'Gluten-free', icon: WheatOff }
+                              { key: 'popular', label: t('client.menu.popular'), icon: Star },
+                              { key: 'vegetarian', label: t('client.menu.vegetarian'), icon: Leaf },
+                              { key: 'glutenFree', label: t('client.menu.glutenFree'), icon: WheatOff }
                             ].map((d) => {
                               const Icon = d.icon
                               const active = dietOnly.includes(d.key)
@@ -378,7 +385,7 @@ export default function MenuBrowser({
 
                         <div>
                           <p className="text-xs font-semibold text-muted uppercase tracking-wide mb-2">
-                            Avoid allergens
+                            {t('client.menu.avoidAllergens')}
                           </p>
                           <div className="flex flex-wrap gap-2">
                             {ALL_ALLERGENS.map((a) => {
@@ -408,7 +415,7 @@ export default function MenuBrowser({
                             }}
                             className="text-sm text-accent font-medium hover:underline"
                           >
-                            Clear all filters
+                            {t('client.menu.clearFilters')}
                           </button>
                         )}
                       </div>
@@ -418,7 +425,7 @@ export default function MenuBrowser({
 
                 {/* Category tabs */}
                 <div className="flex gap-2 overflow-x-auto pb-2 mb-5 -mx-4 px-4">
-                  {[{ id: 'all', name: 'All' }, ...categories].map((cat) => (
+                  {[{ id: 'all', name: t('client.menu.all') }, ...categories].map((cat) => (
                     <button
                       key={cat.id}
                       onClick={() => setCategory(cat.id)}
@@ -452,8 +459,8 @@ export default function MenuBrowser({
                 ) : (
                   <div className="text-center py-20">
                     <UtensilsCrossed className="w-12 h-12 mx-auto text-muted mb-4" />
-                    <h3 className="font-bold mb-1">No dishes match your filters</h3>
-                    <p className="text-sm text-muted">Try adjusting your search or filters.</p>
+                    <h3 className="font-bold mb-1">{t('client.menu.noResultsTitle')}</h3>
+                    <p className="text-sm text-muted">{t('client.menu.noResultsBody')}</p>
                   </div>
                 )}
               </>
@@ -472,9 +479,9 @@ export default function MenuBrowser({
               >
                 <span className="flex items-center gap-2">
                   <ShoppingBag className="w-5 h-5" />
-                  {itemCount} {itemCount === 1 ? 'item' : 'items'}
+                  {itemCount} {itemCount === 1 ? t('client.menu.item') : t('client.menu.items')}
                 </span>
-                <span>View order · ${total}</span>
+                <span>{t('client.menu.viewOrder', { total: format(total) })}</span>
               </motion.button>
             )}
           </AnimatePresence>

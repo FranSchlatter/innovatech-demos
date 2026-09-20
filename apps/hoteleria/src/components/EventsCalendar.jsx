@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect, useRef, forwardRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   CalendarDays,
@@ -16,6 +16,7 @@ import {
   GalleryHorizontalEnd
 } from 'lucide-react'
 import { useEvents } from '../hooks/useEvents'
+import { useTranslation } from '../i18n/LanguageProvider'
 import {
   EVENT_CATEGORIES,
   EVENT_CATEGORY_OPTIONS,
@@ -35,7 +36,8 @@ import {
 // swipe/drag left→right with snap) and a classic grid — toggle between them.
 
 // ---------------------------------------------------------------- Event card
-function EventCard({ event, today, isRegistered, onRegister, onUnregister, mode, index }) {
+const EventCard = forwardRef(function EventCard({ event, today, isRegistered, onRegister, onUnregister, mode, index }, ref) {
+  const { t } = useTranslation()
   const cfg = EVENT_CATEGORIES[event.category] || EVENT_CATEGORIES.social
   const CatIcon = cfg.icon
   const left = spotsLeft(event)
@@ -62,6 +64,7 @@ function EventCard({ event, today, isRegistered, onRegister, onUnregister, mode,
 
   return (
     <motion.article
+      ref={ref}
       layout
       exit={{ opacity: 0, scale: 0.95 }}
       {...motionProps}
@@ -87,11 +90,11 @@ function EventCard({ event, today, isRegistered, onRegister, onUnregister, mode,
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
         <span className={`absolute top-4 left-4 inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full text-white ${cfg.solid}`}>
           <CatIcon className="w-3.5 h-3.5" />
-          {cfg.label}
+          {t(`landing.events.categories.${event.category}`)}
         </span>
         {recurLabel && (
           <span className="absolute top-4 right-4 inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-sm text-white">
-            <Repeat className="w-3 h-3" /> Semanal
+            <Repeat className="w-3 h-3" /> {t('landing.events.weekly')}
           </span>
         )}
       </div>
@@ -106,7 +109,7 @@ function EventCard({ event, today, isRegistered, onRegister, onUnregister, mode,
           <li className="flex items-center gap-2">
             <CalendarDays className="w-4 h-4 text-accent flex-shrink-0" />
             <span className="capitalize">
-              {recurLabel ? `Próximo: ${formatEventDate(shownDate, today)}` : formatEventDate(shownDate, today)}
+              {recurLabel ? `${t('landing.events.nextPrefix')} ${formatEventDate(shownDate, today)}` : formatEventDate(shownDate, today)}
             </span>
           </li>
           <li className="flex items-center gap-2">
@@ -124,11 +127,11 @@ function EventCard({ event, today, isRegistered, onRegister, onUnregister, mode,
           <div className="flex items-center gap-1.5 text-sm mb-3">
             <Users className="w-4 h-4 text-muted" />
             {full ? (
-              <span className="font-semibold text-red-600 dark:text-red-400">Sin cupos disponibles</span>
+              <span className="font-semibold text-red-600 dark:text-red-400">{t('landing.events.full')}</span>
             ) : left <= 5 ? (
-              <span className="font-semibold text-amber-600 dark:text-amber-400">¡Últimos {left} lugares!</span>
+              <span className="font-semibold text-amber-600 dark:text-amber-400">{t('landing.events.lastSpots', { n: left })}</span>
             ) : (
-              <span className="text-muted"><span className="font-semibold text-text">{left}</span> lugares disponibles</span>
+              <span className="text-muted"><span className="font-semibold text-text">{left}</span> {t('landing.events.spotsLeft')}</span>
             )}
           </div>
 
@@ -137,7 +140,7 @@ function EventCard({ event, today, isRegistered, onRegister, onUnregister, mode,
               onClick={() => onUnregister(event.id)}
               className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-semibold bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/30 hover:bg-green-500/20 transition-colors"
             >
-              <Check className="w-4 h-4" /> Estás registrado · Cancelar
+              <Check className="w-4 h-4" /> {t('landing.events.registeredCancel')}
             </button>
           ) : (
             <button
@@ -149,19 +152,20 @@ function EventCard({ event, today, isRegistered, onRegister, onUnregister, mode,
                   : 'bg-accent text-bg hover:opacity-90'
               }`}
             >
-              {full ? 'Sin cupos' : <>Registrarme <CalendarCheck className="w-4 h-4" /></>}
+              {full ? t('landing.events.noSpots') : <>{t('landing.events.register')} <CalendarCheck className="w-4 h-4" /></>}
             </button>
           )}
         </div>
       </div>
     </motion.article>
   )
-}
+})
 
 // ---------------------------------------------------------------- Carousel
 // Horizontal scroll-snap track: native swipe on touch, drag on desktop, and
 // arrow buttons that scroll by roughly one card. Arrows disable at the ends.
 function EventsCarousel({ events, ...cardProps }) {
+  const { t } = useTranslation()
   const trackRef = useRef(null)
   const [atStart, setAtStart] = useState(true)
   const [atEnd, setAtEnd] = useState(false)
@@ -199,7 +203,7 @@ function EventsCarousel({ events, ...cardProps }) {
           <button
             onClick={() => scrollByCards(-1)}
             disabled={atStart}
-            aria-label="Anterior"
+            aria-label={t('landing.events.prev')}
             className="hidden md:flex absolute -left-4 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full items-center justify-center bg-surface border border-border shadow-medium text-text hover:bg-accent hover:text-bg disabled:opacity-0 transition-all"
           >
             <ChevronLeft className="w-5 h-5" />
@@ -207,7 +211,7 @@ function EventsCarousel({ events, ...cardProps }) {
           <button
             onClick={() => scrollByCards(1)}
             disabled={atEnd}
-            aria-label="Siguiente"
+            aria-label={t('landing.events.next')}
             className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full items-center justify-center bg-surface border border-border shadow-medium text-text hover:bg-accent hover:text-bg disabled:opacity-0 transition-all"
           >
             <ChevronRight className="w-5 h-5" />
@@ -229,6 +233,7 @@ function EventsCarousel({ events, ...cardProps }) {
 
 // ---------------------------------------------------------------- Section
 export default function EventsCalendar() {
+  const { t } = useTranslation()
   const { upcomingEvents, isRegistered, registerForEvent, unregisterFromEvent } = useEvents()
   const [category, setCategory] = useState('all')
   const [view, setView] = useState('carousel') // 'carousel' | 'grid'
@@ -282,11 +287,11 @@ export default function EventsCalendar() {
           className="text-center mb-12"
         >
           <span className="inline-flex items-center gap-2 text-xs font-semibold tracking-wide uppercase text-accent mb-3">
-            <Sparkles className="w-4 h-4" /> Agenda del hotel
+            <Sparkles className="w-4 h-4" /> {t('landing.events.eyebrow')}
           </span>
-          <h2 className="heading-md mb-4">Actividades del hotel</h2>
+          <h2 className="heading-md mb-4">{t('landing.events.title')}</h2>
           <p className="text-lg text-muted max-w-2xl mx-auto">
-            Experiencias curadas para vivir durante tu estadía. Sumate a las que más te gusten desde acá.
+            {t('landing.events.subtitle')}
           </p>
         </motion.div>
 
@@ -300,7 +305,7 @@ export default function EventsCalendar() {
                   category === 'all' ? 'bg-accent text-bg' : 'bg-bg border border-border text-muted hover:text-text'
                 }`}
               >
-                Todas
+                {t('landing.events.allCategories')}
               </button>
               {availableCategories.map((opt) => {
                 const OptIcon = opt.icon
@@ -314,7 +319,7 @@ export default function EventsCalendar() {
                     }`}
                   >
                     <OptIcon className="w-4 h-4" />
-                    {opt.label}
+                    {t(`landing.events.categories.${opt.value}`)}
                   </button>
                 )
               })}
@@ -331,7 +336,7 @@ export default function EventsCalendar() {
                 view === 'carousel' ? 'bg-accent text-bg' : 'text-muted hover:text-text'
               }`}
             >
-              <GalleryHorizontalEnd className="w-4 h-4" /> Carrusel
+              <GalleryHorizontalEnd className="w-4 h-4" /> {t('landing.events.viewCarousel')}
             </button>
             <button
               onClick={() => setView('grid')}
@@ -339,14 +344,14 @@ export default function EventsCalendar() {
                 view === 'grid' ? 'bg-accent text-bg' : 'text-muted hover:text-text'
               }`}
             >
-              <LayoutGrid className="w-4 h-4" /> Grilla
+              <LayoutGrid className="w-4 h-4" /> {t('landing.events.viewGrid')}
             </button>
           </div>
         </div>
 
         {/* Events */}
         {filtered.length === 0 ? (
-          <p className="text-center text-muted py-12">No hay actividades en esta categoría por ahora.</p>
+          <p className="text-center text-muted py-12">{t('landing.events.emptyCategory')}</p>
         ) : view === 'carousel' ? (
           <EventsCarousel key={category} events={filtered} {...cardProps} />
         ) : (
@@ -388,7 +393,7 @@ export default function EventsCalendar() {
             >
               <button
                 onClick={() => setConfirming(null)}
-                aria-label="Cerrar"
+                aria-label={t('landing.events.close')}
                 className="absolute top-4 right-4 p-2 rounded-full bg-black/20 text-white hover:bg-black/40 transition-colors z-10"
               >
                 <X className="w-5 h-5" />
@@ -405,9 +410,9 @@ export default function EventsCalendar() {
                 <div className="w-14 h-14 mx-auto mb-4 -mt-12 relative rounded-full bg-green-500 flex items-center justify-center shadow-medium ring-4 ring-surface">
                   <Check className="w-7 h-7 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-text mb-1">¡Registro confirmado!</h3>
+                <h3 className="text-xl font-bold text-text mb-1">{t('landing.events.confirmedTitle')}</h3>
                 <p className="text-sm text-muted mb-5">
-                  Te esperamos en <span className="font-semibold text-text">{confirming.name}</span>.
+                  {t('landing.events.confirmedBody', { name: confirming.name })}
                 </p>
 
                 <div className="rounded-lg bg-bg border border-border p-4 text-left space-y-2 text-sm text-muted mb-5">
@@ -426,7 +431,7 @@ export default function EventsCalendar() {
                   onClick={() => setConfirming(null)}
                   className="w-full px-4 py-3 rounded-lg font-semibold bg-accent text-bg hover:opacity-90 transition-opacity"
                 >
-                  Listo
+                  {t('landing.events.done')}
                 </button>
               </div>
             </motion.div>

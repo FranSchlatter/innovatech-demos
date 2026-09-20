@@ -3,7 +3,7 @@ import AdminSidebar from './AdminSidebar'
 import AdminHeader from './AdminHeader'
 import AdminDashboard from '../dashboard/AdminDashboard'
 import InboxManagement from '../inbox/InboxManagement'
-import AdjustmentSimulator from '../contracts/AdjustmentSimulator'
+import ContractsManagement from '../contracts/ContractsManagement'
 import OwnerLiquidations from '../liquidations/OwnerLiquidations'
 import PropertyManagement from '../properties/PropertyManagement'
 import PlatformPublishing from '../platforms/PlatformPublishing'
@@ -33,7 +33,7 @@ function AdminContent({ onExit, isDark, toggleTheme }) {
       case 'operations':
         return <OperationsManagement />
       case 'contracts':
-        return <AdjustmentSimulator />
+        return <ContractsManagement />
       case 'liquidations':
         return <OwnerLiquidations />
       case 'agents':

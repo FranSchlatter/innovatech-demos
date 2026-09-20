@@ -8,6 +8,7 @@ const VIEW_TITLES = {
   leads: 'Leads / CRM',
   visits: 'Agenda de visitas',
   operations: 'Operaciones',
+  contracts: 'Contratos de locación',
   agents: 'Equipo',
   users: 'Usuarios y Roles'
 }

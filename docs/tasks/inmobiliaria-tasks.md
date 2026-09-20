@@ -475,81 +475,84 @@ Investigar e implementar mejoras argentinas:
 
 ---
 
-## I23: Comparador side-by-side de propiedades
+## I23: Comparador side-by-side de propiedades ✅ HECHO (19 sep 2026)
 **Esfuerzo:** Medio (1.5-2 hrs)
-**Archivos:** Nuevo: components/PropertyComparator.jsx, PropertiesListPage.jsx
+**Archivos:** Nuevo: components/PropertyComparator.jsx. Editado: PropertiesListPage.jsx, PropertyCard.jsx
 
-- [ ] **Seleccion de propiedades**: en PropertiesListPage, boton "Comparar" en cada PropertyCard
-  - Al seleccionar 2-4 propiedades, aparece barra flotante abajo: "Comparar X propiedades" boton
-  - Badge con count de seleccionadas
-  - Boton "Limpiar seleccion"
-- [ ] **Vista comparativa** (modal grande o nueva seccion):
-  - Columnas lado a lado (2-4 propiedades)
-  - Filas de comparacion: Foto, Precio, Precio/m2, Superficie, Dormitorios, Banos, Antiguedad, Barrio, Cochera, Amenities, Estado
-  - Highlight de mejor valor en verde (menor precio, mas superficie, etc.)
-  - Si diferencia >20%, marcar en rojo/verde
-- [ ] **Acciones por propiedad en comparador**: "Ver detalle", "Agendar visita", "Quitar de comparacion"
-- [ ] Responsive: en mobile, stack vertical con swipe entre propiedades
+- [x] **Seleccion de propiedades**: toggle "Comparar"/"Comparando" en cada PropertyCard (nuevas props `onToggleCompare`/`isComparing`/`compareDisabled`, deshabilitado al llegar a 4)
+  - Barra flotante abajo (fija, `z-100`) al seleccionar ≥1: icono con badge de count, **thumbnails de las seleccionadas** con X para quitar, botón "Comparar" (deshabilitado <2 con hint), "Limpiar selección"
+  - El toast se corre a `bottom-24` mientras la barra está visible para no pisarse
+- [x] **Vista comparativa** (`PropertyComparator`, modal grande `max-w-6xl`, `bg-black/85`):
+  - Header por columna: foto + operación + título + precio + acciones + X para quitar
+  - Grid responsive con **columna de labels sticky-left** y **header sticky-top**; 2-4 columnas de propiedad. En mobile desborda → swipe horizontal (hint "Deslizá…")
+  - Filas: Operación, Tipo, Barrio, Precio, Precio/m², Sup. total, Sup. cubierta, Ambientes, Dormitorios, Baños, Cochera, Antigüedad, Orientación, Estado, Disponibilidad, Expensas, Amenities (count) + fila de **detalle de amenities** con chips
+  - **Highlight de mejor valor en verde** (check) según métrica (menor precio/precio-m²/expensas; mayor superficie/ambientes/dorm/baños/cochera/amenities; más nuevo)
+  - **Diferencia >20%** marca el peor valor en **rojo** con flecha; empates y <2 valores válidos no marcan
+  - **Guard de comparabilidad de precio**: si mezclan operación/moneda distinta, el precio NO corona ganador (nota al pie explicándolo) — no compara peras con manzanas
+- [x] **Acciones por propiedad en comparador**: "Ver" (→ detalle), "Agendar" (deshabilitado si no disponible), "Quitar" (X); cierran el modal y navegan vía `onSelectProperty`
+- [x] Responsive (scroll-swipe con labels pineados), dark/light por tokens, Escape + click-fuera cierran, body-scroll lock. Fills sólidos (alpha no-op de la app). Al quitar y quedar <2, el modal se cierra solo
 
-**Criterio de exito:** Seleccionar 2-4 propiedades y compararlas en tabla visual. Highlights de diferencias. Acciones directas.
+**Criterio de exito:** Seleccionar 2-4 propiedades y compararlas en tabla visual. Highlights de diferencias. Acciones directas. ✅ Build OK (1912 módulos), dev server transforma los 3 módulos sin errores. Verificación en navegador pendiente (no había Playwright en la sesión).
 
 ---
 
 ## I24: Simulador Ajuste — Mejoras
 **Esfuerzo:** Bajo-Medio (1 hr)
-**Archivos:** AdjustmentSimulator.jsx (137 lineas), mockContracts.js
+**Archivos:** AdjustmentSimulator.jsx (reescrito ~430 lineas), mockContracts.js (+ engine de fechas/estado)
 
 Owner dijo "ME GUSTA" pero si se puede mejorar:
 
-- [ ] **Grafico de evolucion**: agregar chart visual con la proyeccion de cuotas a lo largo del contrato (barras o linea, CSS)
-- [ ] **Comparacion de indices**: boton "Comparar indices" que muestra las 3 proyecciones (UVA/ICL/IPC) para el mismo contrato lado a lado
-- [ ] **Indices reales mock**: mostrar valor actual de cada indice con fecha de ultimo dato (ej: "ICL: 1,234.56 — Dato al 01/09/2026")
-- [ ] **Alerta de ajuste proximo**: si el proximo ajuste es en < 30 dias, mostrar banner warning con fecha y estimacion
-- [ ] **Boton "Notificar inquilino"**: simula envio de notificacion con el monto del ajuste (toast)
-- [ ] Mejorar layout del recibo/preview haciendolo mas similar a un recibo real
+- [x] **Grafico de evolucion** (`EvolutionChart`): barras CSS animadas (Framer) con la cuota por período, eje Y con montos compactos ($k/$M), barras base vs ajustadas por color, marca "hoy" en el período vigente y `title` con detalle por barra. Escala 18–100% para que toda barra sea visible (gotcha altura% → columna `h-full` dentro de fila con alto fijo)
+- [x] **Comparacion de indices** (`CompareSection`): botón toggle "Comparar índices" que despliega gráfico **SVG multi-línea** (ICL oro / UVA verde / IPC azul, `vector-effect=non-scaling-stroke`, dots finales, "tu índice" resaltado) + tabla de cuota final por índice con highlight del más barato (verde) / más caro (rojo) y frase resumen del ahorro mensual. Mismo contrato, 3 escenarios
+- [x] **Indices reales mock**: ticker de 3 tarjetas seleccionables (reemplaza los botones de índice) con valor publicado + `%/mes` + "Dato al DD Mmm AAAA" (ICL 1.287,40 · UVA 1.794,06 · IPC 8.456,78). La tarjeta activa marca "Aplicado"
+- [x] **Alerta de ajuste proximo** (`NextAdjustmentBanner`): motor `contractStatus` calcula período vigente + próximo ajuste desde `startDate`/`freqMonths` vs `TODAY` (2026-09-19, TZ-safe). Si `<30 días` → banner warning (fecha + prev→nuevo + %/monto); si no, banner info neutro; si no hay más ajustes, aviso. CT-1041 dispara la alerta (12 días → 01 Oct)
+- [x] **Boton "Notificar inquilino"**: en el banner y en el recibo; toast (`useToast` compartido) "Notificación enviada a {inquilino}: nuevo alquiler {monto} desde {fecha}"
+- [x] **Recibo mejorado**: layout tipo comprobante real — franja de acento, cabecera con marca + folio (`CT-XXXX-NN`) + fecha de emisión, bloque inquilino/contrato/propiedad/período/índice, separadores punteados, línea de ajuste acumulado, mora editable con punitorio, TOTAL destacado y nota "sin validez fiscal". `tabular-nums` en montos
 
-**Criterio de exito:** Grafico de evolucion. Comparacion de 3 indices. Valores mock actualizados. Alerta proximo ajuste.
-
----
-
-## I25: Contratos vigentes — Tabla de gestion
-**Esfuerzo:** Medio (1.5-2 hrs)
-**Archivos:** Nuevo: admin/contracts/ContractsManagement.jsx, mockContracts.js (expandir)
-
-- [ ] Nuevo modulo admin: "Contratos" (separado del Simulador de Ajuste, o como tab dentro)
-- [ ] **Tabla de contratos vigentes**:
-  - Columnas: Propiedad | Inquilino | Propietario | Inicio | Vencimiento | Monto actual | Indice | Proximo ajuste | Estado
-  - Estado: Vigente / Por vencer (<90 dias) / Vencido / Rescindido
-  - Ordenable por columna
-  - Filtros: estado, indice, agente
-- [ ] **Click en contrato**: modal con detalle completo
-  - Datos del contrato (todas las clausulas)
-  - Historial de ajustes (tabla: fecha, indice aplicado, monto anterior, monto nuevo)
-  - Documentos asociados
-  - Botones: "Renovar" (cambio estado), "Rescindir" (cambio estado con fecha)
-- [ ] **Alertas automaticas**: banner arriba con contratos que vencen en < 90 dias
-- [ ] **Boton "Nuevo contrato"**: modal con todos los campos
-- [ ] Agregar a sidebar (si es modulo separado) o como tab en Contratos
-
-**Criterio de exito:** Tabla de contratos con estado visual. Alertas de vencimiento. Detalle con historial de ajustes. CRUD basico.
+**Criterio de exito:** Grafico de evolucion. Comparacion de 3 indices. Valores mock actualizados. Alerta proximo ajuste. ✅ Build OK (1912 módulos) · verificado en navegador (Chrome/Playwright): light+dark sin errores de consola, ticker/banner/recibo/chart/comparador y toast de notificación OK. Cambios aditivos en `mockContracts` → portal Locatario (I17) intacto.
 
 ---
 
-## I26: POIs cercanos a propiedad
+## I25: Contratos vigentes — Tabla de gestion ✅ HECHO (19 sep 2026)
 **Esfuerzo:** Medio (1.5-2 hrs)
-**Archivos:** PropertyDetailPage.jsx, properties.json (agregar campo pois[])
+**Archivos:** Nuevo: admin/contracts/ContractsManagement.jsx, hooks/useContracts.js, scripts/test-contracts.mjs, scripts/smoke-contracts.mjs. Editado: mockContracts.js (expandido), admin/contracts/AdjustmentSimulator.jsx (+prop initialContractId), layout/AdminLayout.jsx + AdminSidebar.jsx + AdminHeader.jsx
 
-- [ ] Agregar campo `pois[]` a properties.json (o archivo separado):
-  - Por propiedad: 4-6 POIs cercanos con: name, type (school/hospital/market/park/transport/gym/restaurant), distance (ej: "200m", "3 cuadras"), walkTime (ej: "5 min")
-- [ ] **Seccion en PropertyDetailPage**: "Que hay cerca"
-  - Grid de cards por POI: icono segun tipo, nombre, distancia, tiempo caminando
-  - Agrupados por tipo: Educacion, Salud, Transporte, Comercio, Recreacion
-  - Estilo limpio con iconos de Lucide
-- [ ] **Score de ubicacion**: calcular puntaje 1-10 basado en cantidad y variedad de POIs
-  - Mostrar como badge prominente: "Ubicacion: 8.5/10" con barra visual
-- [ ] Dark mode, responsive (2 columnas md, 1 mobile)
+El sidebar "Ajustes" pasó a llamarse **"Contratos"** y ahora abre un contenedor con **2 tabs**: "Contratos vigentes" (la gestión nueva) + "Simulador de ajuste" (el AdjustmentSimulator de I24, intacto). Todo el modelo financiero se deriva con el MISMO motor de ajuste (`projectAdjustments`/`contractStatus`) → la tabla muestra los mismos números que el simulador y los portales.
 
-**Criterio de exito:** Seccion "Que hay cerca" en detalle de propiedad con POIs categorizado. Score de ubicacion. Info util para el comprador/inquilino.
+- [x] Nuevo modulo admin: "Contratos" como contenedor tabbed (gestión + simulador). Icono `FileText` en sidebar
+- [x] **mockContracts.js expandido (aditivo)**: los 3 contratos que usa el simulador/portal Locatario quedan intactos en sus campos núcleo; se enriquecen con propiedad/dirección/inquilino (email/tel)/propietario (CUIT)/agente/depósito/cláusulas extra, y se agregan 5 contratos más para cubrir todos los estados. Helpers nuevos: `CONTRACT_STATUSES`/`CONTRACT_STATUS`, `contractEndDate`, `contractClauses`, `contractDocuments` (statuses deterministas seedeados por id), `deriveContract` (motor compartido)
+- [x] **Tabla de contratos vigentes**:
+  - Columnas: Propiedad | Inquilino | Propietario | Inicio | Vencimiento | Monto actual | Índice | Próx. ajuste | Estado (responsive: oculta owner/inicio/índice/próx en < xl/lg; cards en mobile)
+  - Estado con motor: Vigente / Por vencer (<90 días) / Vencido / Rescindido (badges sólidos por tono — alpha no-op de la app)
+  - Ordenable por cualquier columna (toggle asc/desc con ícono)
+  - Filtros: estado, índice, agente + búsqueda (propiedad/inquilino/propietario/N°) + "Limpiar"
+- [x] **Click en contrato**: `ContractDetailModal` (xl) con detalle completo
+  - Datos del contrato + todas las cláusulas + thumbnail de la propiedad (lookup properties.json)
+  - Historial de ajustes (tabla fecha · índice · monto anterior · monto nuevo · var% · aplicado/programado) derivado del motor
+  - Documentos asociados (verificado/pendiente + descargar con toast)
+  - Botones: "Simular ajuste" (salta al tab simulador con el contrato preseleccionado — solo contratos seed), "Renovar" (`RenewModal`: extiende vencimiento 12/24/36m) y "Rescindir" (`TerminateModal`: DatePicker + motivo)
+- [x] **Alertas automáticas**: banner warning arriba con los contratos que vencen en < 90 días (nombre + días + "Renovar" rápido)
+- [x] **Botón "Nuevo contrato"**: `NewContractModal` con autocompletado desde la cartera de alquileres (properties.json), partes, agente, plazo, índice, frecuencia, alquiler base + depósito, validación de obligatorios
+- [x] **KPIs**: Vigentes · Por vencer · Renta mensual de la cartera activa · Próximo ajuste más cercano
+- [x] Persistencia en localStorage (`useContracts`, key `terranova-contracts-v1`, normalize schema-safe + "Restaurar demo"). Crear/renovar/rescindir persisten
+
+**Criterio de exito:** Tabla de contratos con estado visual. Alertas de vencimiento. Detalle con historial de ajustes. CRUD basico. ✅ Build OK (1914 módulos). Motor verificado (`test-contracts.mjs`: 52/52 checks — 4 vigentes, 2 por vencer, 1 vencido, 1 rescindido). Smoke en navegador (`smoke-contracts.mjs`, playwright-core + Chrome): tabla/filtros/detalle/renovar/nuevo/simulador/dark, 0 errores de consola.
+
+---
+
+## I26: POIs cercanos a propiedad ✅ HECHO (19 sep 2026)
+**Esfuerzo:** Medio (1.5-2 hrs)
+**Archivos:** data/pois.js (nuevo), components/NearbyPlaces.jsx (nuevo), pages/PropertyDetailPage.jsx, scripts/smoke-pois.mjs (nuevo)
+
+- [x] Motor de POIs en `data/pois.js` (patrón seedeado por id, como mockExcursions/mockValuation):
+  - Pools curados con landmarks reales por barrio (14 barrios). Selección determinista 5-7 POIs por propiedad, con cobertura de categorías garantizada.
+  - Tipos: school/university/hospital/pharmacy/transport/market/mall/restaurant/park/gym. Distancia + `travel` (a pie ≤1200m, en auto si más) derivados por zona (urban/premium/coastal/suburban/gated).
+- [x] **Sección en PropertyDetailPage**: "Qué hay cerca" (nuevo `NearbyPlaces.jsx`)
+  - Grid de cards por POI: icono Lucide según tipo, nombre, distancia, tiempo (a pie/auto). Agrupados por categoría (Educación/Salud/Transporte/Comercio/Recreación).
+- [x] **Score de ubicación** 1-10 = variedad(4) + cantidad(2.5) + proximidad(3.5); label cualitativo + barra visual. Barrios cerrados bajan a ~6, urbanos 8-9.3.
+- [x] Dark/light mode OK, responsive (2 col md, 1 mobile). Build OK. `scripts/smoke-pois.mjs` (playwright-core): sección, score, 5 categorías, distancias/tiempos, toggle de tema y mobile → SMOKE PASS, 0 errores de consola.
+
+**Criterio de exito:** ✅ Seccion "Que hay cerca" en detalle de propiedad con POIs categorizado. Score de ubicacion. Info util para el comprador/inquilino.
 
 ---
 

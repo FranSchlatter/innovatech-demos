@@ -22,6 +22,8 @@ import {
   Utensils,
   X
 } from 'lucide-react'
+import { useTranslation } from '../i18n/LanguageProvider'
+import { useCurrency } from '../hooks/useCurrency'
 
 // Sample excursion data — exported so the Guest Portal can render preview cards
 // that deep-link into this form with an excursion preselected.
@@ -101,6 +103,8 @@ export const EXCURSIONS = [
 ]
 
 export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'Guest', roomNumber = '101', initialExcursionId = null }) {
+  const { t } = useTranslation()
+  const { format } = useCurrency()
   const [firstNamePrefill, ...lastNameParts] = guestName.trim().split(' ')
   const preselected = initialExcursionId ? EXCURSIONS.find((e) => e.id === initialExcursionId) : null
   const [selectedExcursion, setSelectedExcursion] = useState(preselected || null)
@@ -124,27 +128,27 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
     const newErrors = {}
 
     if (currentStep === 2) {
-      if (!formData.date) newErrors.date = 'Please select a date'
-      if (!formData.schedule) newErrors.schedule = 'Please select a time'
+      if (!formData.date) newErrors.date = t('client.excursion.errors.selectDate')
+      if (!formData.schedule) newErrors.schedule = t('client.excursion.errors.selectTime')
 
       // Validate date is in the future
       if (formData.date) {
         const selectedDate = new Date(formData.date)
         const today = new Date()
         today.setHours(0, 0, 0, 0)
-        if (selectedDate < today) newErrors.date = 'Please select a future date'
+        if (selectedDate < today) newErrors.date = t('client.excursion.errors.futureDate')
       }
     }
 
     if (currentStep === 3) {
-      if (!formData.firstName.trim()) newErrors.firstName = 'First name is required'
-      if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required'
+      if (!formData.firstName.trim()) newErrors.firstName = t('client.excursion.errors.firstNameRequired')
+      if (!formData.lastName.trim()) newErrors.lastName = t('client.excursion.errors.lastNameRequired')
       if (!formData.email.trim()) {
-        newErrors.email = 'Email is required'
+        newErrors.email = t('client.excursion.errors.emailRequired')
       } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-        newErrors.email = 'Please enter a valid email'
+        newErrors.email = t('client.excursion.errors.emailInvalid')
       }
-      if (!formData.phone.trim()) newErrors.phone = 'Phone is required'
+      if (!formData.phone.trim()) newErrors.phone = t('client.excursion.errors.phoneRequired')
     }
 
     setErrors(newErrors)
@@ -230,10 +234,10 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
           transition={{ delay: 0.3 }}
         >
           <h2 className="text-2xl md:text-3xl font-serif text-primary mb-3">
-            Excursion Booked!
+            {t('client.excursion.successTitle')}
           </h2>
           <p className="text-muted mb-6">
-            Get ready for an amazing adventure. We've confirmed your booking.
+            {t('client.excursion.successBody')}
           </p>
         </motion.div>
 
@@ -245,28 +249,28 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
         >
           <div className="space-y-4 text-sm">
             <div className="flex justify-between items-center pb-3 border-b border-border">
-              <span className="text-muted">Booking Number:</span>
+              <span className="text-muted">{t('client.excursion.bookingNumber')}</span>
               <span className="font-mono font-bold text-accent">{bookingNumber}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-muted">Excursion:</span>
+              <span className="text-muted">{t('client.excursion.excursionLabel')}</span>
               <span className="font-medium">{selectedExcursion?.name}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-muted">Date:</span>
+              <span className="text-muted">{t('client.excursion.dateLabel')}:</span>
               <span className="font-medium">{formatDate(formData.date)}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-muted">Time:</span>
+              <span className="text-muted">{t('client.excursion.timeLabel')}:</span>
               <span className="font-medium">{formData.schedule}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-muted">Guests:</span>
-              <span className="font-medium">{formData.numberOfPeople} {formData.numberOfPeople === 1 ? 'person' : 'people'}</span>
+              <span className="text-muted">{t('client.excursion.guestsLabel')}:</span>
+              <span className="font-medium">{formData.numberOfPeople} {formData.numberOfPeople === 1 ? t('client.excursion.person') : t('client.excursion.people')}</span>
             </div>
             <div className="border-t border-border pt-3 flex justify-between items-center">
-              <span className="font-semibold text-primary">Total:</span>
-              <span className="font-bold text-accent text-lg">${calculateTotal()}</span>
+              <span className="font-semibold text-primary">{t('client.excursion.totalAmount')}:</span>
+              <span className="font-bold text-accent text-lg">{format(calculateTotal())}</span>
             </div>
           </div>
         </motion.div>
@@ -280,10 +284,9 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
           <div className="flex items-start gap-3">
             <Mail className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
             <div className="text-left">
-              <p className="text-sm font-medium text-accent">Confirmation sent!</p>
+              <p className="text-sm font-medium text-accent">{t('client.excursion.confirmationSent')}</p>
               <p className="text-sm text-accent/80 mt-1">
-                A confirmation email with all details has been sent to <strong>{formData.email}</strong>.
-                Please arrive at the lobby 15 minutes before departure.
+                {t('client.excursion.confirmationSentBefore')} <strong>{formData.email}</strong>{t('client.excursion.confirmationSentAfter')}
               </p>
             </div>
           </div>
@@ -311,7 +314,7 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
             }}
             className="btn-secondary flex-1"
           >
-            Book Another
+            {t('client.excursion.bookAnother')}
           </motion.button>
           {onClose && (
             <motion.button
@@ -321,7 +324,7 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
               onClick={onClose}
               className="btn-primary flex-1"
             >
-              Done
+              {t('client.excursion.done')}
             </motion.button>
           )}
         </div>
@@ -350,8 +353,8 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
               </motion.button>
             )}
             <div>
-              <h2 className="text-xl font-serif text-primary">Book an Excursion</h2>
-              <p className="text-sm text-muted">Discover amazing experiences around Miami</p>
+              <h2 className="text-xl font-serif text-primary">{t('client.excursion.title')}</h2>
+              <p className="text-sm text-muted">{t('client.excursion.subtitle')}</p>
             </div>
           </div>
           {onClose && (
@@ -367,10 +370,10 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
         {/* Step Indicator */}
         <div className="flex items-center gap-2 mt-4">
           {[
-            { num: 1, label: 'Choose' },
-            { num: 2, label: 'Schedule' },
-            { num: 3, label: 'Details' },
-            { num: 4, label: 'Confirm' }
+            { num: 1, label: t('client.excursion.steps.choose') },
+            { num: 2, label: t('client.excursion.steps.schedule') },
+            { num: 3, label: t('client.excursion.steps.details') },
+            { num: 4, label: t('client.excursion.steps.confirm') }
           ].map((s, idx) => (
             <div key={s.num} className="flex items-center flex-1">
               <div className="flex flex-col items-center flex-1">
@@ -398,8 +401,8 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
             >
-              <h3 className="text-lg font-semibold text-primary mb-2">Choose Your Adventure</h3>
-              <p className="text-sm text-muted mb-6">Select from our curated collection of experiences</p>
+              <h3 className="text-lg font-semibold text-primary mb-2">{t('client.excursion.step1Title')}</h3>
+              <p className="text-sm text-muted mb-6">{t('client.excursion.step1Subtitle')}</p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {EXCURSIONS.map((excursion) => {
@@ -420,7 +423,7 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         />
                         <div className="absolute top-2 right-2 bg-bg/90 backdrop-blur-sm px-2 py-1 rounded-lg">
-                          <span className="font-bold text-accent">${excursion.price}</span>
+                          <span className="font-bold text-accent">{format(excursion.price)}</span>
                         </div>
                       </div>
                       <div className="p-4">
@@ -438,7 +441,7 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
                           </span>
                           <span className="flex items-center gap-1">
                             <Users className="w-3 h-3" />
-                            Max {excursion.maxCapacity}
+                            {t('client.excursion.max', { count: excursion.maxCapacity })}
                           </span>
                         </div>
                       </div>
@@ -476,8 +479,8 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-2xl font-bold text-accent">${selectedExcursion.price}</span>
-                  <p className="text-xs text-muted">per person</p>
+                  <span className="text-2xl font-bold text-accent">{format(selectedExcursion.price)}</span>
+                  <p className="text-xs text-muted">{t('client.excursion.perPerson')}</p>
                 </div>
               </div>
 
@@ -485,7 +488,7 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
                 {/* Date Selection */}
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Select Date <span className="text-red-500">*</span>
+                    {t('client.excursion.selectDate')} <span className="text-red-500">*</span>
                   </label>
                   <DatePicker
                     value={formData.date}
@@ -499,7 +502,7 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
                 {/* Time Selection */}
                 <div>
                   <label className="block text-sm font-medium mb-3">
-                    Available Times <span className="text-red-500">*</span>
+                    {t('client.excursion.availableTimes')} <span className="text-red-500">*</span>
                   </label>
                   <div className="flex flex-wrap gap-2">
                     {selectedExcursion.availableSchedules.map((time) => (
@@ -526,7 +529,7 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
                 {/* Number of People */}
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Number of Guests
+                    {t('client.excursion.numberOfGuests')}
                   </label>
                   <div className="flex items-center gap-3 px-4 py-3 bg-surface rounded-lg border border-border focus-within:border-accent transition-colors">
                     <Users className="w-5 h-5 text-accent flex-shrink-0" />
@@ -536,7 +539,7 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
                       className="flex-1 bg-transparent focus:outline-none text-sm cursor-pointer"
                     >
                       {Array.from({ length: selectedExcursion.maxCapacity }, (_, i) => i + 1).map(n => (
-                        <option key={n} value={n}>{n} {n === 1 ? 'Guest' : 'Guests'}</option>
+                        <option key={n} value={n}>{n} {n === 1 ? t('client.excursion.guest') : t('client.excursion.guests')}</option>
                       ))}
                     </select>
                   </div>
@@ -547,11 +550,13 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
                   <div className="flex justify-between items-center">
                     <div>
                       <span className="text-sm text-muted">
-                        ${selectedExcursion.price} × {formData.numberOfPeople} {formData.numberOfPeople === 1 ? 'guest' : 'guests'}
+                        {formData.numberOfPeople === 1
+                          ? t('client.excursion.priceLine', { price: format(selectedExcursion.price), count: formData.numberOfPeople })
+                          : t('client.excursion.priceLinePlural', { price: format(selectedExcursion.price), count: formData.numberOfPeople })}
                       </span>
                     </div>
                     <div className="text-right">
-                      <span className="text-2xl font-bold text-accent">${calculateTotal()}</span>
+                      <span className="text-2xl font-bold text-accent">{format(calculateTotal())}</span>
                     </div>
                   </div>
                 </div>
@@ -563,14 +568,14 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
                   onClick={handleBack}
                   className="btn-secondary flex-1"
                 >
-                  Back
+                  {t('common.actions.back')}
                 </button>
                 <button
                   type="button"
                   onClick={handleNext}
                   className="btn-primary flex-1 flex items-center justify-center gap-2"
                 >
-                  Continue
+                  {t('client.excursion.continue')}
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
@@ -585,14 +590,14 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
             >
-              <h3 className="text-lg font-semibold text-primary mb-2">Guest Information</h3>
-              <p className="text-sm text-muted mb-6">Please provide contact details for the booking</p>
+              <h3 className="text-lg font-semibold text-primary mb-2">{t('client.excursion.step3Title')}</h3>
+              <p className="text-sm text-muted mb-6">{t('client.excursion.step3Subtitle')}</p>
 
               <div className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      First Name <span className="text-red-500">*</span>
+                      {t('client.excursion.firstName')} <span className="text-red-500">*</span>
                     </label>
                     <div className={`flex items-center gap-3 px-4 py-3 bg-surface rounded-lg border transition-colors ${errors.firstName ? 'border-red-500' : 'border-border focus-within:border-accent'}`}>
                       <User className="w-5 h-5 text-accent flex-shrink-0" />
@@ -609,7 +614,7 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
 
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      Last Name <span className="text-red-500">*</span>
+                      {t('client.excursion.lastName')} <span className="text-red-500">*</span>
                     </label>
                     <div className={`flex items-center gap-3 px-4 py-3 bg-surface rounded-lg border transition-colors ${errors.lastName ? 'border-red-500' : 'border-border focus-within:border-accent'}`}>
                       <User className="w-5 h-5 text-accent flex-shrink-0" />
@@ -627,7 +632,7 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
 
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Email Address <span className="text-red-500">*</span>
+                    {t('client.excursion.email')} <span className="text-red-500">*</span>
                   </label>
                   <div className={`flex items-center gap-3 px-4 py-3 bg-surface rounded-lg border transition-colors ${errors.email ? 'border-red-500' : 'border-border focus-within:border-accent'}`}>
                     <Mail className="w-5 h-5 text-accent flex-shrink-0" />
@@ -644,7 +649,7 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
 
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Phone Number <span className="text-red-500">*</span>
+                    {t('client.excursion.phone')} <span className="text-red-500">*</span>
                   </label>
                   <div className={`flex items-center gap-3 px-4 py-3 bg-surface rounded-lg border transition-colors ${errors.phone ? 'border-red-500' : 'border-border focus-within:border-accent'}`}>
                     <Phone className="w-5 h-5 text-accent flex-shrink-0" />
@@ -661,10 +666,10 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
 
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Special Requests <span className="text-muted font-normal">(Optional)</span>
+                    {t('client.excursion.specialRequests')} <span className="text-muted font-normal">{t('client.excursion.optional')}</span>
                   </label>
                   <textarea
-                    placeholder="Any dietary restrictions, accessibility needs, or special occasions..."
+                    placeholder={t('client.excursion.specialRequestsPlaceholder')}
                     value={formData.specialRequests}
                     onChange={(e) => setFormData({ ...formData, specialRequests: e.target.value })}
                     rows={3}
@@ -679,14 +684,14 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
                   onClick={handleBack}
                   className="btn-secondary flex-1"
                 >
-                  Back
+                  {t('common.actions.back')}
                 </button>
                 <button
                   type="button"
                   onClick={handleNext}
                   className="btn-primary flex-1 flex items-center justify-center gap-2"
                 >
-                  Review Booking
+                  {t('client.excursion.reviewBooking')}
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
@@ -701,8 +706,8 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
             >
-              <h3 className="text-lg font-semibold text-primary mb-2">Review Your Booking</h3>
-              <p className="text-sm text-muted mb-6">Please verify all details before confirming</p>
+              <h3 className="text-lg font-semibold text-primary mb-2">{t('client.excursion.step4Title')}</h3>
+              <p className="text-sm text-muted mb-6">{t('client.excursion.step4Subtitle')}</p>
 
               <div className="space-y-4">
                 {/* Excursion Details */}
@@ -722,20 +727,20 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
                   <div className="p-4">
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <span className="text-muted block">Date</span>
+                        <span className="text-muted block">{t('client.excursion.dateLabel')}</span>
                         <span className="font-medium">{formatDate(formData.date)}</span>
                       </div>
                       <div>
-                        <span className="text-muted block">Time</span>
+                        <span className="text-muted block">{t('client.excursion.timeLabel')}</span>
                         <span className="font-medium">{formData.schedule}</span>
                       </div>
                       <div>
-                        <span className="text-muted block">Guests</span>
-                        <span className="font-medium">{formData.numberOfPeople} {formData.numberOfPeople === 1 ? 'person' : 'people'}</span>
+                        <span className="text-muted block">{t('client.excursion.guestsLabel')}</span>
+                        <span className="font-medium">{formData.numberOfPeople} {formData.numberOfPeople === 1 ? t('client.excursion.person') : t('client.excursion.people')}</span>
                       </div>
                       <div>
-                        <span className="text-muted block">Meeting Point</span>
-                        <span className="font-medium">Hotel Lobby</span>
+                        <span className="text-muted block">{t('client.excursion.meetingPoint')}</span>
+                        <span className="font-medium">{t('client.excursion.hotelLobby')}</span>
                       </div>
                     </div>
                   </div>
@@ -745,29 +750,29 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
                 <div className="bg-surface rounded-xl p-4">
                   <h4 className="font-semibold text-primary mb-3 flex items-center gap-2">
                     <User className="w-4 h-4 text-accent" />
-                    Contact Information
+                    {t('client.excursion.contactInfo')}
                   </h4>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-muted block">Name</span>
+                      <span className="text-muted block">{t('client.excursion.nameLabel')}</span>
                       <span className="font-medium">{formData.firstName} {formData.lastName}</span>
                     </div>
                     <div>
-                      <span className="text-muted block">Email</span>
+                      <span className="text-muted block">{t('client.excursion.emailLabel')}</span>
                       <span className="font-medium text-xs">{formData.email}</span>
                     </div>
                     <div>
-                      <span className="text-muted block">Phone</span>
+                      <span className="text-muted block">{t('client.excursion.phoneLabel')}</span>
                       <span className="font-medium">{formData.phone}</span>
                     </div>
                     <div>
-                      <span className="text-muted block">Room</span>
+                      <span className="text-muted block">{t('client.excursion.roomLabel')}</span>
                       <span className="font-medium">{roomNumber}</span>
                     </div>
                   </div>
                   {formData.specialRequests && (
                     <div className="mt-3 pt-3 border-t border-border">
-                      <span className="text-muted text-sm block mb-1">Special Requests</span>
+                      <span className="text-muted text-sm block mb-1">{t('client.excursion.specialRequestsLabel')}</span>
                       <p className="text-sm font-medium">{formData.specialRequests}</p>
                     </div>
                   )}
@@ -775,7 +780,7 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
 
                 {/* What's Included */}
                 <div className="bg-surface rounded-xl p-4">
-                  <h4 className="font-semibold text-primary mb-3">What's Included</h4>
+                  <h4 className="font-semibold text-primary mb-3">{t('client.excursion.whatsIncluded')}</h4>
                   <div className="flex flex-wrap gap-2">
                     {selectedExcursion.includedItems.map((item, idx) => (
                       <span key={idx} className="text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-full flex items-center gap-1">
@@ -790,16 +795,16 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
                 <div className="bg-accent/10 border border-accent/30 rounded-xl p-4">
                   <div className="flex justify-between items-center">
                     <div>
-                      <span className="font-semibold text-primary">Total Amount</span>
-                      <p className="text-xs text-muted">${selectedExcursion.price} × {formData.numberOfPeople} guests</p>
+                      <span className="font-semibold text-primary">{t('client.excursion.totalAmount')}</span>
+                      <p className="text-xs text-muted">{t('client.excursion.priceCalc', { price: format(selectedExcursion.price), count: formData.numberOfPeople })}</p>
                     </div>
-                    <span className="text-3xl font-bold text-accent">${calculateTotal()}</span>
+                    <span className="text-3xl font-bold text-accent">{format(calculateTotal())}</span>
                   </div>
                 </div>
 
                 {/* Terms */}
                 <div className="bg-bg border border-border rounded-lg p-4 text-sm text-muted">
-                  By confirming this booking, you agree to our cancellation policy. Free cancellation up to 24 hours before the tour.
+                  {t('client.excursion.terms')}
                 </div>
               </div>
 
@@ -811,7 +816,7 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
                     disabled={isSubmitting}
                     className="btn-secondary flex-1"
                   >
-                    Edit
+                    {t('client.excursion.edit')}
                   </button>
                   <motion.button
                     type="submit"
@@ -827,12 +832,12 @@ export default function ExcursionBookingForm({ onClose, onBooked, guestName = 'G
                           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                           className="w-5 h-5 border-2 border-bg border-t-transparent rounded-full"
                         />
-                        Processing...
+                        {t('client.excursion.processing')}
                       </>
                     ) : (
                       <>
                         <CheckCircle className="w-5 h-5" />
-                        Confirm Booking
+                        {t('client.excursion.confirmBooking')}
                       </>
                     )}
                   </motion.button>

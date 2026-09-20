@@ -549,74 +549,103 @@ dev server transforma los 4 modulos tocados con 200 (sin errores de transform).
 
 ---
 
-## H23: Beach/Pool map interactivo (para resorts)
+## H23: Beach/Pool map interactivo (para resorts) ✅
 **Esfuerzo:** Muy Alto (3-4 hrs)
-**Archivos:** Nuevo: components/client/BeachPoolMap.jsx, admin/facilities/FacilitiesManagement.jsx, data/mockFacilities.js
+**Archivos:** Nuevo: components/client/BeachPoolMap.jsx, components/facilities/PoolMapCanvas.jsx, admin/facilities/FacilitiesManagement.jsx, data/mockFacilities.js, hooks/useFacilities.js
 
-- [ ] mockFacilities.js: mapa de pileta/playa con ~20 posiciones: id, type (lounger/cabana/umbrella), position {x,y}, status (available/occupied/reserved), price (cabanas), guestName (si occupied)
-- [ ] Guest-facing BeachPoolMap.jsx:
-  - Vista SVG/CSS del area de pileta con posiciones clickeables
-  - Color por estado: verde=disponible, rojo=ocupado, azul=reservado
-  - Click en posicion disponible: modal de reserva (fecha, horario, confirmar)
-  - Boton "Pedir desde mi reposera": abre menu de bebidas/snacks simplificado
-  - Integrar en Guest Portal tab "Reservations" o como seccion propia
-- [ ] Admin FacilitiesManagement.jsx:
-  - Mismo mapa pero con vista de gestion
-  - Ver quien tiene cada posicion
-  - Liberar posiciones manualmente
-  - Agregar a sidebar admin
+- [x] mockFacilities.js: 21 posiciones (id, type lounger/cabana/umbrella, zone pool/beach, position {x,y} en %, status available/occupied/reserved, price en cabanas, guestName + reservedFor si tomada). Config `FACILITY_TYPES`/`FACILITY_STATUS`/`ZONES`, `POOLSIDE_MENU` (bebidas/snacks) y helpers puros (`facilityCounts`, `describeSpot`). Seed con mezcla de estados
+- [x] Guest-facing BeachPoolMap.jsx (overlay full-screen abierto desde Services > "Beach & Pool"):
+  - Mapa top-down (deck + pileta + franja de mar) con posiciones clickeables (`PoolMapCanvas`)
+  - Color por estado: verde=disponible, rojo=ocupado, azul=reservado (+ estrella dorada en las propias)
+  - Click en disponible: panel de reserva (fecha de la estadía + horario, confirmar con delay 700ms)
+  - Filtro de zona (Todo/Pileta/Playa), leyenda, tooltip por marcador
+  - "Pedir desde mi reposera": sub-vista de bebidas/snacks con carrito (+/-) → pedido a la reposera
+  - Cancelar reserva propia; las reservas aparecen en "My Stay" (type `facility`/`poolside`)
+- [x] Admin FacilitiesManagement.jsx (sidebar icono Umbrella):
+  - Mismo mapa (`PoolMapCanvas` compartido) + vista Lista agrupada por zona
+  - KPIs (posiciones, disponibles, en uso, ingresos cabanas) + filtros por estado y zona
+  - Ver quién tiene cada posición; liberar; marcar ocupada (walk-in con nombre); restablecer board
 
-**Criterio de exito:** Mapa visual de pool/playa funcional. Huesped puede reservar reposera. Admin ve estado general.
+**Detalle técnico:** admin y front comparten el board por el hook `useFacilities` (mismo patrón que
+`useNews`/`useEvents`: `hotel-facilities` en localStorage + evento custom/`storage`), así una reserva
+del huésped se ve al instante en recepción y una liberación del admin devuelve el lugar. Las reservas
+del visitante viven en su propia key (`hotel-facilities-mine`) para saber cuáles puede cancelar/ordenar
+sin mutar el board. El canvas `PoolMapCanvas` es presentacional puro (spots + onSelect) reutilizado por
+ambas superficies (DRY). Posiciones en % → escala responsive sin recomputar. Gotcha respetado: los
+tints de estado usan la paleta estándar Tailwind (emerald/rose/sky, que sí soporta /alpha), NO los
+tokens del theme; las superficies usan fills sólidos (`bg-surface`/`bg-bg`/`bg-primary`) y
+`hover:opacity-90`; se evitó `bg-surface-alt`. La pileta/arena/mar usan colores fijos (imagen
+decorativa, no chrome). Validado: **test de lógica 33/33 PASS** (`scripts/test-facilities.mjs`: seed,
+counts, transiciones reserve/release/occupy, menú); **build OK (1917 módulos)**; **browser real
+(Chrome/playwright) 11/11 PASS con consola SIN errores** — admin (21 markers, ocupar/liberar) y portal
+(login → mapa → reservar), dark + light mode verificados.
+
+**Criterio de exito:** Mapa visual de pool/playa funcional. Huesped puede reservar reposera. Admin ve estado general. ✅
 
 ---
 
-## H24: i18n — Cambio de idioma ES/EN
+## H24: i18n — Cambio de idioma ES/EN ✅
 **Esfuerzo:** Muy Alto (4-5 hrs, probablemente 2 sesiones)
-**Archivos:** Nuevo: i18n/ directorio, todos los componentes
+**Archivos:** Nuevo: src/i18n/ (LanguageProvider + translations/), src/components/LanguageSwitch.jsx; todos los componentes; shared-ui Navbar+Footer
 
-- [ ] Crear sistema de traducciones:
-  - i18n/es.json con todas las strings en espanol
-  - i18n/en.json con traducciones al ingles
-  - Hook useTranslation() que devuelve t('key')
-  - Context provider con idioma actual + toggle
-  - Persistir idioma en localStorage
-- [ ] Selector de idioma en Navbar (banderita o dropdown ES/EN)
-- [ ] Empezar por la landing (componentes publicos)
-- [ ] Segundo paso: admin panel
-- [ ] Tercer paso: guest portal
+- [x] Sistema de traducciones:
+  - Namespaces por área en `src/i18n/translations/{es,en}/*.js` (common, nav, landing, landingExtra, portal, client, adminA/B/C) — se hicieron JS modules (no JSON) para poder comentar/componer y evitar conflictos de merge al paralelizar. `translations/index.js` los mergea (landing = landing+landingExtra; admin = adminA+adminB+adminC).
+  - Hook `useTranslation()` → `{ t, language, setLanguage, toggleLanguage, languages }`. `t('a.b.c', { vars })` con lookup por dot-notation, interpolación `{var}`, soporte de arrays (features/listas), y **fallback** a EN y luego a la key (warning en DEV).
+  - `LanguageProvider` (Context) montado en `main.jsx`; setea `<html lang>`.
+  - Persistencia en localStorage (`hotel-language`) + sync entre pestañas/superficies (evento custom + `storage`).
+  - **Default = ES** (audiencia argentina); toggle a EN persiste.
+- [x] Selector de idioma ES/EN en Navbar compartido (props opcionales `language`/`languages`/`onLanguageChange`, no rompe las otras 3 apps) + `<LanguageSwitch>` propio en las superficies sin Navbar (LoginScreen, Guest Portal header, AdminHeader).
+- [x] Landing completa (Hero, About, Accommodation, Services, Amenities, Events, Offers, Reviews, Contact, NewsBar, Footer, BookingForm, RoomDetail, tour guiado).
+- [x] Admin panel completo (layout/sidebar/header + los 14 módulos).
+- [x] Guest portal + client completo (login, portal, chat, check-in, dining, pool/beach, excursiones, service request).
 
-**Nota:** Esta tarea es grande. Puede dividirse en 2 sesiones: H24a (setup + landing) y H24b (admin + portal).
+**Detalle técnico:** los nombres de habitación/paquete se resuelven en la fuente (AccommodationTiers/OffersSection) y se pasan ya traducidos aguas abajo (detail/booking). Labels data-driven (categorías de eventos/noticias, roles, tipos/zonas de facilities, dificultad de excursiones) se traducen **en render** keyeadas por el id estable, sin tocar `src/data/`. El **contenido autoral** (nombres/descripciones de platos y excursiones, títulos/cuerpos de noticias y eventos, nombres de personas) se deja como está (realista: un hotel no auto-traduce su contenido). Se corrigió un bug de integración: `OffersSection` volvió a pasar `details`/`cancellation` resueltos al `onReservePackage` (App los consumía). Bonus de higiene: `RequestCard`, `TaskCard` y `EventCard` pasaron a `forwardRef` (eliminan warnings preexistentes de "Function components cannot be given refs" bajo `AnimatePresence mode="popLayout"`).
 
-**Criterio de exito:** Toggle ES/EN funcional. Al menos la landing completa en ambos idiomas.
+**Ejecución:** infra + landing hechos a mano como referencia; el resto (portal, client, admin ×3) en paralelo con subagentes, cada uno dueño de archivos y namespace propios (sin conflictos). Después integración + tests.
 
----
+**Validado:**
+- Test de lógica `scripts/test-i18n.mjs`: **paridad es↔en 1831 leaf paths idénticos**, **1339 claves `t()` usadas en el código resuelven en ambos idiomas**, 50 prefijos dinámicos son objetos, interpolación + arrays OK. **PASS**.
+- **Build OK en las 4 apps** (hoteleria 1937 módulos; inmobiliaria/salud/gastronomia sin romper por el Navbar/Footer compartido).
+- **Browser real (Chrome/playwright) 20/20 PASS, consola SIN errores**: default ES, toggle→EN, persistencia tras reload, landing/portal(login+logueado)/admin cambian idioma y sin keys crudas; selector presente en las 3 superficies. Scan de las 14 vistas del admin en EN sin español residual (salvo contenido mock de noticias, intencional).
 
-## H25: Cambio de moneda
-**Esfuerzo:** Medio (1.5-2 hrs)
-**Archivos:** Nuevo: hooks/useCurrency.js, componentes con precios
-
-- [ ] Hook useCurrency: moneda actual (USD/ARS/EUR), tasas de cambio mock, funcion formatPrice(amount, currency)
-- [ ] Selector de moneda en Navbar o footer
-- [ ] Todos los precios se recalculan segun moneda seleccionada
-- [ ] Persistir en localStorage
-- [ ] Aplicar en: AccommodationTiers, BookingForm, OffersSection, ExcursionBookingForm, Guest Portal billing
-
-**Criterio de exito:** Toggle de moneda funcional. Precios se recalculan en toda la app.
+**Criterio de exito:** Toggle ES/EN funcional. Al menos la landing completa en ambos idiomas. ✅ (se hizo toda la app: landing + admin + portal)
 
 ---
 
-## H26: Check-in / Check-out de recepcion (front-desk)
+## H25: Cambio de moneda ✅
 **Esfuerzo:** Medio (1.5-2 hrs)
-**Archivos:** CalendarManagement.jsx, AdminDashboard.jsx, useAdminData.js
+**Archivos:** Nuevo: data/currencies.js, hooks/useCurrency.js, components/CurrencySwitch.jsx; shared-ui Navbar; componentes con precios
+
+- [x] `data/currencies.js`: USD (base, rate 1), ARS (x1180), EUR (x0.92) con símbolo, locale y decimales; helpers puros `getCurrency`, `convertMoney`, `formatMoney` (convierte desde USD-base → redondea → agrupa por locale → prefija símbolo)
+- [x] `hooks/useCurrency.js`: moneda actual + `format(usd)` / `convert(usd)` / `setCurrency` / `currencies`; persistencia localStorage (`hotel-currency`) + sync misma-pestaña (evento custom) y entre pestañas (`storage`) — mismo patrón que useNews/useLiveChat (sin Context)
+- [x] Selector de moneda USD/ARS/EUR en Navbar compartido (props opcionales, no rompe las otras 3 apps) + `<CurrencySwitch>` en el header del Guest Portal
+- [x] Todos los precios guest-facing se recalculan: AccommodationTiers, RoomDetailPage, BookingForm, OffersSection, ExcursionBookingForm, Guest Portal (billing + requests + servicios + amenities + modales), F&B (MenuBrowser/CartDrawer/OrderConfirmation) y BeachPoolMap (cabañas + menú de reposera)
+- [x] Persiste en localStorage y sobrevive reload
+
+**Detalle técnico:** todos los precios se autoran en **USD (moneda base)**; `format()` convierte en render, así cambiar de moneda reformatea toda la app desde una única fuente de verdad (los objetos de request/orden persistidos guardan USD, se convierten al mostrarse). El símbolo se prefija siempre (`US$`/`$`/`€`) y el `locale` sólo maneja el agrupado de miles (Intl decimal, nunca style currency → sin símbolos duplicados/ambiguos). Se quitaron los strings `"From $520"` hardcodeados de OFFERS (ahora `priceValue` + clave i18n `landing.offers.priceFrom`). Los strings i18n que embebían `$` (`excursion.priceLine/priceCalc`, `menu.viewOrder`, `cart.placeOrder`) pasaron a `{price}`/`{total}` y reciben el valor ya formateado. **Fuera de alcance (a propósito):** el admin no lleva selector y sus KPIs de gestión quedan en su representación nativa — DynamicPricing/CommissionWidget son **ARS** (contabilidad interna), no se tocan; los KPIs USD del admin no dependen de la elección del huésped.
+
+**Validado:**
+- Lógica `scripts/test-currency.mjs`: **31/31 PASS** (config, getCurrency fallback, convertMoney, formatMoney redondeo/agrupado/símbolo, determinismo, consistencia format = símbolo + convertido-redondeado).
+- **i18n parity `scripts/test-i18n.mjs` PASS** (1832 leaf paths es↔en, +1 `priceFrom`; 1340 claves resuelven).
+- **Build OK en las 4 apps** (hoteleria 1941 módulos; salud/gastronomia/inmobiliaria sin romper por el Navbar compartido).
+- **Browser real `scripts/browser-currency.mjs` (Chrome/playwright) 13/13 PASS, consola SIN errores:** default US$189 → ARS $223.020 → EUR €174, persiste tras reload, billing del portal convierte (€805 ↔ US$875), selector propio en el portal.
+
+**Criterio de exito:** Toggle de moneda funcional. Precios se recalculan en toda la app. ✅
+
+---
+
+## H26: Check-in / Check-out de recepcion (front-desk) ✅
+**Esfuerzo:** Muy Alto (4-5 hrs)
+**Archivos:** Nuevo: hooks/useReservations.js, data/admin/reservationsModel.js, data/admin/checkinStation.js, components/client/checkin/CheckInStation.jsx + SignaturePad.jsx, components/admin/reception/ReceptionManagement.jsx, i18n station + adminD; Modificado: useAdminData.js, CalendarManagement.jsx, AdminDashboard.jsx, GuestPortal.jsx, AdminLayout/Sidebar/Header, mockReservations.js
 
 Estado actual:
 - [x] Dashboard "Today's Activity": check-in de arribos y check-out de salidas de HOY (ActivityDetailModal)
-- [x] Calendario: botones "Registrar check-in / check-out" en el modal de detalle de reserva (persiste en `hotel-admin-calendar-status`)
+- [x] Calendario: botones "Registrar check-in / check-out" en el modal de detalle de reserva
 
 Pendiente (unificar y ampliar):
-- [ ] Unificar la fuente de reservas: hoy el Dashboard usa useAdminData y el Calendario usa mockReservations+localStorage por separado (un check-in en uno no se refleja en el otro)
-- [ ] Vista/tab "Recepcion" o lista de reservas con filtros (llegadas, en casa, salidas) y acciones rapidas de check-in/out
-- [ ] Timeline de estado por reserva (confirmed -> checked-in -> checked-out) con timestamps
+- [x] Unificar la fuente de reservas: store `useReservations` (key `hotel-reservations`, sync custom+storage event) es ahora la única fuente; `useAdminData` la delega (sigue exponiendo `reservations` para Pricing/Dashboard/Rooms); Calendario y Recepción la consumen → un check-in en cualquier superficie se refleja en todas. Migración one-time de las keys legacy `hotel-admin-calendar-extra/status`.
+- [x] Vista/tab "Recepcion" (sidebar ConciergeBell) con KPIs, filtros llegadas/en casa/salidas/próximas/todas, búsqueda, acciones rápidas de check-in/out
+- [x] Timeline de estado por reserva (confirmed → checked-in → checked-out) con timestamps + actor (modal Historial)
 
 ### Estacion de check-in completa (objetivo real)
 **Motivacion:** agilizar la llegada. Si el huesped completa online (documentos, acompanantes,
@@ -629,24 +658,33 @@ Un unico flujo de check-in, usable por DOS actores:
 - **Huesped (self-service)**: desde el Guest Portal / kiosko / QR — adelanta pasos antes de llegar
 - **Recepcionista**: desde el admin (Calendario o vista Recepcion) — retoma lo que el huesped dejo hecho y finaliza
 
-Pasos del flujo (wizard):
-- [ ] 1. Identificar la reserva (buscar por nombre/numero, o autologin del huesped)
-- [ ] 2. Documentos: subir/adjuntar foto de DNI/pasaporte (upload mock + preview), tipo y numero de documento, nacionalidad, fecha de nacimiento
-- [ ] 3. Datos de contacto y huespedes acompanantes (nombre + documento por persona)
-- [ ] 4. Asignar habitacion: elegir/confirmar numero de habitacion disponible del tipo reservado (integrar con estado de RoomManagement/Calendario)
-- [ ] 5. Metodo de pago / garantia (tarjeta mock, preautorizacion)
-- [ ] 6. Firma digital del huesped (canvas) + aceptacion de politicas
-- [ ] 7. Emitir tarjetas/llaves: cantidad de key cards, "codigo" de llave digital simulada, opcion de llave movil
-- [ ] 8. Confirmacion: resumen + estado pasa a checked-in + genera comprobante
+Pasos del flujo (wizard `CheckInStation`, mode-aware):
+- [x] 1. Identificar la reserva (paso `identify`, solo recepción — resumen + confirmar)
+- [x] 2. Documentos: foto de DNI/pasaporte (upload mock FileReader→data-url + preview), tipo/número, nacionalidad, fecha de nacimiento (DatePicker compartido)
+- [x] 3. Huéspedes acompañantes (nombre + documento por persona; paso solo si guests > 1)
+- [x] 4. Asignar habitación: elegir habitación disponible del tipo reservado (fallback a cualquier disponible); al confirmar setea `roomId` → queda ocupada en Rooms/KPIs/Calendario
+- [x] 5. Método de pago / garantía (tarjeta mock enmascarada, ya pagada, o pagar en recepción + preautorización)
+- [x] 6. Firma digital en canvas (theme-aware, pointer events) + aceptación de políticas
+- [x] 7. Emitir llaves: stepper de key cards (1-4) + toggle de llave móvil + código de llave digital
+- [x] 8. Confirmación: resumen completo → estado pasa a checked-in + pantalla de éxito con llave digital
 
 Consideraciones:
-- [ ] Que sirva igual para el huesped (menos campos, mas guiado) y para recepcion (todos los campos, edicion libre)
-- [ ] Persistir todo (documentos como data-url mock) en localStorage
-- [ ] Al terminar, la habitacion queda asignada y ocupada en Calendario/Rooms/KPIs
+- [x] Sirve igual para huésped (modo `guest`, menos pasos/campos) y recepción (modo `reception`, todos los campos); un único componente parametrizado por `mode`
+- [x] Persiste todo (documentos como data-url mock) en el store `hotel-reservations`, embebido por reserva (`reservation.station`)
+- [x] Progreso resumible: `saveStation` guarda avances parciales → un huésped arranca online y recepción lo retoma (banner + barra de progreso "Pre-check-in" en la fila)
+- [x] Al terminar, la habitación queda asignada y ocupada en Calendario/Rooms/KPIs (fuente unificada)
 
-**Nota:** H16 es la version basica del check-in digital del huesped (3 pasos, sin documentos ni asignacion de habitacion). H26 lo absorbe/expande hacia una estacion completa y compartida con recepcion. Definir si se fusionan.
+**Nota:** H16 (check-in básico del huésped, 3 pasos) fue **absorbido y eliminado**: el Guest Portal ahora usa `CheckInStation` en modo `guest` sobre el store compartido (la reserva del portal `RES-2024-5678` se siembra en `mockReservations`, así recepción la ve y retoma). `CheckInFlow.jsx` fue borrado.
 
-**Criterio de exito:** Un mismo wizard de check-in permite, tanto al huesped como a recepcion, cargar documentos, asignar habitacion, emitir tarjetas y dejar la reserva en checked-in, reflejado en Dashboard, Calendario y KPIs.
+**Detalle técnico:** modelo puro y testeable en `checkinStation.js` (buildSteps mode-aware, blank/hydrate null-safe, validateStationStep→claves i18n, stationProgress/nextIncompleteStep, generateKeyCode inyectable, maskCard) y `reservationsModel.js` (mergeReservations, applyLegacyMigration, reservationBucket). El store no persiste el array (congelaría las fechas relativas del mock) sino un **delta de overrides + extras** que se mergea sobre el seed fresco en cada carga (mismo criterio que el viejo calendario). i18n: nuevo namespace top-level `station` (compartido admin+portal) + `adminD` (reception), paridad es/en. Gotcha resuelto en browser: `blankStationData(null)` crasheaba (default param no cubre `null`) porque la estación se monta siempre → coerción `reservation || {}`.
+
+**Validado:**
+- Lógica `scripts/test-checkin-station.mjs` **56/56 PASS** + `scripts/test-reservations.mjs` **26/26 PASS**.
+- i18n `scripts/test-i18n.mjs` **PASS** (1999 leaf paths es↔en, 1393 claves resuelven).
+- **Build OK** (hoteleria 1950 módulos).
+- **Browser real `scripts/browser-reception.mjs` (Chrome/playwright) 24/24 PASS, consola SIN errores**: Recepción lista reservas + KPIs, estación abre en recepción (identify) y en portal (guest, sin identify), check-out refleja en KPIs (in-house 3→2) y persiste en `hotel-reservations`, Dashboard/Calendario sin keys crudas, y **Recepción muestra el pre-check-in online del huésped ("Continuar check-in")**.
+
+**Criterio de exito:** Un mismo wizard de check-in permite, tanto al huesped como a recepcion, cargar documentos, asignar habitacion, emitir tarjetas y dejar la reserva en checked-in, reflejado en Dashboard, Calendario y KPIs. ✅
 
 ---
 

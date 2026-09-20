@@ -1,22 +1,24 @@
 import { useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Send, Sparkles, Headset } from 'lucide-react'
+import { useTranslation } from '../i18n/LanguageProvider'
 
 // Presentational live-chat window for the guest portal (H5). State lives in the
 // parent (GuestPortal) via the shared useLiveChat hook, so the same messages
 // surface in the admin inbox (Bandeja IA).
 
-function timeAgo(ts) {
+function timeAgo(ts, t) {
   const diff = Date.now() - ts
   const min = Math.floor(diff / 60000)
-  if (min < 1) return 'recién'
-  if (min < 60) return `hace ${min} min`
+  if (min < 1) return t('portal.chat.timeAgo.now')
+  if (min < 60) return t('portal.chat.timeAgo.minutes', { min })
   const h = Math.floor(min / 60)
-  if (h < 24) return `hace ${h} h`
-  return `hace ${Math.floor(h / 24)} d`
+  if (h < 24) return t('portal.chat.timeAgo.hours', { h })
+  return t('portal.chat.timeAgo.days', { d: Math.floor(h / 24) })
 }
 
 function ChatBubble({ from, text, ts }) {
+  const { t } = useTranslation()
   const mine = from === 'guest'
   const isAI = from === 'ai'
   return (
@@ -32,20 +34,21 @@ function ChatBubble({ from, text, ts }) {
       }`}>
         {isAI && (
           <p className="text-[10px] font-semibold text-accent flex items-center gap-1 mb-0.5">
-            <Sparkles className="w-3 h-3" /> Asistente
+            <Sparkles className="w-3 h-3" /> {t('portal.chat.assistant')}
           </p>
         )}
         {from === 'staff' && (
-          <p className="text-[10px] font-semibold text-muted mb-0.5">Recepción</p>
+          <p className="text-[10px] font-semibold text-muted mb-0.5">{t('portal.chat.reception')}</p>
         )}
         <p className="text-sm whitespace-pre-wrap break-words">{text}</p>
-        {ts && <p className={`text-[10px] mt-0.5 text-right ${mine ? 'text-white/70' : 'text-muted'}`}>{timeAgo(ts)}</p>}
+        {ts && <p className={`text-[10px] mt-0.5 text-right ${mine ? 'text-white/70' : 'text-muted'}`}>{timeAgo(ts, t)}</p>}
       </div>
     </motion.div>
   )
 }
 
 export default function GuestChat({ open, onClose, guestName, messages, draft, setDraft, onSend }) {
+  const { t } = useTranslation()
   const scrollRef = useRef(null)
 
   // Auto-scroll to the newest message whenever the thread changes or opens.
@@ -62,7 +65,7 @@ export default function GuestChat({ open, onClose, guestName, messages, draft, s
     }
   }
 
-  const firstName = (guestName || 'huésped').split(' ')[0]
+  const firstName = (guestName || t('portal.chat.fallbackName')).split(' ')[0]
 
   return (
     <AnimatePresence>
@@ -92,13 +95,13 @@ export default function GuestChat({ open, onClose, guestName, messages, draft, s
                 <Headset className="w-5 h-5" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold leading-tight">Live Chat</p>
+                <p className="font-semibold leading-tight">{t('portal.chat.title')}</p>
                 <p className="text-xs text-white/80 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-green-300 inline-block" />
-                  Concierge en línea
+                  {t('portal.chat.online')}
                 </p>
               </div>
-              <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/15 transition-colors" title="Cerrar">
+              <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/15 transition-colors" title={t('portal.chat.close')}>
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -108,7 +111,7 @@ export default function GuestChat({ open, onClose, guestName, messages, draft, s
               {/* Persistent greeting (UI only, not stored) */}
               <ChatBubble
                 from="ai"
-                text={`¡Hola ${firstName}! 👋 Soy el asistente del hotel. ¿En qué puedo ayudarte? Escribinos y un agente se suma a la conversación enseguida.`}
+                text={t('portal.chat.greeting', { name: firstName })}
               />
               {messages.map((m) => (
                 <ChatBubble key={m.id} from={m.from} text={m.text} ts={m.ts} />
@@ -122,14 +125,14 @@ export default function GuestChat({ open, onClose, guestName, messages, draft, s
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Escribí tu mensaje…"
+                placeholder={t('portal.chat.inputPlaceholder')}
                 className="flex-1 resize-none bg-bg border border-border rounded-xl px-3.5 py-2.5 text-sm text-text placeholder:text-muted outline-none focus:border-accent max-h-24"
               />
               <button
                 onClick={onSend}
                 disabled={!draft.trim()}
                 className="flex-shrink-0 h-10 w-10 grid place-items-center rounded-xl bg-accent text-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-accent/90 transition"
-                title="Enviar"
+                title={t('portal.chat.send')}
               >
                 <Send className="w-4 h-4" />
               </button>

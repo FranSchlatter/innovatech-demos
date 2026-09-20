@@ -22,6 +22,7 @@ import {
   MessageCircle
 } from 'lucide-react'
 import PropertyMap from '../components/PropertyMap'
+import NearbyPlaces from '../components/NearbyPlaces'
 import VirtualTourModal from '../components/VirtualTourModal'
 import FloorPlanModal from '../components/FloorPlanModal'
 import agents from '../data/agents.json'
@@ -252,6 +253,9 @@ export default function PropertyDetailPage({ property, favorites, onBack, onSche
             <h2 className="heading-sm mb-3">Ubicación</h2>
             <PropertyMap properties={[property]} activeId={property.id} height="h-[320px]" />
           </section>
+
+          {/* Nearby POIs */}
+          <NearbyPlaces property={property} />
         </div>
 
         {/* RIGHT sidebar */}

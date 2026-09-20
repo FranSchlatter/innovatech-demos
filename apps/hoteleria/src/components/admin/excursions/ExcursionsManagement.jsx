@@ -35,6 +35,7 @@ import {
   getExcursionMetrics
 } from '../../../data/admin/mockExcursions'
 import { WEEKDAYS, expandWeekly, describeWeekdays, todayISO } from '../../../data/recurrence'
+import { useTranslation } from '../../../i18n/LanguageProvider'
 
 const STORAGE_KEY = 'hotel-excursions'
 
@@ -68,10 +69,15 @@ const seatColor = (booked, capacity) => {
   return { bar: 'bg-green-500', text: 'text-green-600 dark:text-green-400' }
 }
 
+// Returns { label, today } so callers can prefix a translated "Today ·".
 const formatDepDate = (dateStr) => {
   const d = new Date(dateStr + 'T00:00:00')
   const label = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-  return isToday(dateStr) ? `Today · ${label}` : label
+  return { label, today: isToday(dateStr) }
+}
+const depDateText = (dateStr, t) => {
+  const { label, today } = formatDepDate(dateStr)
+  return today ? t('admin.excursions.depDateToday', { label }) : label
 }
 
 // --- Recurrence building blocks (shared by Create + Manage) -----------------
@@ -103,6 +109,7 @@ function WeekdayChips({ value, onToggle }) {
 
 // A list of times entered as chips. `value` is an array of 'HH:MM' strings.
 function TimesInput({ value, onAdd, onRemove }) {
+  const { t } = useTranslation()
   const [time, setTime] = useState('09:00')
   return (
     <div>
@@ -118,16 +125,16 @@ function TimesInput({ value, onAdd, onRemove }) {
           onClick={() => time && onAdd(time)}
           className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-primary text-primary-contrast text-sm font-medium hover:opacity-90 transition-opacity"
         >
-          <Plus className="w-4 h-4" /> Add time
+          <Plus className="w-4 h-4" /> {t('admin.excursions.times.addTime')}
         </button>
       </div>
       {value.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mt-2">
-          {value.map((t) => (
-            <span key={t} className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-bg border border-border text-xs font-medium text-text">
+          {value.map((tm) => (
+            <span key={tm} className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-bg border border-border text-xs font-medium text-text">
               <Clock className="w-3 h-3 text-muted" />
-              {t}
-              <button type="button" onClick={() => onRemove(t)} className="text-muted hover:text-red-500">
+              {tm}
+              <button type="button" onClick={() => onRemove(tm)} className="text-muted hover:text-red-500">
                 <X className="w-3 h-3" />
               </button>
             </span>
@@ -172,12 +179,13 @@ function KPICard({ icon: Icon, label, value, sub, color, index }) {
 }
 
 function DepartureRow({ dep }) {
+  const { t } = useTranslation()
   const c = seatColor(dep.booked, dep.capacity)
   const full = dep.booked >= dep.capacity
   return (
     <div className="flex items-center gap-3 py-2">
       <div className="w-28 shrink-0">
-        <p className="text-xs font-medium text-text">{formatDepDate(dep.date)}</p>
+        <p className="text-xs font-medium text-text">{depDateText(dep.date, t)}</p>
         <p className="text-xs text-muted flex items-center gap-1"><Clock className="w-3 h-3" />{dep.time}</p>
       </div>
       <div className="flex-1 min-w-0">
@@ -187,9 +195,9 @@ function DepartureRow({ dep }) {
       </div>
       <div className="w-20 shrink-0 text-right">
         {full ? (
-          <span className="text-xs font-semibold text-red-600 dark:text-red-400">Full</span>
+          <span className="text-xs font-semibold text-red-600 dark:text-red-400">{t('admin.excursions.card.full')}</span>
         ) : (
-          <span className={`text-xs font-semibold ${c.text}`}>{dep.capacity - dep.booked} left</span>
+          <span className={`text-xs font-semibold ${c.text}`}>{t('admin.excursions.card.left', { count: dep.capacity - dep.booked })}</span>
         )}
         <p className="text-[11px] text-muted">{dep.booked}/{dep.capacity}</p>
       </div>
@@ -198,6 +206,7 @@ function DepartureRow({ dep }) {
 }
 
 function ExcursionCard({ excursion, onToggle, onManage }) {
+  const { t } = useTranslation()
   const active = excursion.status === 'active'
   const totalBooked = excursion.departures.reduce((s, d) => s + d.booked, 0)
   const totalCap = excursion.departures.reduce((s, d) => s + d.capacity, 0)
@@ -212,12 +221,12 @@ function ExcursionCard({ excursion, onToggle, onManage }) {
         <img src={excursion.image} alt={excursion.name} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <span className="absolute top-3 left-3 text-xs font-medium px-2 py-1 rounded-full bg-black/50 backdrop-blur-sm text-white">
-          {excursion.category}
+          {t(`admin.excursions.categories.${excursion.category}`)}
         </span>
         <span className={`absolute top-3 right-3 text-xs font-semibold px-2 py-1 rounded-full ${
           active ? 'bg-green-500/90 text-white' : 'bg-gray-500/80 text-white'
         }`}>
-          {active ? 'Active' : 'Inactive'}
+          {active ? t('admin.excursions.card.active') : t('admin.excursions.card.inactive')}
         </span>
         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between text-white">
           <div className="min-w-0">
@@ -239,9 +248,9 @@ function ExcursionCard({ excursion, onToggle, onManage }) {
         {/* Departures */}
         <div className="flex items-center justify-between mb-1">
           <span className="text-xs font-semibold text-text flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-muted" /> Schedule &amp; capacity
+            <Calendar className="w-3.5 h-3.5 text-muted" /> {t('admin.excursions.card.scheduleCapacity')}
           </span>
-          <span className="text-xs text-muted">{totalBooked}/{totalCap} seats</span>
+          <span className="text-xs text-muted">{t('admin.excursions.card.seats', { booked: totalBooked, cap: totalCap })}</span>
         </div>
         <div className="divide-y divide-border mb-4">
           {excursion.departures.map((dep) => (
@@ -260,14 +269,14 @@ function ExcursionCard({ excursion, onToggle, onManage }) {
             }`}
           >
             <Power className="w-4 h-4" />
-            {active ? 'Pause' : 'Activate'}
+            {active ? t('admin.excursions.card.pause') : t('admin.excursions.card.activate')}
           </button>
           <button
             onClick={() => onManage(excursion)}
             className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-primary text-primary-contrast text-sm font-medium hover:opacity-90 transition-opacity"
           >
             <Ticket className="w-4 h-4" />
-            Manage
+            {t('admin.excursions.card.manage')}
           </button>
         </div>
       </div>
@@ -276,6 +285,7 @@ function ExcursionCard({ excursion, onToggle, onManage }) {
 }
 
 function ManageModal({ excursion, onClose, onSave }) {
+  const { t } = useTranslation()
   const [draft, setDraft] = useState(null)
   const [saving, setSaving] = useState(false)
   const [newDep, setNewDep] = useState({ date: '', time: '', capacity: 10 })
@@ -389,7 +399,7 @@ function ManageModal({ excursion, onClose, onSave }) {
                 <img src={draft.image} alt="" className="w-11 h-11 rounded-lg object-cover shrink-0" />
                 <div className="min-w-0">
                   <h2 className="text-lg font-bold text-text truncate">{draft.name}</h2>
-                  <p className="text-sm text-muted">{draft.category} · {draft.duration}</p>
+                  <p className="text-sm text-muted">{t(`admin.excursions.categories.${draft.category}`)} · {draft.duration}</p>
                 </div>
               </div>
               <button onClick={onClose} className="p-2 rounded-lg hover:bg-bg text-muted hover:text-text transition-colors">
@@ -402,7 +412,7 @@ function ManageModal({ excursion, onClose, onSave }) {
               {/* Price + status */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-text mb-2">Price / person</label>
+                  <label className="block text-sm font-medium text-text mb-2">{t('admin.excursions.manage.pricePerPerson')}</label>
                   <div className="flex items-center gap-2 px-3 py-2 bg-bg border border-border rounded-lg">
                     <span className="text-muted">$</span>
                     <input
@@ -415,7 +425,7 @@ function ManageModal({ excursion, onClose, onSave }) {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-text mb-2">Status</label>
+                  <label className="block text-sm font-medium text-text mb-2">{t('admin.excursions.manage.status')}</label>
                   <button
                     onClick={() => setDraft((d) => ({ ...d, status: d.status === 'active' ? 'inactive' : 'active' }))}
                     className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -425,25 +435,25 @@ function ManageModal({ excursion, onClose, onSave }) {
                     }`}
                   >
                     <Power className="w-4 h-4" />
-                    {draft.status === 'active' ? 'Active' : 'Inactive'}
+                    {draft.status === 'active' ? t('admin.excursions.manage.active') : t('admin.excursions.manage.inactive')}
                   </button>
                 </div>
               </div>
 
               {/* Departures / capacity management */}
               <div>
-                <h3 className="text-sm font-semibold text-text mb-3">Schedules &amp; capacity</h3>
+                <h3 className="text-sm font-semibold text-text mb-3">{t('admin.excursions.manage.schedulesCapacity')}</h3>
                 <div className="space-y-2">
                   {draft.departures.map((dep) => {
                     const c = seatColor(dep.booked, dep.capacity)
                     return (
                       <div key={dep.id} className="flex items-center gap-3 p-3 bg-bg rounded-lg">
                         <div className="w-28 shrink-0">
-                          <p className="text-xs font-medium text-text">{formatDepDate(dep.date)}</p>
+                          <p className="text-xs font-medium text-text">{depDateText(dep.date, t)}</p>
                           <p className="text-xs text-muted flex items-center gap-1"><Clock className="w-3 h-3" />{dep.time}</p>
                         </div>
                         <div className="flex-1 text-xs text-muted">
-                          <span className={`font-semibold ${c.text}`}>{dep.booked}</span> booked · cap.
+                          <span className={`font-semibold ${c.text}`}>{dep.booked}</span> {t('admin.excursions.manage.booked')}
                         </div>
                         {/* Capacity stepper */}
                         <div className="flex items-center gap-1.5">
@@ -465,7 +475,7 @@ function ManageModal({ excursion, onClose, onSave }) {
                         <button
                           onClick={() => removeDep(dep.id)}
                           disabled={dep.booked > 0}
-                          title={dep.booked > 0 ? 'Has bookings — cannot remove' : 'Remove slot'}
+                          title={dep.booked > 0 ? t('admin.excursions.manage.hasBookings') : t('admin.excursions.manage.removeSlot')}
                           className="p-1.5 rounded-md text-muted hover:text-red-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -478,7 +488,7 @@ function ManageModal({ excursion, onClose, onSave }) {
                 {/* Add slot */}
                 <div className="mt-3 flex flex-wrap items-end gap-2 p-3 bg-bg rounded-lg">
                   <div className="flex-1 min-w-[120px]">
-                    <label className="block text-xs text-muted mb-1">Date</label>
+                    <label className="block text-xs text-muted mb-1">{t('admin.excursions.manage.date')}</label>
                     <DatePicker
                       value={newDep.date}
                       min={new Date().toISOString().split('T')[0]}
@@ -486,7 +496,7 @@ function ManageModal({ excursion, onClose, onSave }) {
                     />
                   </div>
                   <div className="w-24">
-                    <label className="block text-xs text-muted mb-1">Time</label>
+                    <label className="block text-xs text-muted mb-1">{t('admin.excursions.manage.time')}</label>
                     <input
                       type="time"
                       value={newDep.time}
@@ -495,7 +505,7 @@ function ManageModal({ excursion, onClose, onSave }) {
                     />
                   </div>
                   <div className="w-20">
-                    <label className="block text-xs text-muted mb-1">Cap.</label>
+                    <label className="block text-xs text-muted mb-1">{t('admin.excursions.manage.cap')}</label>
                     <input
                       type="number"
                       min={1}
@@ -509,26 +519,26 @@ function ManageModal({ excursion, onClose, onSave }) {
                     disabled={!newDep.date || !newDep.time}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-contrast text-sm font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
                   >
-                    <Plus className="w-4 h-4" /> Add
+                    <Plus className="w-4 h-4" /> {t('admin.excursions.manage.add')}
                   </button>
                 </div>
 
                 {/* Recurring generator — set weekdays + times and auto-create slots */}
                 <div className="mt-3 p-3 bg-bg rounded-lg space-y-3">
                   <p className="text-xs font-semibold text-text flex items-center gap-1.5">
-                    <Repeat className="w-3.5 h-3.5 text-muted" /> Generate recurring departures
+                    <Repeat className="w-3.5 h-3.5 text-muted" /> {t('admin.excursions.manage.generateRecurring')}
                   </p>
                   <div>
-                    <label className="block text-xs text-muted mb-1.5">Repeat on</label>
+                    <label className="block text-xs text-muted mb-1.5">{t('admin.excursions.manage.repeatOn')}</label>
                     <WeekdayChips value={rec.weekdays} onToggle={toggleRecDay} />
                   </div>
                   <div className="flex flex-wrap gap-4">
                     <div>
-                      <label className="block text-xs text-muted mb-1.5">Times</label>
+                      <label className="block text-xs text-muted mb-1.5">{t('admin.excursions.manage.times')}</label>
                       <TimesInput value={rec.times} onAdd={addRecTime} onRemove={removeRecTime} />
                     </div>
                     <div className="w-20">
-                      <label className="block text-xs text-muted mb-1.5">Weeks</label>
+                      <label className="block text-xs text-muted mb-1.5">{t('admin.excursions.manage.weeks')}</label>
                       <input
                         type="number"
                         min={1}
@@ -539,7 +549,7 @@ function ManageModal({ excursion, onClose, onSave }) {
                       />
                     </div>
                     <div className="w-20">
-                      <label className="block text-xs text-muted mb-1.5">Cap.</label>
+                      <label className="block text-xs text-muted mb-1.5">{t('admin.excursions.manage.cap')}</label>
                       <input
                         type="number"
                         min={1}
@@ -552,15 +562,17 @@ function ManageModal({ excursion, onClose, onSave }) {
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-xs text-muted">
                       {recPreview > 0
-                        ? `${recPreview} new departure${recPreview === 1 ? '' : 's'} · ${describeWeekdays(rec.weekdays)}`
-                        : 'Pick weekdays and at least one time.'}
+                        ? (recPreview === 1
+                            ? t('admin.excursions.manage.newDepartures', { count: recPreview, days: describeWeekdays(rec.weekdays) })
+                            : t('admin.excursions.manage.newDeparturesPlural', { count: recPreview, days: describeWeekdays(rec.weekdays) }))
+                        : t('admin.excursions.manage.pickWeekdaysTimes')}
                     </p>
                     <button
                       onClick={generateRecurring}
                       disabled={!recPreview}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-contrast text-sm font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
                     >
-                      <CalendarPlus className="w-4 h-4" /> Generate
+                      <CalendarPlus className="w-4 h-4" /> {t('admin.excursions.manage.generate')}
                     </button>
                   </div>
                 </div>
@@ -570,7 +582,7 @@ function ManageModal({ excursion, onClose, onSave }) {
             {/* Footer */}
             <div className="flex items-center justify-end gap-3 p-5 border-t border-border">
               <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-text hover:bg-bg rounded-lg transition-colors">
-                Cancel
+                {t('common.actions.cancel')}
               </button>
               <button
                 onClick={handleSave}
@@ -578,7 +590,7 @@ function ManageModal({ excursion, onClose, onSave }) {
                 className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-contrast text-sm font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
               >
                 <Save className="w-4 h-4" />
-                {saving ? 'Saving…' : 'Save changes'}
+                {saving ? t('admin.excursions.manage.saving') : t('admin.excursions.manage.saveChanges')}
               </button>
             </div>
           </motion.div>
@@ -603,6 +615,7 @@ function CreateModal({ open, onClose, onCreate }) {
     defaultCapacity: 12,
     recurrence: { enabled: false, weekdays: [], times: [], weeks: 4 }
   }
+  const { t } = useTranslation()
   const [form, setForm] = useState(blank)
   const [saving, setSaving] = useState(false)
   const [touched, setTouched] = useState(false)
@@ -692,8 +705,8 @@ function CreateModal({ open, onClose, onCreate }) {
                   <Compass className="w-5 h-5" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-text">New excursion</h2>
-                  <p className="text-sm text-muted">Add a tour to the catalogue</p>
+                  <h2 className="text-lg font-bold text-text">{t('admin.excursions.create.title')}</h2>
+                  <p className="text-sm text-muted">{t('admin.excursions.create.subtitle')}</p>
                 </div>
               </div>
               <button onClick={onClose} className="p-2 rounded-lg hover:bg-bg text-muted hover:text-text transition-colors">
@@ -707,52 +720,52 @@ function CreateModal({ open, onClose, onCreate }) {
                 {/* Left column */}
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-text mb-1.5">Name *</label>
+                    <label className="block text-sm font-medium text-text mb-1.5">{t('admin.excursions.create.name')}</label>
                     <input
                       type="text"
                       value={form.name}
                       onChange={(e) => set('name', e.target.value)}
-                      placeholder="e.g. Sunset Kayak Tour"
+                      placeholder={t('admin.excursions.create.namePlaceholder')}
                       className={`w-full px-3 py-2 bg-bg border rounded-lg text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/50 ${
                         fieldError('name') ? 'border-red-500' : 'border-border'
                       }`}
                     />
-                    {fieldError('name') && <p className="text-xs text-red-500 mt-1">Name is required</p>}
+                    {fieldError('name') && <p className="text-xs text-red-500 mt-1">{t('admin.excursions.create.nameRequired')}</p>}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-text mb-1.5">Description</label>
+                    <label className="block text-sm font-medium text-text mb-1.5">{t('admin.excursions.create.description')}</label>
                     <textarea
                       rows={3}
                       value={form.description}
                       onChange={(e) => set('description', e.target.value)}
-                      placeholder="Short description shown to guests…"
+                      placeholder={t('admin.excursions.create.descriptionPlaceholder')}
                       className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text placeholder:text-muted resize-none focus:outline-none focus:ring-2 focus:ring-primary/50"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm font-medium text-text mb-1.5">Category</label>
+                      <label className="block text-sm font-medium text-text mb-1.5">{t('admin.excursions.create.category')}</label>
                       <select
                         value={form.category}
                         onChange={(e) => set('category', e.target.value)}
                         className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
                       >
                         {EXCURSION_CATEGORIES.map((c) => (
-                          <option key={c} value={c}>{c}</option>
+                          <option key={c} value={c}>{t(`admin.excursions.categories.${c}`)}</option>
                         ))}
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-text mb-1.5">Difficulty</label>
+                      <label className="block text-sm font-medium text-text mb-1.5">{t('admin.excursions.create.difficulty')}</label>
                       <select
                         value={form.difficulty}
                         onChange={(e) => set('difficulty', e.target.value)}
                         className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
                       >
                         {DIFFICULTIES.map((d) => (
-                          <option key={d} value={d}>{d}</option>
+                          <option key={d} value={d}>{t(`admin.excursions.difficulties.${d}`)}</option>
                         ))}
                       </select>
                     </div>
@@ -761,13 +774,13 @@ function CreateModal({ open, onClose, onCreate }) {
 
                 {/* Right column — image */}
                 <div>
-                  <label className="block text-sm font-medium text-text mb-1.5">Image URL</label>
+                  <label className="block text-sm font-medium text-text mb-1.5">{t('admin.excursions.create.imageUrl')}</label>
                   <div className="aspect-video rounded-lg border border-border bg-bg overflow-hidden flex items-center justify-center mb-2">
                     {form.image ? (
                       // eslint-disable-next-line jsx-a11y/img-redundant-alt
                       <img
                         src={form.image}
-                        alt="Preview"
+                        alt={t('admin.excursions.create.preview')}
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none'
@@ -776,7 +789,7 @@ function CreateModal({ open, onClose, onCreate }) {
                     ) : (
                       <div className="flex flex-col items-center text-muted">
                         <ImageIcon className="w-8 h-8 mb-1" />
-                        <span className="text-xs">Preview</span>
+                        <span className="text-xs">{t('admin.excursions.create.preview')}</span>
                       </div>
                     )}
                   </div>
@@ -792,7 +805,7 @@ function CreateModal({ open, onClose, onCreate }) {
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-text mb-1.5">Price / person *</label>
+                  <label className="block text-sm font-medium text-text mb-1.5">{t('admin.excursions.create.pricePerPerson')}</label>
                   <div className={`flex items-center gap-1 px-3 py-2 bg-bg border rounded-lg ${fieldError('price') ? 'border-red-500' : 'border-border'}`}>
                     <span className="text-muted text-sm">$</span>
                     <input
@@ -806,19 +819,19 @@ function CreateModal({ open, onClose, onCreate }) {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-text mb-1.5">Duration *</label>
+                  <label className="block text-sm font-medium text-text mb-1.5">{t('admin.excursions.create.duration')}</label>
                   <input
                     type="text"
                     value={form.duration}
                     onChange={(e) => set('duration', e.target.value)}
-                    placeholder="e.g. 3 hours"
+                    placeholder={t('admin.excursions.create.durationPlaceholder')}
                     className={`w-full px-3 py-2 bg-bg border rounded-lg text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/50 ${
                       fieldError('duration') ? 'border-red-500' : 'border-border'
                     }`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-text mb-1.5">Default capacity *</label>
+                  <label className="block text-sm font-medium text-text mb-1.5">{t('admin.excursions.create.defaultCapacity')}</label>
                   <input
                     type="number"
                     min={1}
@@ -830,12 +843,12 @@ function CreateModal({ open, onClose, onCreate }) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-text mb-1.5">Guide</label>
+                  <label className="block text-sm font-medium text-text mb-1.5">{t('admin.excursions.create.guide')}</label>
                   <input
                     type="text"
                     value={form.guide}
                     onChange={(e) => set('guide', e.target.value)}
-                    placeholder="e.g. Carlos M."
+                    placeholder={t('admin.excursions.create.guidePlaceholder')}
                     className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/50"
                   />
                 </div>
@@ -843,22 +856,22 @@ function CreateModal({ open, onClose, onCreate }) {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-text mb-1.5">Location</label>
+                  <label className="block text-sm font-medium text-text mb-1.5">{t('admin.excursions.create.location')}</label>
                   <input
                     type="text"
                     value={form.location}
                     onChange={(e) => set('location', e.target.value)}
-                    placeholder="e.g. South Beach"
+                    placeholder={t('admin.excursions.create.locationPlaceholder')}
                     className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/50"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-text mb-1.5">Meeting point</label>
+                  <label className="block text-sm font-medium text-text mb-1.5">{t('admin.excursions.create.meetingPoint')}</label>
                   <input
                     type="text"
                     value={form.meetingPoint}
                     onChange={(e) => set('meetingPoint', e.target.value)}
-                    placeholder="e.g. Hotel Lobby"
+                    placeholder={t('admin.excursions.create.meetingPointPlaceholder')}
                     className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/50"
                   />
                 </div>
@@ -872,7 +885,7 @@ function CreateModal({ open, onClose, onCreate }) {
                   className="w-full flex items-center justify-between gap-2 px-4 py-3"
                 >
                   <span className="flex items-center gap-2 text-sm font-medium text-text">
-                    <Repeat className="w-4 h-4 text-muted" /> Schedule recurring departures
+                    <Repeat className="w-4 h-4 text-muted" /> {t('admin.excursions.create.scheduleRecurring')}
                   </span>
                   <span className={`relative w-10 h-5 rounded-full transition-colors ${rec.enabled ? 'bg-primary' : 'bg-border'}`}>
                     <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${rec.enabled ? 'translate-x-5' : ''}`} />
@@ -882,16 +895,16 @@ function CreateModal({ open, onClose, onCreate }) {
                 {rec.enabled ? (
                   <div className="px-4 pb-4 pt-1 space-y-3">
                     <div>
-                      <label className="block text-xs text-muted mb-1.5">Repeat on</label>
+                      <label className="block text-xs text-muted mb-1.5">{t('admin.excursions.create.repeatOn')}</label>
                       <WeekdayChips value={rec.weekdays} onToggle={toggleRecDay} />
                     </div>
                     <div className="flex flex-wrap gap-4 items-start">
                       <div>
-                        <label className="block text-xs text-muted mb-1.5">Times</label>
+                        <label className="block text-xs text-muted mb-1.5">{t('admin.excursions.create.times')}</label>
                         <TimesInput value={rec.times} onAdd={addRecTime} onRemove={removeRecTime} />
                       </div>
                       <div className="w-20">
-                        <label className="block text-xs text-muted mb-1.5">Weeks</label>
+                        <label className="block text-xs text-muted mb-1.5">{t('admin.excursions.create.weeks')}</label>
                         <input
                           type="number"
                           min={1}
@@ -904,13 +917,15 @@ function CreateModal({ open, onClose, onCreate }) {
                     </div>
                     <p className={`text-xs ${fieldError('recurrence') ? 'text-red-500' : 'text-muted'}`}>
                       {recCount > 0
-                        ? `${recCount} departure${recCount === 1 ? '' : 's'} will be created · ${describeWeekdays(rec.weekdays)} · next ${rec.weeks} weeks.`
-                        : 'Pick at least one weekday and one time.'}
+                        ? (recCount === 1
+                            ? t('admin.excursions.create.willCreate', { count: recCount, days: describeWeekdays(rec.weekdays), weeks: rec.weeks })
+                            : t('admin.excursions.create.willCreatePlural', { count: recCount, days: describeWeekdays(rec.weekdays), weeks: rec.weeks }))
+                        : t('admin.excursions.create.pickWeekdayTime')}
                     </p>
                   </div>
                 ) : (
                   <p className="px-4 pb-4 pt-1 text-xs text-muted">
-                    Two upcoming departures (today &amp; tomorrow) will be created automatically using the default capacity. You can adjust the schedule afterwards from <span className="text-text font-medium">Manage</span>.
+                    {t('admin.excursions.create.autoHint')} <span className="text-text font-medium">{t('admin.excursions.create.autoHintManage')}</span>.
                   </p>
                 )}
               </div>
@@ -919,7 +934,7 @@ function CreateModal({ open, onClose, onCreate }) {
             {/* Footer */}
             <div className="flex items-center justify-end gap-3 p-5 border-t border-border">
               <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-text hover:bg-bg rounded-lg transition-colors">
-                Cancel
+                {t('common.actions.cancel')}
               </button>
               <button
                 onClick={handleCreate}
@@ -927,7 +942,7 @@ function CreateModal({ open, onClose, onCreate }) {
                 className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-contrast text-sm font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
               >
                 <Plus className="w-4 h-4" />
-                {saving ? 'Creating…' : 'Create excursion'}
+                {saving ? t('admin.excursions.create.creating') : t('admin.excursions.create.create')}
               </button>
             </div>
           </motion.div>
@@ -940,14 +955,15 @@ function CreateModal({ open, onClose, onCreate }) {
 // --- Metrics view -----------------------------------------------------------
 
 function RevenueChart({ data }) {
+  const { t } = useTranslation()
   const max = Math.max(...data.map((d) => d.revenue), 1)
   return (
     <div className="bg-surface rounded-xl border border-border p-4 sm:p-5">
       <h3 className="text-base font-bold text-text mb-1 flex items-center gap-2">
         <DollarSign className="w-5 h-5 text-primary" />
-        Total revenue by excursion
+        {t('admin.excursions.metrics.revenueByExcursion')}
       </h3>
-      <p className="text-xs text-muted mb-4">Realised bookings · last 28 days</p>
+      <p className="text-xs text-muted mb-4">{t('admin.excursions.metrics.realisedBookings')}</p>
       <div className="space-y-3">
         {data.map((e, i) => (
           <div key={e.id} className="flex items-center gap-3">
@@ -973,17 +989,18 @@ function RevenueChart({ data }) {
 }
 
 function TopPopular({ data }) {
+  const { t } = useTranslation()
   const medals = ['bg-amber-400 text-amber-950', 'bg-slate-300 text-slate-800', 'bg-orange-400 text-orange-950']
   const maxBookings = Math.max(...data.map((d) => d.bookings), 1)
   return (
     <div className="bg-surface rounded-xl border border-border p-4 sm:p-5">
       <h3 className="text-base font-bold text-text mb-1 flex items-center gap-2">
         <Award className="w-5 h-5 text-primary" />
-        Top 3 most popular
+        {t('admin.excursions.metrics.topPopular')}
       </h3>
-      <p className="text-xs text-muted mb-4">Ranked by seats sold</p>
+      <p className="text-xs text-muted mb-4">{t('admin.excursions.metrics.rankedBySeats')}</p>
       {data.length === 0 ? (
-        <p className="text-sm text-muted py-6 text-center">No bookings recorded yet.</p>
+        <p className="text-sm text-muted py-6 text-center">{t('admin.excursions.metrics.noBookings')}</p>
       ) : (
         <div className="space-y-3">
           {data.map((e, i) => (
@@ -1005,7 +1022,7 @@ function TopPopular({ data }) {
               </div>
               <div className="text-right shrink-0">
                 <p className="text-sm font-bold text-text tabular-nums">{e.bookings}</p>
-                <p className="text-[11px] text-muted">bookings</p>
+                <p className="text-[11px] text-muted">{t('admin.excursions.metrics.bookings')}</p>
               </div>
             </div>
           ))}
@@ -1016,14 +1033,15 @@ function TopPopular({ data }) {
 }
 
 function WeekdayOccupancy({ data }) {
+  const { t } = useTranslation()
   const max = Math.max(...data.map((d) => d.occ), 1)
   return (
     <div className="bg-surface rounded-xl border border-border p-4 sm:p-5">
       <h3 className="text-base font-bold text-text mb-1 flex items-center gap-2">
         <Percent className="w-5 h-5 text-primary" />
-        Average occupancy by day
+        {t('admin.excursions.metrics.avgOccupancy')}
       </h3>
-      <p className="text-xs text-muted mb-4">Seats filled per weekday · last 28 days</p>
+      <p className="text-xs text-muted mb-4">{t('admin.excursions.metrics.seatsPerWeekday')}</p>
       <div className="flex items-end gap-2 sm:gap-3 h-40">
         {data.map((d, i) => (
           <div key={d.label} className="flex-1 flex flex-col items-center justify-end gap-1.5 h-full">
@@ -1046,6 +1064,7 @@ function WeekdayOccupancy({ data }) {
 }
 
 function TrendLine({ data }) {
+  const { t } = useTranslation()
   const W = 280
   const H = 110
   const pad = 10
@@ -1063,9 +1082,9 @@ function TrendLine({ data }) {
     <div className="bg-surface rounded-xl border border-border p-4 sm:p-5">
       <h3 className="text-base font-bold text-text mb-1 flex items-center gap-2">
         <TrendingUp className="w-5 h-5 text-primary" />
-        Booking trend
+        {t('admin.excursions.metrics.bookingTrend')}
       </h3>
-      <p className="text-xs text-muted mb-4">Total seats sold per week · last 4 weeks</p>
+      <p className="text-xs text-muted mb-4">{t('admin.excursions.metrics.seatsPerWeek')}</p>
       <div className="text-primary">
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-32" preserveAspectRatio="none">
           <path d={areaPath} fill="currentColor" opacity="0.12" />
@@ -1098,15 +1117,16 @@ function TrendLine({ data }) {
 }
 
 function MetricsView({ excursions }) {
+  const { t } = useTranslation()
   const metrics = useMemo(() => getExcursionMetrics(excursions), [excursions])
   const avgTicket = metrics.totalBookings ? Math.round(metrics.totalRevenue / metrics.totalBookings) : 0
 
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        <KPICard index={0} icon={DollarSign} label="Revenue · 28 days" value={`$${metrics.totalRevenue.toLocaleString()}`} color="bg-green-500" />
-        <KPICard index={1} icon={Ticket} label="Seats sold · 28 days" value={metrics.totalBookings.toLocaleString()} color="bg-blue-500" />
-        <KPICard index={2} icon={TrendingUp} label="Avg. ticket" value={`$${avgTicket}`} sub="per seat" color="bg-purple-500" />
+        <KPICard index={0} icon={DollarSign} label={t('admin.excursions.metrics.revenue28')} value={`$${metrics.totalRevenue.toLocaleString()}`} color="bg-green-500" />
+        <KPICard index={1} icon={Ticket} label={t('admin.excursions.metrics.seatsSold28')} value={metrics.totalBookings.toLocaleString()} color="bg-blue-500" />
+        <KPICard index={2} icon={TrendingUp} label={t('admin.excursions.metrics.avgTicket')} value={`$${avgTicket}`} sub={t('admin.excursions.metrics.perSeat')} color="bg-purple-500" />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <RevenueChart data={metrics.revenueByExcursion} />
@@ -1119,6 +1139,7 @@ function MetricsView({ excursions }) {
 }
 
 export default function ExcursionsManagement() {
+  const { t } = useTranslation()
   const [excursions, setExcursions] = useState(loadExcursions)
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all')
@@ -1238,8 +1259,8 @@ export default function ExcursionsManagement() {
   }
 
   const tabs = [
-    { id: 'catalogue', label: 'Catalogue', icon: LayoutGrid },
-    { id: 'metrics', label: 'Metrics', icon: BarChart3 }
+    { id: 'catalogue', key: 'admin.excursions.tabs.catalogue', icon: LayoutGrid },
+    { id: 'metrics', key: 'admin.excursions.tabs.metrics', icon: BarChart3 }
   ]
 
   return (
@@ -1247,32 +1268,32 @@ export default function ExcursionsManagement() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold text-text">Excursions</h2>
-          <p className="text-sm text-muted">Schedules, capacity and performance</p>
+          <h2 className="text-xl font-bold text-text">{t('admin.excursions.title')}</h2>
+          <p className="text-sm text-muted">{t('admin.excursions.subtitle')}</p>
         </div>
         <button
           onClick={() => setCreating(true)}
           className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-contrast text-sm font-medium rounded-lg hover:opacity-90 transition-opacity self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
-          Add excursion
+          {t('admin.excursions.add')}
         </button>
       </div>
 
       {/* Tabs */}
       <div className="flex gap-1 p-1 bg-bg border border-border rounded-lg w-full sm:w-auto sm:inline-flex">
-        {tabs.map((t) => {
-          const activeTab = tab === t.id
+        {tabs.map((tabItem) => {
+          const activeTab = tab === tabItem.id
           return (
             <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
+              key={tabItem.id}
+              onClick={() => setTab(tabItem.id)}
               className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                 activeTab ? 'bg-primary text-primary-contrast' : 'text-muted hover:text-text'
               }`}
             >
-              <t.icon className="w-4 h-4" />
-              {t.label}
+              <tabItem.icon className="w-4 h-4" />
+              {t(tabItem.key)}
             </button>
           )
         })}
@@ -1284,10 +1305,10 @@ export default function ExcursionsManagement() {
         <>
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <KPICard index={0} icon={Compass} label="Active excursions" value={`${stats.activeCount}/${stats.total}`} color="bg-teal-500" />
-        <KPICard index={1} icon={Calendar} label="Departures today" value={stats.todaySlots} color="bg-blue-500" />
-        <KPICard index={2} icon={Users} label="Seats occupancy" value={`${stats.occupancy}%`} sub={`${stats.seatsBooked}/${stats.seatsCap} seats today`} color="bg-purple-500" />
-        <KPICard index={3} icon={TrendingUp} label="Revenue today" value={`$${stats.revenue.toLocaleString()}`} color="bg-green-500" />
+        <KPICard index={0} icon={Compass} label={t('admin.excursions.kpis.activeExcursions')} value={`${stats.activeCount}/${stats.total}`} color="bg-teal-500" />
+        <KPICard index={1} icon={Calendar} label={t('admin.excursions.kpis.departuresToday')} value={stats.todaySlots} color="bg-blue-500" />
+        <KPICard index={2} icon={Users} label={t('admin.excursions.kpis.seatsOccupancy')} value={`${stats.occupancy}%`} sub={t('admin.excursions.kpis.seatsToday', { booked: stats.seatsBooked, cap: stats.seatsCap })} color="bg-purple-500" />
+        <KPICard index={3} icon={TrendingUp} label={t('admin.excursions.kpis.revenueToday')} value={`$${stats.revenue.toLocaleString()}`} color="bg-green-500" />
       </div>
 
       {/* Filters */}
@@ -1296,7 +1317,7 @@ export default function ExcursionsManagement() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <input
             type="text"
-            placeholder="Search excursions, location…"
+            placeholder={t('admin.excursions.searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-bg border border-border rounded-lg text-text placeholder:text-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
@@ -1308,9 +1329,9 @@ export default function ExcursionsManagement() {
             onChange={(e) => setCategoryFilter(e.target.value)}
             className="px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
           >
-            <option value="all">All categories</option>
+            <option value="all">{t('admin.excursions.filters.allCategories')}</option>
             {EXCURSION_CATEGORIES.map((c) => (
-              <option key={c} value={c}>{c}</option>
+              <option key={c} value={c}>{t(`admin.excursions.categories.${c}`)}</option>
             ))}
           </select>
           <select
@@ -1318,9 +1339,9 @@ export default function ExcursionsManagement() {
             onChange={(e) => setStatusFilter(e.target.value)}
             className="px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
           >
-            <option value="all">All status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
+            <option value="all">{t('admin.excursions.filters.allStatus')}</option>
+            <option value="active">{t('admin.excursions.filters.active')}</option>
+            <option value="inactive">{t('admin.excursions.filters.inactive')}</option>
           </select>
         </div>
       </div>
@@ -1340,8 +1361,8 @@ export default function ExcursionsManagement() {
       {filtered.length === 0 && (
         <div className="text-center py-12">
           <Compass className="w-12 h-12 mx-auto text-muted mb-4" />
-          <h3 className="text-lg font-medium text-text mb-1">No excursions found</h3>
-          <p className="text-sm text-muted">Try adjusting your filters or search query</p>
+          <h3 className="text-lg font-medium text-text mb-1">{t('admin.excursions.empty.title')}</h3>
+          <p className="text-sm text-muted">{t('admin.excursions.empty.subtitle')}</p>
         </div>
       )}
         </>

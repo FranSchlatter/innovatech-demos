@@ -1,0 +1,15 @@
+export default {
+  home: 'Home',
+  accommodation: 'Accommodation',
+  services: 'Services',
+  amenities: 'Amenities',
+  activities: 'Activities',
+  offers: 'Offers',
+  contact: 'Contact',
+  tour: 'Tour',
+  guestPortal: 'Guest Portal',
+  admin: 'Admin',
+  lightMode: 'Light mode',
+  darkMode: 'Dark mode',
+  language: 'Language',
+}

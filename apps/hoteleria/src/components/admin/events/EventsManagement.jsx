@@ -21,6 +21,7 @@ import {
   CalendarCheck
 } from 'lucide-react'
 import { useEvents } from '../../../hooks/useEvents'
+import { useTranslation } from '../../../i18n/LanguageProvider'
 import {
   EVENT_CATEGORIES,
   EVENT_CATEGORY_OPTIONS,
@@ -34,21 +35,16 @@ import {
 } from '../../../data/mockEvents'
 import { WEEKDAYS, weekdayOf, describeWeekdays } from '../../../data/recurrence'
 
+// Status pill styling. Labels resolve at render time via t('admin.events.status.<id>').
 const STATUS = {
-  today: { label: 'Hoy', cls: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20' },
-  upcoming: { label: 'Próximo', cls: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20' },
-  past: { label: 'Finalizado', cls: 'bg-gray-500/10 text-gray-500 dark:text-gray-400 border-gray-500/20' },
-  cancelled: { label: 'Cancelado', cls: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20' }
+  today: { cls: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20' },
+  upcoming: { cls: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20' },
+  past: { cls: 'bg-gray-500/10 text-gray-500 dark:text-gray-400 border-gray-500/20' },
+  cancelled: { cls: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20' }
 }
 
 // Order events by relevance: today first, then upcoming, cancelled, past.
 const STATUS_RANK = { today: 0, upcoming: 1, cancelled: 2, past: 3 }
-
-const WEEKDAYS_ES = ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa']
-const MONTHS_ES = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-]
 
 const pad = (n) => String(n).padStart(2, '0')
 const toISO = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
@@ -74,6 +70,7 @@ function KPICard({ icon: Icon, label, value, sub, color, index }) {
 
 // ---------------------------------------------------------------- Create / edit modal
 function EventModal({ open, editing, initialDate, onClose, onSave }) {
+  const { t } = useTranslation()
   const empty = {
     name: '',
     description: '',
@@ -174,7 +171,7 @@ function EventModal({ open, editing, initialDate, onClose, onSave }) {
                 <div className="p-2 rounded-lg bg-primary/10">
                   <CalendarDays className="w-5 h-5 text-primary" />
                 </div>
-                <h2 className="text-lg font-bold text-text">{editing ? 'Editar evento' : 'Crear evento'}</h2>
+                <h2 className="text-lg font-bold text-text">{editing ? t('admin.events.modal.editTitle') : t('admin.events.modal.createTitle')}</h2>
               </div>
               <button onClick={onClose} className="p-2 rounded-lg hover:bg-bg text-muted hover:text-text transition-colors">
                 <X className="w-5 h-5" />
@@ -184,7 +181,7 @@ function EventModal({ open, editing, initialDate, onClose, onSave }) {
             <div className="p-5 overflow-y-auto space-y-5">
               {/* Image + preview / placeholder upload */}
               <div>
-                <label className="block text-sm font-medium text-text mb-2">Imagen de portada</label>
+                <label className="block text-sm font-medium text-text mb-2">{t('admin.events.modal.coverLabel')}</label>
                 <div className="flex gap-3">
                   <div className="w-24 h-24 rounded-lg overflow-hidden bg-bg border border-border flex-shrink-0 flex items-center justify-center">
                     {draft.image ? (
@@ -198,11 +195,11 @@ function EventModal({ open, editing, initialDate, onClose, onSave }) {
                       type="url"
                       value={draft.image}
                       onChange={(e) => set({ image: e.target.value })}
-                      placeholder="https://…/foto.jpg"
+                      placeholder={t('admin.events.modal.coverPlaceholder')}
                       className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/50"
                     />
                     <p className="text-[11px] text-muted mt-1.5">
-                      Pegá una URL de imagen. La subida de archivos se habilita al conectar el backend.
+                      {t('admin.events.modal.coverHint')}
                     </p>
                   </div>
                 </div>
@@ -210,7 +207,7 @@ function EventModal({ open, editing, initialDate, onClose, onSave }) {
 
               {/* Category */}
               <div>
-                <label className="block text-sm font-medium text-text mb-2">Categoría</label>
+                <label className="block text-sm font-medium text-text mb-2">{t('admin.events.modal.categoryLabel')}</label>
                 <div className="flex flex-wrap gap-2">
                   {EVENT_CATEGORY_OPTIONS.map((opt) => {
                     const OptIcon = opt.icon
@@ -227,7 +224,7 @@ function EventModal({ open, editing, initialDate, onClose, onSave }) {
                         }`}
                       >
                         <OptIcon className="w-3.5 h-3.5" />
-                        {opt.label}
+                        {t(`admin.events.categories.${opt.value}`)}
                       </button>
                     )
                   })}
@@ -236,26 +233,26 @@ function EventModal({ open, editing, initialDate, onClose, onSave }) {
 
               {/* Name */}
               <div>
-                <label className="block text-sm font-medium text-text mb-2">Nombre</label>
+                <label className="block text-sm font-medium text-text mb-2">{t('admin.events.modal.nameLabel')}</label>
                 <input
                   type="text"
                   maxLength={70}
                   value={draft.name}
                   onChange={(e) => set({ name: e.target.value })}
-                  placeholder="Ej: Noche de jazz en vivo"
+                  placeholder={t('admin.events.modal.namePlaceholder')}
                   className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/50"
                 />
               </div>
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-medium text-text mb-2">Descripción</label>
+                <label className="block text-sm font-medium text-text mb-2">{t('admin.events.modal.descriptionLabel')}</label>
                 <textarea
                   rows={2}
                   maxLength={200}
                   value={draft.description}
                   onChange={(e) => set({ description: e.target.value })}
-                  placeholder="Breve descripción que verá el huésped."
+                  placeholder={t('admin.events.modal.descriptionPlaceholder')}
                   className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
                 />
                 <p className="text-[11px] text-muted mt-1 text-right">{draft.description.length}/200</p>
@@ -263,13 +260,13 @@ function EventModal({ open, editing, initialDate, onClose, onSave }) {
 
               {/* Location */}
               <div>
-                <label className="block text-sm font-medium text-text mb-2">Ubicación</label>
+                <label className="block text-sm font-medium text-text mb-2">{t('admin.events.modal.locationLabel')}</label>
                 <input
                   type="text"
                   maxLength={60}
                   value={draft.location}
                   onChange={(e) => set({ location: e.target.value })}
-                  placeholder="Ej: Terraza principal"
+                  placeholder={t('admin.events.modal.locationPlaceholder')}
                   className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/50"
                 />
               </div>
@@ -277,7 +274,7 @@ function EventModal({ open, editing, initialDate, onClose, onSave }) {
               {/* Date */}
               <div>
                 <label className="block text-sm font-medium text-text mb-2">
-                  {recurring ? 'A partir de' : 'Fecha'}
+                  {recurring ? t('admin.events.modal.dateFromLabel') : t('admin.events.modal.dateLabel')}
                 </label>
                 <DatePicker
                   value={draft.date}
@@ -289,7 +286,7 @@ function EventModal({ open, editing, initialDate, onClose, onSave }) {
               {/* Times + capacity */}
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-text mb-2">Inicio</label>
+                  <label className="block text-sm font-medium text-text mb-2">{t('admin.events.modal.startLabel')}</label>
                   <input
                     type="time"
                     value={draft.startTime}
@@ -298,7 +295,7 @@ function EventModal({ open, editing, initialDate, onClose, onSave }) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-text mb-2">Fin</label>
+                  <label className="block text-sm font-medium text-text mb-2">{t('admin.events.modal.endLabel')}</label>
                   <input
                     type="time"
                     value={draft.endTime}
@@ -308,7 +305,7 @@ function EventModal({ open, editing, initialDate, onClose, onSave }) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-text mb-2">Cupos</label>
+                  <label className="block text-sm font-medium text-text mb-2">{t('admin.events.modal.capacityLabel')}</label>
                   <input
                     type="number"
                     min={1}
@@ -327,7 +324,7 @@ function EventModal({ open, editing, initialDate, onClose, onSave }) {
                   className="w-full flex items-center justify-between gap-2 px-4 py-3"
                 >
                   <span className="flex items-center gap-2 text-sm font-medium text-text">
-                    <Repeat className="w-4 h-4 text-muted" /> Evento recurrente (semanal)
+                    <Repeat className="w-4 h-4 text-muted" /> {t('admin.events.modal.recurringToggle')}
                   </span>
                   <span className={`relative w-10 h-5 rounded-full transition-colors ${recurring ? 'bg-primary' : 'bg-border'}`}>
                     <span
@@ -341,7 +338,7 @@ function EventModal({ open, editing, initialDate, onClose, onSave }) {
                 {/* Weekday picker — only when recurrence is on */}
                 {recurring && (
                   <div className="px-4 pb-4 pt-1">
-                    <p className="text-xs text-muted mb-2">Se repite cada semana los días:</p>
+                    <p className="text-xs text-muted mb-2">{t('admin.events.modal.recurringHint')}</p>
                     <div className="flex flex-wrap gap-1.5">
                       {WEEKDAYS.map((w) => {
                         const active = draft.weekdays.includes(w.value)
@@ -368,7 +365,7 @@ function EventModal({ open, editing, initialDate, onClose, onSave }) {
 
             <div className="flex items-center justify-end gap-3 p-5 border-t border-border">
               <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-text hover:bg-bg rounded-lg transition-colors">
-                Cancelar
+                {t('common.actions.cancel')}
               </button>
               <button
                 onClick={handleSave}
@@ -376,7 +373,7 @@ function EventModal({ open, editing, initialDate, onClose, onSave }) {
                 className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-contrast text-sm font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Save className="w-4 h-4" />
-                {saving ? 'Guardando…' : editing ? 'Guardar cambios' : 'Crear evento'}
+                {saving ? t('common.actions.saving') : editing ? t('admin.events.modal.saveChanges') : t('admin.events.modal.create')}
               </button>
             </div>
           </motion.div>
@@ -387,7 +384,7 @@ function EventModal({ open, editing, initialDate, onClose, onSave }) {
 }
 
 // ---------------------------------------------------------------- Event card (list view)
-function EventCard({ event, today, onEdit, onCancel, onDelete }) {
+function EventCard({ event, today, onEdit, onCancel, onDelete, t }) {
   const status = eventStatus(event, today)
   const st = STATUS[status]
   const cfg = EVENT_CATEGORIES[event.category] || EVENT_CATEGORIES.social
@@ -418,10 +415,10 @@ function EventCard({ event, today, onEdit, onCancel, onDelete }) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <span className={`absolute top-3 left-3 inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full text-white ${cfg.solid}`}>
           <CatIcon className="w-3 h-3" />
-          {cfg.label}
+          {t(`admin.events.categories.${event.category}`)}
         </span>
         <span className={`absolute top-3 right-3 inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full border ${st.cls}`}>
-          {st.label}
+          {t(`admin.events.status.${status}`)}
         </span>
         <div className="absolute bottom-3 left-3 right-3 text-white">
           <h3 className={`font-bold truncate ${cancelled ? 'line-through' : ''}`}>{event.name}</h3>
@@ -443,10 +440,10 @@ function EventCard({ event, today, onEdit, onCancel, onDelete }) {
         <div className="mb-1 flex items-center justify-between text-xs">
           <span className="text-text font-medium flex items-center gap-1">
             <Users className="w-3.5 h-3.5 text-muted" />
-            {event.registered}/{event.capacity} inscriptos
+            {t('admin.events.card.registered', { registered: event.registered, capacity: event.capacity })}
           </span>
           <span className={left === 0 ? 'text-red-600 dark:text-red-400 font-semibold' : 'text-muted'}>
-            {left === 0 ? 'Completo' : `${left} libres`}
+            {left === 0 ? t('admin.events.card.full') : t('admin.events.card.spotsLeft', { count: left })}
           </span>
         </div>
         <div className="h-2 rounded-full bg-bg overflow-hidden mb-4">
@@ -463,19 +460,19 @@ function EventCard({ event, today, onEdit, onCancel, onDelete }) {
                 : 'bg-bg text-muted hover:text-text'
             }`}
           >
-            {cancelled ? <><RotateCcw className="w-3.5 h-3.5" />Reactivar</> : <><Ban className="w-3.5 h-3.5" />Cancelar</>}
+            {cancelled ? <><RotateCcw className="w-3.5 h-3.5" />{t('admin.events.card.reactivate')}</> : <><Ban className="w-3.5 h-3.5" />{t('admin.events.card.cancel')}</>}
           </button>
           <button
             onClick={() => onEdit(event)}
             className="p-1.5 rounded-lg text-muted hover:text-primary hover:bg-bg transition-colors"
-            title="Editar evento"
+            title={t('admin.events.card.editTitle')}
           >
             <Pencil className="w-4 h-4" />
           </button>
           <button
             onClick={() => onDelete(event.id)}
             className="p-1.5 rounded-lg text-muted hover:text-red-500 transition-colors"
-            title="Eliminar evento"
+            title={t('admin.events.card.deleteTitle')}
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -486,7 +483,7 @@ function EventCard({ event, today, onEdit, onCancel, onDelete }) {
 }
 
 // ---------------------------------------------------------------- Monthly calendar view
-function MonthCalendar({ events, today, onEdit, onCreateOnDate }) {
+function MonthCalendar({ events, today, onEdit, onCreateOnDate, t }) {
   const [viewMonth, setViewMonth] = useState(() => {
     const d = new Date(today + 'T00:00:00')
     return new Date(d.getFullYear(), d.getMonth(), 1)
@@ -544,16 +541,16 @@ function MonthCalendar({ events, today, onEdit, onCreateOnDate }) {
       {/* Month navigation */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-base font-bold text-text">
-          {MONTHS_ES[viewMonth.getMonth()]} {viewMonth.getFullYear()}
+          {t('admin.events.calendar.months')[viewMonth.getMonth()]} {viewMonth.getFullYear()}
         </h3>
         <div className="flex items-center gap-1">
           <button onClick={goToday} className="px-3 py-1.5 rounded-lg text-sm font-medium text-text hover:bg-bg transition-colors">
-            Hoy
+            {t('common.actions.today')}
           </button>
-          <button onClick={goPrev} aria-label="Mes anterior" className="w-8 h-8 rounded-lg flex items-center justify-center text-muted hover:text-primary hover:bg-bg transition-colors">
+          <button onClick={goPrev} aria-label={t('admin.events.calendar.prevMonth')} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted hover:text-primary hover:bg-bg transition-colors">
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <button onClick={goNext} aria-label="Mes siguiente" className="w-8 h-8 rounded-lg flex items-center justify-center text-muted hover:text-primary hover:bg-bg transition-colors">
+          <button onClick={goNext} aria-label={t('admin.events.calendar.nextMonth')} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted hover:text-primary hover:bg-bg transition-colors">
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
@@ -561,7 +558,7 @@ function MonthCalendar({ events, today, onEdit, onCreateOnDate }) {
 
       {/* Weekday header */}
       <div className="grid grid-cols-7 gap-1 mb-1">
-        {WEEKDAYS_ES.map((w) => (
+        {t('admin.events.calendar.weekdaysShort').map((w) => (
           <span key={w} className="text-[11px] font-medium text-muted text-center py-1">{w}</span>
         ))}
       </div>
@@ -579,7 +576,7 @@ function MonthCalendar({ events, today, onEdit, onCreateOnDate }) {
               key={iso}
               onClick={canCreate ? () => onCreateOnDate(iso) : undefined}
               role={canCreate ? 'button' : undefined}
-              title={canCreate ? 'Crear evento este día' : undefined}
+              title={canCreate ? t('admin.events.calendar.createOnDay') : undefined}
               className={`group relative min-h-[84px] rounded-lg border p-1.5 flex flex-col gap-1 transition-colors ${
                 isToday ? 'border-primary bg-primary/5' : 'border-border bg-bg'
               } ${canCreate ? 'cursor-pointer hover:border-primary' : ''}`}
@@ -599,7 +596,7 @@ function MonthCalendar({ events, today, onEdit, onCreateOnDate }) {
                     <button
                       key={`${e.id}-${iso}`}
                       onClick={(ev) => { ev.stopPropagation(); onEdit(e) }}
-                      title={`${e.startTime} · ${e.name}${isOccurrence ? ' (recurrente)' : ''}`}
+                      title={`${e.startTime} · ${e.name}${isOccurrence ? t('admin.events.calendar.recurringSuffix') : ''}`}
                       className={`w-full text-left text-[10px] leading-tight px-1.5 py-1 rounded ${cfg.softBg} ${cfg.softText} hover:opacity-80 transition-opacity truncate ${
                         e.cancelled ? 'line-through opacity-60' : ''
                       }`}
@@ -614,7 +611,7 @@ function MonthCalendar({ events, today, onEdit, onCreateOnDate }) {
                   )
                 })}
                 {dayEvents.length > 3 && (
-                  <span className="text-[10px] text-muted px-1.5">+{dayEvents.length - 3} más</span>
+                  <span className="text-[10px] text-muted px-1.5">{t('admin.events.calendar.moreEvents', { count: dayEvents.length - 3 })}</span>
                 )}
               </div>
             </div>
@@ -629,7 +626,7 @@ function MonthCalendar({ events, today, onEdit, onCreateOnDate }) {
           return (
             <span key={opt.value} className="inline-flex items-center gap-1.5 text-xs text-muted">
               <span className={`w-2.5 h-2.5 rounded-full ${cfg.dot}`} />
-              {opt.label}
+              {t(`admin.events.categories.${opt.value}`)}
             </span>
           )
         })}
@@ -640,6 +637,7 @@ function MonthCalendar({ events, today, onEdit, onCreateOnDate }) {
 
 // ---------------------------------------------------------------- Main
 export default function EventsManagement() {
+  const { t } = useTranslation()
   const { events, addEvent, updateEvent, deleteEvent, toggleCancel } = useEvents()
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState(null)
@@ -695,7 +693,7 @@ export default function EventsManagement() {
     else addEvent(draft)
   }
   const handleDelete = (id) => {
-    if (window.confirm('¿Eliminar este evento? No se puede deshacer.')) deleteEvent(id)
+    if (window.confirm(t('admin.events.deleteConfirm'))) deleteEvent(id)
   }
 
   return (
@@ -704,26 +702,26 @@ export default function EventsManagement() {
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-xl font-bold text-text flex items-center gap-2">
-            <CalendarDays className="w-5 h-5 text-primary" /> Actividades y eventos
+            <CalendarDays className="w-5 h-5 text-primary" /> {t('admin.events.title')}
           </h1>
           <p className="text-sm text-muted">
-            Programá actividades del hotel. Aparecen en la landing y los huéspedes pueden registrarse.
+            {t('admin.events.subtitle')}
           </p>
         </div>
         <button
           onClick={openCreate}
           className="inline-flex items-center gap-2 px-3 py-2 bg-primary text-primary-contrast text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
         >
-          <Plus className="w-4 h-4" /> Crear evento
+          <Plus className="w-4 h-4" /> {t('admin.events.create')}
         </button>
       </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <KPICard index={0} icon={CalendarDays} label="Eventos totales" value={stats.total} color="bg-indigo-500" />
-        <KPICard index={1} icon={CalendarCheck} label="Próximos" value={stats.upcoming} color="bg-blue-500" />
-        <KPICard index={2} icon={Users} label="Inscriptos" value={stats.totalRegistered} color="bg-emerald-500" />
-        <KPICard index={3} icon={Users} label="Ocupación próximos" value={`${stats.occupancy}%`} color="bg-amber-500" />
+        <KPICard index={0} icon={CalendarDays} label={t('admin.events.kpis.total')} value={stats.total} color="bg-indigo-500" />
+        <KPICard index={1} icon={CalendarCheck} label={t('admin.events.kpis.upcoming')} value={stats.upcoming} color="bg-blue-500" />
+        <KPICard index={2} icon={Users} label={t('admin.events.kpis.registered')} value={stats.totalRegistered} color="bg-emerald-500" />
+        <KPICard index={3} icon={Users} label={t('admin.events.kpis.occupancy')} value={`${stats.occupancy}%`} color="bg-amber-500" />
       </div>
 
       {/* Tabs + filter */}
@@ -735,7 +733,7 @@ export default function EventsManagement() {
               tab === 'list' ? 'bg-primary text-primary-contrast' : 'text-muted hover:text-text'
             }`}
           >
-            <List className="w-4 h-4" /> Lista
+            <List className="w-4 h-4" /> {t('admin.events.tabs.list')}
           </button>
           <button
             onClick={() => setTab('calendar')}
@@ -743,7 +741,7 @@ export default function EventsManagement() {
               tab === 'calendar' ? 'bg-primary text-primary-contrast' : 'text-muted hover:text-text'
             }`}
           >
-            <CalendarDays className="w-4 h-4" /> Calendario
+            <CalendarDays className="w-4 h-4" /> {t('admin.events.tabs.calendar')}
           </button>
         </div>
 
@@ -753,9 +751,9 @@ export default function EventsManagement() {
             onChange={(e) => setCategoryFilter(e.target.value)}
             className="px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
           >
-            <option value="all">Todas las categorías</option>
+            <option value="all">{t('admin.events.filterAll')}</option>
             {EVENT_CATEGORY_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
+              <option key={o.value} value={o.value}>{t(`admin.events.categories.${o.value}`)}</option>
             ))}
           </select>
         )}
@@ -763,11 +761,11 @@ export default function EventsManagement() {
 
       {/* Content */}
       {tab === 'calendar' ? (
-        <MonthCalendar events={events} today={today} onEdit={openEdit} onCreateOnDate={openCreateOnDate} />
+        <MonthCalendar events={events} today={today} onEdit={openEdit} onCreateOnDate={openCreateOnDate} t={t} />
       ) : sorted.length === 0 ? (
         <div className="bg-surface rounded-xl border border-border text-center py-12">
           <CalendarDays className="w-10 h-10 mx-auto text-muted mb-2" />
-          <p className="text-sm text-muted">No hay eventos{categoryFilter !== 'all' ? ' en esta categoría' : ''}. Creá el primero.</p>
+          <p className="text-sm text-muted">{categoryFilter !== 'all' ? t('admin.events.emptyInCategory') : t('admin.events.empty')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -780,6 +778,7 @@ export default function EventsManagement() {
                 onEdit={openEdit}
                 onCancel={toggleCancel}
                 onDelete={handleDelete}
+                t={t}
               />
             ))}
           </AnimatePresence>

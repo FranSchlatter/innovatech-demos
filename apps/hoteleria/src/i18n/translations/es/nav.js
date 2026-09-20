@@ -1,0 +1,15 @@
+export default {
+  home: 'Inicio',
+  accommodation: 'Habitaciones',
+  services: 'Servicios',
+  amenities: 'Comodidades',
+  activities: 'Actividades',
+  offers: 'Ofertas',
+  contact: 'Contacto',
+  tour: 'Recorrido',
+  guestPortal: 'Portal del Huésped',
+  admin: 'Admin',
+  lightMode: 'Modo claro',
+  darkMode: 'Modo oscuro',
+  language: 'Idioma',
+}

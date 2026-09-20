@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion'
+import { useTranslation } from '../i18n/LanguageProvider'
 
 export default function HotelAbout() {
+  const { t } = useTranslation()
   const images = [
     'https://plus.unsplash.com/premium_photo-1661929519129-7a76946c1d38?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?w=800&q=80',
     'https://cdn.pixabay.com/photo/2020/12/24/19/11/hotel-room-5858069_1280.jpg?w=800&q=80',
@@ -19,12 +21,10 @@ export default function HotelAbout() {
           className="text-center mb-16 max-w-3xl mx-auto"
         >
           <h1 className="heading-lg mb-6">
-            A Sanctuary of Elegance & Tranquility
+            {t('landing.about.title')}
           </h1>
           <p className="text-lg text-muted leading-relaxed">
-            Nestled steps from the ocean, Villa Serena embodies timeless luxury and contemporary
-            comfort. Every detail has been carefully curated to create an unforgettable experience
-            for our distinguished guests.
+            {t('landing.about.intro')}
           </p>
         </motion.div>
 
@@ -51,12 +51,12 @@ export default function HotelAbout() {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <h3 className="heading-sm text-accent mb-4">Timeless Luxury</h3>
+              <h3 className="heading-sm text-accent mb-4">{t('landing.about.blocks.luxuryTitle')}</h3>
               <p className="text-muted leading-relaxed mb-4">
-                Experience unparalleled elegance in every corner of our establishment. Our carefully curated spaces blend contemporary design with classic charm, creating an atmosphere of refined sophistication.
+                {t('landing.about.blocks.luxuryP1')}
               </p>
               <p className="text-muted leading-relaxed">
-                From the grand lobby to intimate suites, every element reflects our commitment to excellence and attention to detail.
+                {t('landing.about.blocks.luxuryP2')}
               </p>
             </motion.div>
           </div>
@@ -70,12 +70,12 @@ export default function HotelAbout() {
               transition={{ duration: 0.6 }}
               className="order-2 md:order-1"
             >
-              <h3 className="heading-sm text-accent mb-4">Comfort Redefined</h3>
+              <h3 className="heading-sm text-accent mb-4">{t('landing.about.blocks.comfortTitle')}</h3>
               <p className="text-muted leading-relaxed mb-4">
-                Rest assured in our thoughtfully designed guest rooms that blend comfort with style. Each space offers modern amenities while maintaining the warmth and character that define our brand.
+                {t('landing.about.blocks.comfortP1')}
               </p>
               <p className="text-muted leading-relaxed">
-                Wake up to stunning views and fall asleep to the sounds of tranquility in our sanctuary of peace.
+                {t('landing.about.blocks.comfortP2')}
               </p>
             </motion.div>
             <motion.div
@@ -114,12 +114,12 @@ export default function HotelAbout() {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <h3 className="heading-sm text-accent mb-4">Unforgettable Moments</h3>
+              <h3 className="heading-sm text-accent mb-4">{t('landing.about.blocks.momentsTitle')}</h3>
               <p className="text-muted leading-relaxed mb-4">
-                Create lasting memories in our world-class facilities. Whether you're celebrating a special occasion or seeking a peaceful retreat, our hotel provides the perfect setting.
+                {t('landing.about.blocks.momentsP1')}
               </p>
               <p className="text-muted leading-relaxed">
-                Every interaction, every detail, every moment is designed to exceed your expectations and touch your heart.
+                {t('landing.about.blocks.momentsP2')}
               </p>
             </motion.div>
           </div>
@@ -129,16 +129,16 @@ export default function HotelAbout() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {[
             {
-              title: 'Excellence',
-              description: 'Exceptional service and attention to detail in every interaction'
+              title: t('landing.about.values.excellenceTitle'),
+              description: t('landing.about.values.excellenceDesc')
             },
             {
-              title: 'Elegance',
-              description: 'Refined aesthetics that inspire wonder and sophisticated comfort'
+              title: t('landing.about.values.eleganceTitle'),
+              description: t('landing.about.values.eleganceDesc')
             },
             {
-              title: 'Authenticity',
-              description: 'Genuine connections with our guests and local community'
+              title: t('landing.about.values.authenticityTitle'),
+              description: t('landing.about.values.authenticityDesc')
             }
           ].map((value, idx) => (
             <motion.div

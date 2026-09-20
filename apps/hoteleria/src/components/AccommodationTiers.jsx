@@ -1,7 +1,11 @@
 import { motion } from 'framer-motion'
 import { useState } from 'react'
+import { useTranslation } from '../i18n/LanguageProvider'
+import { useCurrency } from '../hooks/useCurrency'
 
 export default function AccommodationTiers({ onSelectRoom }) {
+  const { t } = useTranslation()
+  const { format } = useCurrency()
   const [activeTab, setActiveTab] = useState('rooms')
 
   const accommodations = {
@@ -158,10 +162,19 @@ export default function AccommodationTiers({ onSelectRoom }) {
   }
 
   const tabs = [
-    { id: 'rooms', label: 'Rooms', description: 'From 45 m²' },
-    { id: 'suites', label: 'Suites', description: 'From 85 m²' },
-    { id: 'villas', label: 'Villas', description: 'From 200 m²' }
+    { id: 'rooms', label: t('landing.accommodation.tabs.rooms'), description: t('landing.accommodation.tabs.roomsDesc') },
+    { id: 'suites', label: t('landing.accommodation.tabs.suites'), description: t('landing.accommodation.tabs.suitesDesc') },
+    { id: 'villas', label: t('landing.accommodation.tabs.villas'), description: t('landing.accommodation.tabs.villasDesc') }
   ]
+
+  // Data names stay in English (source of truth); derive the i18n slug from them.
+  const roomKey = (name) => name.toLowerCase().replace(/\s+/g, '-')
+  const roomName = (item) => t(`landing.accommodation.rooms.${roomKey(item.name)}.name`)
+  const roomDesc = (item) => t(`landing.accommodation.rooms.${roomKey(item.name)}.description`)
+  // Pass a language-resolved copy downstream so the detail/booking pages show the
+  // translated room name/description without re-deriving the key.
+  const selectRoom = (item, action) =>
+    onSelectRoom?.({ ...item, name: roomName(item), description: roomDesc(item) }, action)
 
   return (
     <section id="accommodation" className="py-20 md:py-32 bg-surface">
@@ -174,9 +187,9 @@ export default function AccommodationTiers({ onSelectRoom }) {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="heading-md mb-4">Choose Your Sanctuary</h2>
+          <h2 className="heading-md mb-4">{t('landing.accommodation.title')}</h2>
           <p className="text-lg text-muted max-w-2xl mx-auto">
-            Select from our curated collection of rooms, suites, and villas
+            {t('landing.accommodation.subtitle')}
           </p>
         </motion.div>
 
@@ -223,32 +236,32 @@ export default function AccommodationTiers({ onSelectRoom }) {
               <div className="p-8">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="heading-sm text-primary mb-2">{item.name}</h3>
+                    <h3 className="heading-sm text-primary mb-2">{roomName(item)}</h3>
                     <div className="flex gap-6 text-sm text-muted mb-4">
                       <span>{item.size} m²</span>
-                      <span>{item.guests} guests</span>
+                      <span>{item.guests} {t('landing.accommodation.guests')}</span>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm text-muted mb-1">from</div>
-                    <div className="text-2xl font-bold text-accent">${item.price}</div>
+                    <div className="text-sm text-muted mb-1">{t('landing.accommodation.from')}</div>
+                    <div className="text-2xl font-bold text-accent">{format(item.price)}</div>
                   </div>
                 </div>
 
-                <p className="text-muted text-sm mb-6 line-clamp-2">{item.description}</p>
+                <p className="text-muted text-sm mb-6 line-clamp-2">{roomDesc(item)}</p>
 
                 <div className="flex gap-3">
                   <button
-                    onClick={() => onSelectRoom?.(item, 'details')}
+                    onClick={() => selectRoom(item, 'details')}
                     className="btn-secondary flex-1 text-center"
                   >
-                    View Details
+                    {t('landing.accommodation.viewDetails')}
                   </button>
                   <button
-                    onClick={() => onSelectRoom?.(item, 'reserve')}
+                    onClick={() => selectRoom(item, 'reserve')}
                     className="btn-gold flex-1 text-center"
                   >
-                    Reserve
+                    {t('landing.accommodation.reserve')}
                   </button>
                 </div>
               </div>

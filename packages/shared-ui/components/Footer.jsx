@@ -1,7 +1,22 @@
 import { motion } from 'framer-motion'
 import { Github, Linkedin, Mail, Heart } from 'lucide-react'
 
-export default function Footer({ brand = 'InnovaTech', currentYear = new Date().getFullYear() }) {
+const DEFAULT_LABELS = {
+  servicesTitle: 'Services',
+  services: ['Hospitality', 'Health', 'Gastronomy'],
+  legalTitle: 'Legal',
+  legal: ['Terms', 'Privacy', 'Cookies'],
+  madeWithPrefix: '',
+  madeWith: 'Made with',
+  madeWithSuffix: 'by innovatech.',
+}
+
+export default function Footer({
+  brand = 'InnovaTech',
+  currentYear = new Date().getFullYear(),
+  labels,
+}) {
+  const l = { ...DEFAULT_LABELS, ...labels }
   const socialLinks = [
     { icon: Github, href: 'https://github.com', label: 'GitHub' },
     { icon: Linkedin, href: 'https://linkedin.com', label: 'LinkedIn' },
@@ -42,11 +57,11 @@ export default function Footer({ brand = 'InnovaTech', currentYear = new Date().
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
           >
-            <h4 className="font-semibold text-text mb-4">Services</h4>
+            <h4 className="font-semibold text-text mb-4">{l.servicesTitle}</h4>
             <ul className="space-y-2 text-muted text-sm">
-              <li><a href="#" className="hover:text-primary transition-colors">Hospitality</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Health</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Gastronomy</a></li>
+              {l.services.map((item) => (
+                <li key={item}><a href="#" className="hover:text-primary transition-colors">{item}</a></li>
+              ))}
             </ul>
           </motion.div>
 
@@ -56,17 +71,17 @@ export default function Footer({ brand = 'InnovaTech', currentYear = new Date().
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
           >
-            <h4 className="font-semibold text-text mb-4">Legal</h4>
+            <h4 className="font-semibold text-text mb-4">{l.legalTitle}</h4>
             <ul className="space-y-2 text-muted text-sm">
-              <li><a href="#" className="hover:text-primary transition-colors">Terms</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Privacy</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Cookies</a></li>
+              {l.legal.map((item) => (
+                <li key={item}><a href="#" className="hover:text-primary transition-colors">{item}</a></li>
+              ))}
             </ul>
           </motion.div>
         </div>
 
         <div className="border-t border-border pt-8 text-center text-muted text-sm">
-          <p>© {currentYear} {brand}. Made with <Heart className="w-4 h-4 inline text-accent" /> by innovatech.</p>
+          <p>© {currentYear} {brand}. {l.madeWith} <Heart className="w-4 h-4 inline text-accent" /> {l.madeWithSuffix}</p>
         </div>
       </div>
     </footer>

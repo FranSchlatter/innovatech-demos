@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronDown, Star, MapPin, Calendar, Check, Video, ImageIcon } from 'lucide-react'
+import { useTranslation } from '../i18n/LanguageProvider'
 
 // Poster / fallback still image (also used on mobile & reduced-motion for performance).
 const HERO_POSTER =
@@ -16,6 +17,7 @@ const HERO_VIDEO = {
 const MODE_KEY = 'hotel-hero-mode' // 'video' | 'image'
 
 export default function HeroCarousel() {
+  const { t } = useTranslation()
   const videoRef = useRef(null)
   const [isMobile, setIsMobile] = useState(false)
   const [reducedMotion, setReducedMotion] = useState(false)
@@ -92,12 +94,7 @@ export default function HeroCarousel() {
     document.getElementById('amenities')?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  const features = [
-    '5-Star Luxury Resort',
-    'Oceanfront Property',
-    '24/7 Concierge Service',
-    'Award-Winning Spa'
-  ]
+  const features = t('landing.hero.features')
 
   // The video toggle only makes sense where a video can actually play.
   const canToggle = !isMobile && !reducedMotion && !videoError
@@ -157,7 +154,7 @@ export default function HeroCarousel() {
             className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-full mb-6"
           >
             <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-            <span className="text-sm font-medium">Luxury Hospitality</span>
+            <span className="text-sm font-medium">{t('landing.hero.badge')}</span>
           </motion.div>
 
           {/* Main Heading */}
@@ -167,10 +164,10 @@ export default function HeroCarousel() {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight"
           >
-            Experience
+            {t('landing.hero.headingTop')}
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-200 to-yellow-400">
-              Timeless Elegance
+              {t('landing.hero.headingAccent')}
             </span>
           </motion.h1>
 
@@ -181,8 +178,7 @@ export default function HeroCarousel() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="text-lg md:text-xl text-gray-200 mb-8 max-w-2xl leading-relaxed"
           >
-            Immerse yourself in unparalleled luxury where every detail is crafted
-            to create unforgettable memories. Your sanctuary awaits.
+            {t('landing.hero.subtitle')}
           </motion.p>
 
           {/* Features Grid */}
@@ -212,13 +208,13 @@ export default function HeroCarousel() {
               className="bg-white hover:bg-gray-100 text-black px-8 py-4 rounded-lg text-base font-semibold transition-all duration-300 hover:scale-105 shadow-2xl inline-flex items-center justify-center gap-2"
             >
               <Calendar className="w-5 h-5" />
-              Book Your Stay
+              {t('landing.hero.bookStay')}
             </button>
             <button
               onClick={handleExplore}
               className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-lg text-base font-semibold transition-all duration-300 hover:scale-105 inline-flex items-center justify-center gap-2"
             >
-              Explore Amenities
+              {t('landing.hero.exploreAmenities')}
             </button>
           </motion.div>
         </div>
@@ -233,15 +229,15 @@ export default function HeroCarousel() {
       >
         <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 text-center min-w-[140px]">
           <div className="text-3xl font-bold text-white mb-1">250+</div>
-          <div className="text-sm text-gray-300">Luxury Rooms</div>
+          <div className="text-sm text-gray-300">{t('landing.hero.stats.rooms')}</div>
         </div>
         <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 text-center min-w-[140px]">
           <div className="text-3xl font-bold text-white mb-1">4.9★</div>
-          <div className="text-sm text-gray-300">Guest Rating</div>
+          <div className="text-sm text-gray-300">{t('landing.hero.stats.rating')}</div>
         </div>
         <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 text-center min-w-[140px]">
           <div className="text-3xl font-bold text-white mb-1">50+</div>
-          <div className="text-sm text-gray-300">Years Legacy</div>
+          <div className="text-sm text-gray-300">{t('landing.hero.stats.legacy')}</div>
         </div>
       </motion.div>
 
@@ -261,12 +257,12 @@ export default function HeroCarousel() {
             {mode === 'video' ? (
               <>
                 <ImageIcon className="w-4 h-4" />
-                <span className="hidden sm:inline">Photo</span>
+                <span className="hidden sm:inline">{t('landing.hero.photo')}</span>
               </>
             ) : (
               <>
                 <Video className="w-4 h-4" />
-                <span className="hidden sm:inline">Video</span>
+                <span className="hidden sm:inline">{t('landing.hero.video')}</span>
               </>
             )}
           </motion.button>
@@ -279,7 +275,7 @@ export default function HeroCarousel() {
         transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/70 flex flex-col items-center gap-2"
       >
-        <span className="text-sm tracking-wider uppercase">Scroll</span>
+        <span className="text-sm tracking-wider uppercase">{t('landing.hero.scroll')}</span>
         <ChevronDown className="w-5 h-5" />
       </motion.div>
     </div>

@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import restaurantData from '../../../data/restaurants.json'
 import roomServiceMenu from '../../../data/menuItems.json'
+import { useTranslation } from '../../../i18n/LanguageProvider'
 import MenuBrowser from './MenuBrowser'
 
 const RESTAURANTS = restaurantData.restaurants
@@ -43,6 +44,7 @@ export default function DiningHub({
   onReserveTable,
   onCallWaiter
 }) {
+  const { t } = useTranslation()
   const [mode, setMode] = useState('restaurants') // 'restaurants' | 'room-service'
   const [selected, setSelected] = useState(null) // active restaurant
   const [reserveOpen, setReserveOpen] = useState(false)
@@ -67,12 +69,12 @@ export default function DiningHub({
   const handleReserve = (booking) => {
     onReserveTable?.(booking)
     setReserveOpen(false)
-    showToast(`Table booked at ${booking.venue} · ${booking.date} ${booking.time}`)
+    showToast(t('client.dining.tableBookedToast', { venue: booking.venue, date: booking.date, time: booking.time }))
   }
 
   const handleWaiter = (restaurant) => {
     onCallWaiter?.({ venue: restaurant.name, location: restaurant.location })
-    showToast(`A waiter has been notified at ${restaurant.name} 🛎️`)
+    showToast(t('client.dining.waiterNotifiedToast', { venue: restaurant.name }))
   }
 
   return (
@@ -93,7 +95,7 @@ export default function DiningHub({
                   <button
                     onClick={() => setSelected(null)}
                     className="p-2 -ml-2 rounded-lg hover:bg-bg text-muted hover:text-primary transition-colors"
-                    title="Back to restaurants"
+                    title={t('client.dining.backToRestaurants')}
                   >
                     <ArrowLeft className="w-5 h-5" />
                   </button>
@@ -104,17 +106,17 @@ export default function DiningHub({
                 )}
                 <div className="min-w-0">
                   <h1 className="font-bold text-lg leading-tight truncate">
-                    {selected ? selected.name : 'Dining'}
+                    {selected ? selected.name : t('client.dining.title')}
                   </h1>
                   <p className="text-xs text-muted truncate">
-                    {selected ? selected.tagline : `Room ${room} · in-room & à-la-carte`}
+                    {selected ? selected.tagline : t('client.dining.roomSubtitle', { room })}
                   </p>
                 </div>
               </div>
               <button
                 onClick={onClose}
                 className="p-2 rounded-lg hover:bg-bg text-muted hover:text-primary transition-colors"
-                title="Close"
+                title={t('client.dining.close')}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -125,8 +127,8 @@ export default function DiningHub({
               <div className="container mx-auto px-4 pb-3">
                 <div className="inline-flex bg-bg rounded-xl p-1 border border-border">
                   {[
-                    { id: 'restaurants', label: 'Restaurants', icon: UtensilsCrossed },
-                    { id: 'room-service', label: 'Room Service', icon: Home }
+                    { id: 'restaurants', label: t('client.dining.tabs.restaurants'), icon: UtensilsCrossed },
+                    { id: 'room-service', label: t('client.dining.tabs.roomService'), icon: Home }
                   ].map((opt) => {
                     const Icon = opt.icon
                     const active = mode === opt.id
@@ -184,9 +186,9 @@ export default function DiningHub({
                   onBrowse={() =>
                     setMenuConfig({
                       menu: roomServiceMenu,
-                      venueName: 'Room Service',
+                      venueName: t('client.dining.tabs.roomService'),
                       serviceType: 'room',
-                      title: 'Room Service'
+                      title: t('client.dining.tabs.roomService')
                     })
                   }
                 />
@@ -245,6 +247,7 @@ function PriceRange({ value }) {
 }
 
 function RestaurantCard({ restaurant, onOpen }) {
+  const { t } = useTranslation()
   return (
     <motion.button
       layout
@@ -267,7 +270,7 @@ function RestaurantCard({ restaurant, onOpen }) {
         </div>
         {!restaurant.reservable && (
           <span className="absolute top-3 right-3 bg-black/60 text-white text-[10px] font-semibold px-2.5 py-1 rounded-full">
-            Walk-in
+            {t('client.dining.walkIn')}
           </span>
         )}
         <div className="absolute bottom-3 left-4 right-4">
@@ -288,11 +291,12 @@ function RestaurantCard({ restaurant, onOpen }) {
 }
 
 function RestaurantDetail({ restaurant, onReserve, onOrder, onWaiter }) {
+  const { t } = useTranslation()
   const info = [
-    { icon: Clock, label: 'Hours', value: restaurant.hours },
-    { icon: MapPin, label: 'Location', value: restaurant.location },
-    { icon: Shirt, label: 'Dress code', value: restaurant.dressCode },
-    { icon: Star, label: 'Rating', value: `${restaurant.rating} · ${restaurant.priceRange}` }
+    { icon: Clock, label: t('client.dining.info.hours'), value: restaurant.hours },
+    { icon: MapPin, label: t('client.dining.info.location'), value: restaurant.location },
+    { icon: Shirt, label: t('client.dining.info.dressCode'), value: restaurant.dressCode },
+    { icon: Star, label: t('client.dining.info.rating'), value: `${restaurant.rating} · ${restaurant.priceRange}` }
   ]
   return (
     <motion.div
@@ -341,12 +345,12 @@ function RestaurantDetail({ restaurant, onReserve, onOrder, onWaiter }) {
             className="flex items-center justify-center gap-2 bg-accent text-white py-3 rounded-xl font-semibold hover:bg-accent/90 transition"
           >
             <CalendarCheck className="w-5 h-5" />
-            Book a table
+            {t('client.dining.bookTable')}
           </button>
         ) : (
           <div className="flex items-center justify-center gap-2 bg-bg text-muted py-3 rounded-xl font-medium text-sm border border-border">
             <Users className="w-4 h-4" />
-            Walk-in only
+            {t('client.dining.walkInOnly')}
           </div>
         )}
         <button
@@ -354,14 +358,14 @@ function RestaurantDetail({ restaurant, onReserve, onOrder, onWaiter }) {
           className="flex items-center justify-center gap-2 bg-surface border border-border text-primary py-3 rounded-xl font-semibold hover:border-accent transition"
         >
           <UtensilsCrossed className="w-5 h-5 text-accent" />
-          View menu
+          {t('client.dining.viewMenu')}
         </button>
         <button
           onClick={onWaiter}
           className="flex items-center justify-center gap-2 bg-surface border border-border text-primary py-3 rounded-xl font-semibold hover:border-accent transition"
         >
           <Bell className="w-5 h-5 text-accent" />
-          Call waiter
+          {t('client.dining.callWaiter')}
         </button>
       </div>
     </motion.div>
@@ -369,6 +373,7 @@ function RestaurantDetail({ restaurant, onReserve, onOrder, onWaiter }) {
 }
 
 function RoomServiceIntro({ room, onBrowse }) {
+  const { t } = useTranslation()
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -385,28 +390,27 @@ function RoomServiceIntro({ room, onBrowse }) {
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
         <div className="absolute inset-0 p-6 md:p-8 flex flex-col justify-center max-w-md">
           <div className="flex items-center gap-2 text-white/80 text-sm mb-2">
-            <Home className="w-4 h-4" /> In-room dining · 24/7
+            <Home className="w-4 h-4" /> {t('client.dining.roomService.badge')}
           </div>
-          <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">Order to Room {room}</h3>
+          <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">{t('client.dining.roomService.heading', { room })}</h3>
           <p className="text-white/85 text-sm mb-5">
-            Breakfast, dinner, desserts and drinks delivered straight to your door.
-            Charged to your room, pay at checkout.
+            {t('client.dining.roomService.description')}
           </p>
           <button
             onClick={onBrowse}
             className="self-start inline-flex items-center gap-2 bg-accent text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-accent/90 transition"
           >
             <UtensilsCrossed className="w-5 h-5" />
-            Browse full menu
+            {t('client.dining.roomService.browseMenu')}
           </button>
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-3 mt-5">
         {[
-          { icon: Clock, title: 'Fast', text: '25–40 min average' },
-          { icon: Sparkles, title: 'Fresh', text: 'Made to order' },
-          { icon: Home, title: 'Anywhere', text: 'To your room' }
+          { icon: Clock, title: t('client.dining.roomService.fast'), text: t('client.dining.roomService.fastText') },
+          { icon: Sparkles, title: t('client.dining.roomService.fresh'), text: t('client.dining.roomService.freshText') },
+          { icon: Home, title: t('client.dining.roomService.anywhere'), text: t('client.dining.roomService.anywhereText') }
         ].map((f) => {
           const Icon = f.icon
           return (
@@ -423,6 +427,7 @@ function RoomServiceIntro({ room, onBrowse }) {
 }
 
 function TableReservationModal({ restaurant, room, guestName, guestPhone, onClose, onConfirm }) {
+  const { t } = useTranslation()
   const today = new Date().toISOString().split('T')[0]
   const [date, setDate] = useState(today)
   const [time, setTime] = useState('')
@@ -452,7 +457,7 @@ function TableReservationModal({ restaurant, room, guestName, guestPhone, onClos
           <div>
             <h3 className="text-lg font-bold flex items-center gap-2">
               <CalendarCheck className="w-5 h-5 text-accent" />
-              Book a table
+              {t('client.dining.reservation.title')}
             </h3>
             <p className="text-xs text-muted mt-0.5">{restaurant.name} · {restaurant.location}</p>
           </div>
@@ -464,7 +469,7 @@ function TableReservationModal({ restaurant, room, guestName, guestPhone, onClos
         <div className="p-5 space-y-4 overflow-y-auto">
           {/* Date */}
           <div>
-            <label className="text-sm text-muted mb-1.5 block">Date</label>
+            <label className="text-sm text-muted mb-1.5 block">{t('client.dining.reservation.dateLabel')}</label>
             <DatePicker
               value={date}
               min={today}
@@ -474,7 +479,7 @@ function TableReservationModal({ restaurant, room, guestName, guestPhone, onClos
 
           {/* Time slots */}
           <div>
-            <label className="text-sm text-muted mb-1.5 block">Time</label>
+            <label className="text-sm text-muted mb-1.5 block">{t('client.dining.reservation.timeLabel')}</label>
             <div className="grid grid-cols-4 gap-2">
               {restaurant.timeSlots.map((slot) => (
                 <button
@@ -492,7 +497,7 @@ function TableReservationModal({ restaurant, room, guestName, guestPhone, onClos
 
           {/* Party size */}
           <div>
-            <label className="text-sm text-muted mb-1.5 block">Party size</label>
+            <label className="text-sm text-muted mb-1.5 block">{t('client.dining.reservation.partyLabel')}</label>
             <div className="flex items-center gap-2">
               {[1, 2, 3, 4, 5, 6].map((n) => (
                 <button
@@ -505,29 +510,29 @@ function TableReservationModal({ restaurant, room, guestName, guestPhone, onClos
                   {n}
                 </button>
               ))}
-              <span className="text-sm text-muted ml-1">guests</span>
+              <span className="text-sm text-muted ml-1">{t('client.dining.reservation.guests')}</span>
             </div>
           </div>
 
           {/* Contact */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-sm text-muted mb-1.5 block">Name</label>
+              <label className="text-sm text-muted mb-1.5 block">{t('client.dining.reservation.nameLabel')}</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Full name"
+                placeholder={t('client.dining.reservation.namePlaceholder')}
                 className="w-full px-4 py-2.5 bg-bg rounded-xl border-2 border-border focus:border-accent outline-none text-sm"
               />
             </div>
             <div>
-              <label className="text-sm text-muted mb-1.5 block">Phone</label>
+              <label className="text-sm text-muted mb-1.5 block">{t('client.dining.reservation.phoneLabel')}</label>
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="+1 555 …"
+                placeholder={t('client.dining.reservation.phonePlaceholder')}
                 className="w-full px-4 py-2.5 bg-bg rounded-xl border-2 border-border focus:border-accent outline-none text-sm"
               />
             </div>
@@ -535,11 +540,11 @@ function TableReservationModal({ restaurant, room, guestName, guestPhone, onClos
 
           {/* Special requests */}
           <div>
-            <label className="text-sm text-muted mb-1.5 block">Special requests</label>
+            <label className="text-sm text-muted mb-1.5 block">{t('client.dining.reservation.requestsLabel')}</label>
             <textarea
               value={requests}
               onChange={(e) => setRequests(e.target.value)}
-              placeholder="Window table, high chair, allergies…"
+              placeholder={t('client.dining.reservation.requestsPlaceholder')}
               rows={2}
               className="w-full px-4 py-2.5 bg-bg rounded-xl border-2 border-border focus:border-accent outline-none text-sm resize-none"
             />
@@ -565,7 +570,7 @@ function TableReservationModal({ restaurant, room, guestName, guestPhone, onClos
             className="w-full bg-accent text-white py-3 rounded-xl font-bold hover:bg-accent/90 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Send className="w-5 h-5" />
-            Confirm reservation
+            {t('client.dining.reservation.confirm')}
           </button>
         </div>
       </motion.div>

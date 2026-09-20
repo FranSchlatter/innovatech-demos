@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Heart, BedDouble, Bath, Maximize, Car, MapPin, Camera } from 'lucide-react'
+import { Heart, BedDouble, Bath, Maximize, Car, MapPin, Camera, Scale, Check } from 'lucide-react'
 import { formatPrice, formatArea, OPERATION_LABELS, TYPE_LABELS, STATUS_LABELS } from '../utils/format'
 
 const operationStyles = {
@@ -8,7 +8,16 @@ const operationStyles = {
   temporary: 'bg-gold text-primary'
 }
 
-export default function PropertyCard({ property, isFavorite, onToggleFavorite, onSelect, footer }) {
+export default function PropertyCard({
+  property,
+  isFavorite,
+  onToggleFavorite,
+  onSelect,
+  footer,
+  onToggleCompare,
+  isComparing = false,
+  compareDisabled = false
+}) {
   const p = property
   const unavailable = p.status !== 'available'
 
@@ -91,6 +100,29 @@ export default function PropertyCard({ property, isFavorite, onToggleFavorite, o
             <span className="inline-flex items-center gap-1.5"><Car className="w-4 h-4 text-accent" /> {p.garage}</span>
           )}
         </div>
+
+        {/* Compare toggle */}
+        {onToggleCompare && (
+          <button
+            onClick={() => onToggleCompare(p.id)}
+            disabled={!isComparing && compareDisabled}
+            aria-pressed={isComparing}
+            className={`mb-3 inline-flex items-center gap-2 self-start px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-widest transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+              isComparing
+                ? 'bg-accent text-primary-contrast'
+                : 'border border-hairline text-muted hover:text-accent hover:border-accent'
+            }`}
+          >
+            <span
+              className={`inline-flex items-center justify-center w-4 h-4 rounded-sm border ${
+                isComparing ? 'border-primary-contrast bg-primary-contrast' : 'border-current'
+              }`}
+            >
+              {isComparing ? <Check className="w-3 h-3 text-accent" /> : <Scale className="w-3 h-3" />}
+            </span>
+            {isComparing ? 'Comparando' : 'Comparar'}
+          </button>
+        )}
 
         {/* Actions */}
         {footer ?? (

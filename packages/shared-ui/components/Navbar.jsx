@@ -56,7 +56,7 @@ function CurrencyToggle({ currency, currencies, onCurrencyChange, className = ''
                 : 'text-muted hover:text-primary'
             }`}
           >
-            {cur.label}
+            {cur.symbol}
           </button>
         )
       })}

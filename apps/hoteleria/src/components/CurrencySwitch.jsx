@@ -25,7 +25,7 @@ export default function CurrencySwitch({ className = '' }) {
               active ? 'bg-primary text-primary-contrast' : 'text-muted hover:text-primary'
             }`}
           >
-            {cur.label}
+            {cur.symbol}
           </button>
         )
       })}

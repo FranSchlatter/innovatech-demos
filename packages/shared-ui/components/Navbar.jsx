@@ -99,35 +99,39 @@ export default function Navbar({
           : 'bg-bg/80 backdrop-blur-sm'
       }`}
     >
-      <div className="container py-4 flex items-center justify-between">
+      <div className="container py-4 flex items-center justify-between gap-6 lg:gap-10">
         <motion.div
-          className="text-2xl font-bold text-primary cursor-pointer"
+          className="text-2xl font-bold text-primary cursor-pointer whitespace-nowrap shrink-0"
           whileHover={{ scale: 1.05 }}
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         >
           {brand}
         </motion.div>
 
-        <div className="hidden md:flex items-center gap-8">
-          {links.map((link) => (
-            <a
-              key={link.name}
-              href={link.href}
-              onClick={(e) => {
-                if (link.onClick) {
-                  e.preventDefault()
-                  link.onClick()
-                }
-              }}
-              className={`transition-colors font-medium ${
-                link.highlight
-                  ? 'px-4 py-2 bg-primary text-primary-contrast rounded-lg hover:opacity-90'
-                  : 'text-text hover:text-primary'
-              }`}
-            >
-              {link.name}
-            </a>
-          ))}
+        <div className="hidden md:flex items-center gap-6 lg:gap-8">
+          {links.map((link) => {
+            const Icon = link.icon
+            return (
+              <a
+                key={link.name}
+                href={link.href}
+                onClick={(e) => {
+                  if (link.onClick) {
+                    e.preventDefault()
+                    link.onClick()
+                  }
+                }}
+                className={`inline-flex items-center gap-1.5 whitespace-nowrap transition-colors font-medium ${
+                  link.highlight
+                    ? 'px-4 py-2 bg-primary text-primary-contrast rounded-lg hover:opacity-90'
+                    : 'text-text hover:text-primary'
+                }`}
+              >
+                {Icon && <Icon className="w-4 h-4 shrink-0" />}
+                {link.name}
+              </a>
+            )
+          })}
           <CurrencyToggle
             currency={currency}
             currencies={currencies}
@@ -163,26 +167,30 @@ export default function Navbar({
           className="md:hidden bg-surface border-t border-border"
         >
           <div className="container py-4 flex flex-col gap-4">
-            {links.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                onClick={(e) => {
-                  if (link.onClick) {
-                    e.preventDefault()
-                    link.onClick()
-                  }
-                  setIsOpen(false)
-                }}
-                className={`transition-colors font-medium px-2 py-2 rounded-lg ${
-                  link.highlight
-                    ? 'bg-primary text-primary-contrast hover:opacity-90'
-                    : 'text-text hover:text-primary'
-                }`}
-              >
-                {link.name}
-              </a>
-            ))}
+            {links.map((link) => {
+              const Icon = link.icon
+              return (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  onClick={(e) => {
+                    if (link.onClick) {
+                      e.preventDefault()
+                      link.onClick()
+                    }
+                    setIsOpen(false)
+                  }}
+                  className={`inline-flex items-center gap-2 transition-colors font-medium px-2 py-2 rounded-lg ${
+                    link.highlight
+                      ? 'bg-primary text-primary-contrast hover:opacity-90'
+                      : 'text-text hover:text-primary'
+                  }`}
+                >
+                  {Icon && <Icon className="w-4 h-4 shrink-0" />}
+                  {link.name}
+                </a>
+              )
+            })}
             <div className="pt-2 border-t border-border flex items-center gap-2">
               <button
                 onClick={toggleTheme}

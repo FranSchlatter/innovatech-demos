@@ -7,7 +7,7 @@ export default {
   offers: 'Ofertas',
   contact: 'Contacto',
   tour: 'Recorrido',
-  guestPortal: 'Portal del Huésped',
+  guestPortal: 'Portal',
   admin: 'Admin',
   lightMode: 'Modo claro',
   darkMode: 'Modo oscuro',

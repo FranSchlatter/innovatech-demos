@@ -7,7 +7,7 @@ export default {
   offers: 'Offers',
   contact: 'Contact',
   tour: 'Tour',
-  guestPortal: 'Guest Portal',
+  guestPortal: 'Portal',
   admin: 'Admin',
   lightMode: 'Light mode',
   darkMode: 'Dark mode',

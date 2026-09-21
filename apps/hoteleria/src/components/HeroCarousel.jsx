@@ -7,11 +7,11 @@ import { useTranslation } from '../i18n/LanguageProvider'
 const HERO_POSTER =
   'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1920&h=1080&fit=crop&q=90'
 
-// Pexels stock video "Aerial View Of Beautiful Resort" (Tom Fisk) — direct .mp4, no hotlink protection.
+// Pexels stock video "Aerial View Of An Infinity Pool In Maldives Beach Resorts" — direct .mp4, no hotlink protection.
 // A small quality ladder so we don't ship 1080p to a 768px tablet.
 const HERO_VIDEO = {
-  hd: 'https://videos.pexels.com/video-files/2169880/2169880-hd_1920_1080_30fps.mp4',
-  md: 'https://videos.pexels.com/video-files/2169880/2169880-hd_1280_720_30fps.mp4',
+  hd: 'https://videos.pexels.com/video-files/4069480/4069480-hd_1920_1080_25fps.mp4',
+  md: 'https://videos.pexels.com/video-files/4069480/4069480-hd_1280_720_50fps.mp4',
 }
 
 const MODE_KEY = 'hotel-hero-mode' // 'video' | 'image'

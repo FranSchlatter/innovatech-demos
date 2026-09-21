@@ -448,7 +448,7 @@ function RolePermissionsPanel({ users }) {
                 const RoleIcon = role.icon
                 return (
                   <tr key={role.id} className="border-b border-border last:border-0">
-                    <td className="px-4 py-3 sticky left-0 bg-surface z-10">
+                    <td className="px-4 py-3 align-middle sticky left-0 bg-surface z-10">
                       <div className="flex items-center gap-2 whitespace-nowrap">
                         <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg ${role.solid}`}>
                           <RoleIcon className="w-4 h-4" />
@@ -459,7 +459,7 @@ function RolePermissionsPanel({ users }) {
                     {AREAS.map((area) => {
                       const has = role.defaultAreas.includes(area.id)
                       return (
-                        <td key={area.id} className="px-2 py-3 text-center">
+                        <td key={area.id} className="px-2 py-3 text-center align-middle">
                           {has ? (
                             <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full mx-auto ${role.badge}`}>
                               <Check className="w-3.5 h-3.5" strokeWidth={3} />

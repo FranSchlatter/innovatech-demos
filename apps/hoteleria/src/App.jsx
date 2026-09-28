@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Navbar from '@shared-ui/components/Navbar'
 import Footer from '@shared-ui/components/Footer'
 import { useDarkMode } from '@shared-hooks/useDarkMode'
@@ -23,6 +23,7 @@ import { useCurrency } from './hooks/useCurrency'
 import { useTranslation } from './i18n/LanguageProvider'
 import { AnimatePresence } from 'framer-motion'
 import { User, Compass } from 'lucide-react'
+import { FEATURE_MAP } from './embed/featureMap'
 import './styles.css'
 
 export default function App() {
@@ -42,6 +43,20 @@ export default function App() {
   const [selectedRoom, setSelectedRoom] = useState(null)
   const [viewMode, setViewMode] = useState('main') // 'main', 'detail', 'booking', 'admin', 'guest-portal'
   const [tourRun, setTourRun] = useState(false)
+
+  // Deep-link from the marketplace: ?feature=<id> opens the demo at that feature
+  // ("ver en vivo"). featureMap.live tells us which view to show and where to scroll.
+  useEffect(() => {
+    const featureId = new URLSearchParams(window.location.search).get('feature')
+    const live = featureId && FEATURE_MAP[featureId]?.live
+    if (!live) return
+    if (live.viewMode) setViewMode(live.viewMode)
+    if (live.scrollTo) {
+      setTimeout(() => {
+        document.getElementById(live.scrollTo)?.scrollIntoView({ behavior: 'smooth' })
+      }, 400)
+    }
+  }, [])
 
   // Announcement bar is landing-only; when visible it pushes the fixed navbar
   // down by its height so the two never overlap.
@@ -211,7 +226,9 @@ export default function App() {
         </section>
 
         {/* Hotel Activities & Events (admin-managed, guests can register) */}
-        <EventsCalendar />
+        <section id="activities">
+          <EventsCalendar />
+        </section>
 
         {/* Offers */}
         <section id="offers">

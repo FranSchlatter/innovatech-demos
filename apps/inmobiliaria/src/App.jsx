@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Navbar from '@shared-ui/components/Navbar'
 import Footer from '@shared-ui/components/Footer'
 import { useDarkMode } from '@shared-hooks/useDarkMode'
@@ -20,6 +20,7 @@ import ScheduleVisitForm from './pages/ScheduleVisitForm'
 import AdminLayout from './components/admin/layout/AdminLayout'
 import ClientPortal from './components/ClientPortal'
 import GuidedTour from '@shared-ui/components/GuidedTour'
+import { FEATURE_MAP } from './embed/featureMap'
 import { Compass, Gauge } from 'lucide-react'
 import './styles.css'
 
@@ -39,6 +40,20 @@ export default function App() {
   const [listingsFilter, setListingsFilter] = useState(null)
   const [viewMode, setViewMode] = useState('main') // main | listings | detail | schedule | admin | client-portal
   const [tourRun, setTourRun] = useState(false)
+
+  // Deep-link from the marketplace: ?feature=<id> opens the demo at that feature
+  // ("ver en vivo"). featureMap.live tells us which view to show and where to scroll.
+  useEffect(() => {
+    const featureId = new URLSearchParams(window.location.search).get('feature')
+    const live = featureId && FEATURE_MAP[featureId]?.live
+    if (!live) return
+    if (live.viewMode) setViewMode(live.viewMode)
+    if (live.scrollTo) {
+      setTimeout(() => {
+        document.getElementById(live.scrollTo)?.scrollIntoView({ behavior: 'smooth' })
+      }, 400)
+    }
+  }, [])
 
   const startTour = () => {
     setViewMode('main')

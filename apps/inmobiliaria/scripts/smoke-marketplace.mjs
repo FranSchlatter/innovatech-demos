@@ -23,9 +23,9 @@ try {
 
   assert(await page.getByRole('heading', { name: /Probá cada funcionalidad/ }).isVisible(), 'hero heading visible')
 
-  // Feature cards
-  const addButtons = page.getByRole('button', { name: 'Agregar' })
-  const cardCount = await addButtons.count()
+  // Feature cards — each is a "Ver <name>" button; add-to-pack is the corner toggle
+  const cardButtons = page.getByRole('button', { name: /^Ver / })
+  const cardCount = await cardButtons.count()
   assert(cardCount >= 6, `feature cards rendered (found ${cardCount})`)
 
   // Curated packs
@@ -33,18 +33,22 @@ try {
 
   await page.screenshot({ path: 'scripts/marketplace-catalog.png', fullPage: false })
 
-  // Add to pack → floating bar appears with a count
-  await addButtons.first().click()
+  // Add to pack (corner toggle) → floating bar appears with a count
+  await page.getByRole('button', { name: /al pack$/ }).first().click()
   await page.waitForTimeout(300)
   assert(await page.getByRole('button', { name: /Mi pack/ }).isVisible(), 'pack bar appears after adding')
 
-  // Filter by rubro
-  await page.getByRole('button', { name: 'Inmobiliaria' }).first().click()
+  // Filter by categoría
+  await page.getByRole('button', { name: 'Finanzas & Pagos' }).first().click()
   await page.waitForTimeout(300)
-  assert(await page.getByRole('button', { name: 'Todos los rubros' }).isVisible(), 'rubro filters interactive')
+  assert(await page.getByRole('button', { name: 'Todas' }).isVisible(), 'category filters interactive')
+  await page.getByRole('button', { name: 'Todas' }).click()
+
+  // front/portal/admin are chips in the same flat filter list
+  assert(await page.getByRole('button', { name: 'Front público' }).first().isVisible(), 'type chips in filter list')
 
   // Open a preview modal → the embed iframe mounts
-  await page.getByRole('button', { name: 'Probar' }).first().click()
+  await page.getByRole('button', { name: /^Ver / }).first().click()
   await page.waitForTimeout(1500)
   const iframe = page.locator('iframe[title^="Preview:"]')
   assert(await iframe.count() === 1, 'preview iframe mounted')
